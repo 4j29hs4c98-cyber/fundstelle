@@ -4,6 +4,10 @@ import * as sync from './sync.js';
 import { tr } from './i18n.js';
 import { S, get, list, save, remove, toast, undoable, uid } from './core.js';
 import { render, applyLang, applyTheme } from './render.js';
+import { WAHLARTEN, BUNDESLAENDER } from './katalog.js';
+import { C } from './content.js';
+import { PROFIL_ID } from './profil.js';
+import { auswahlAus, MAX_VERGLEICH } from './views/vergleich.js';
 
 export const actions = {
   // Eine gemerkte Frage ist ein Record des Nutzers, kein redaktioneller Inhalt. Format: { frage: <id>, created }.
@@ -20,6 +24,13 @@ export const actions = {
     S.melden = bezug || null; render();
     if (S.melden) document.getElementById('melden-text')?.focus();
   },
+  // Partei im Vergleich an- oder abwaehlen. Die Auswahl lebt in der Adresse, deshalb nur den Hash setzen.
+  vergleich({ id }) {
+    const jetzt = S.view === 'vergleich' ? auswahlAus(S.param) : [];
+    if (!jetzt.includes(id) && jetzt.length >= MAX_VERGLEICH) { toast('At most four parties at once.'); return; }
+    location.hash = '#vergleich/' + (jetzt.includes(id) ? jetzt.filter(x => x !== id) : [...jetzt, id]).join(',');
+  },
+  'alle-wahlen'() { S.alleWahlen = !S.alleWahlen; render(); },
   theme({ v }) { try { localStorage.setItem('theme', v); } catch {} applyTheme(); render(); },
   lang({ v }) { applyLang(v); render(); },
   async 'sign-up'(_, el) {
@@ -38,6 +49,19 @@ export const actions = {
 
 export const forms = {
   suche(fd) { S.suche = String(fd.get('q') || '').trim().slice(0, 200); },
+  startfrage(fd) { S.frage = String(fd.get('q') || '').trim().slice(0, 200); },
+  // Nur bekannte Werte speichern: was aus dem Formular kommt, wird gegen die Listen geprueft.
+  async profil(fd) {
+    const arten = WAHLARTEN.map(w => w.id), laender = BUNDESLAENDER.map(l => l.id), themen = C.themen.map(t => t.id);
+    const land = String(fd.get('land') || '');
+    await save('profil', PROFIL_ID, {
+      wahlarten: fd.getAll('art').filter(a => arten.includes(a)),
+      land: laender.includes(land) ? land : '',
+      themen: fd.getAll('thema').filter(t => themen.includes(t)),
+      hinweise: fd.get('hinweise') === '1',
+    });
+    toast('Profile saved');
+  },
   // Meldungen landen in einer Tabelle, die nur das Team lesen kann. Nur angemeldet, damit niemand anonym flutet.
   async melden(fd) {
     const text = String(fd.get('text') || '').trim(), bezug = String(fd.get('bezug') || '').slice(0, 200);

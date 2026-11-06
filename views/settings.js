@@ -2,6 +2,27 @@
 import { tr, getLang } from '../i18n.js';
 import * as sync from '../sync.js';
 import { esc } from '../core.js';
+import { WAHLARTEN, BUNDESLAENDER } from '../katalog.js';
+import { themenSortiert } from '../content.js';
+import { profil } from '../profil.js';
+
+// Profil: welche Wahlen und Themen interessieren. Start, Wahltermine und Vergleich richten sich danach.
+function profilPanel() {
+  const pr = profil();
+  const box = (name, v, an, text) => `<label class="check"><input type="checkbox" name="${name}" value="${esc(v)}"${an ? ' checked' : ''}> ${text}</label>`;
+  return `<section class="panel"><h2>${tr('Your profile')}</h2>
+    <p class="note small">${tr('Stays on your device and syncs only when you are signed in.')}</p>
+    <form class="stack" data-form="profil">
+      <fieldset><legend>${tr('Which elections interest you?')}</legend>
+        ${WAHLARTEN.map(w => box('art', w.id, pr.wahlarten.includes(w.id), tr(w.name))).join('')}</fieldset>
+      <label>${tr('Your state')}<select name="land"><option value="">${tr('All states')}</option>
+        ${BUNDESLAENDER.map(l => `<option value="${l.id}"${l.id === pr.land ? ' selected' : ''}>${esc(l.name)}</option>`).join('')}</select></label>
+      <fieldset><legend>${tr('Your topics')}</legend>
+        ${themenSortiert().map(t => box('thema', t.id, pr.themen.includes(t.id), esc(t.titel))).join('')}</fieldset>
+      ${box('hinweise', '1', pr.hinweise, tr('Show notes before my elections'))}
+      <div class="row"><button class="btn primary">${tr('Save profile')}</button></div>
+    </form></section>`;
+}
 
 function ago(iso) { const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? tr('just now') : tr('{n} min ago', { n: m }); }
 export function syncLine() {
@@ -19,6 +40,7 @@ export function viewSettings() {
     : `<p>${tr('Signed in as {email}', { email: esc(st.user.email) })}</p><p class="note">${syncLine()}</p><div class="row"><button class="btn" data-action="sign-out">${tr('Sign out')}</button></div>`;
   return `
   <header class="page-head"><h1>${tr('Settings')}</h1></header>
+  ${profilPanel()}
   <section class="panel"><h2>${tr('Appearance')}</h2>
     <div class="seg">${['system', 'light', 'dark'].map(v => `<button data-action="theme" data-v="${v}" aria-pressed="${v === theme}">${tr(v[0].toUpperCase() + v.slice(1))}</button>`).join('')}</div>
     <h2>${tr('Language')}</h2>

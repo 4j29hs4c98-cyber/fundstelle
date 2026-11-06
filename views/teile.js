@@ -17,6 +17,20 @@ export const safeUrl = u => { try { const x = new URL(u); return x.protocol === 
 export const extLink = (url, text) => { const u = safeUrl(url); return u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${text}</a>` : text; };
 export const rolle = r => (ROLLE[r] ? tr(ROLLE[r]) : '');
 
+// Parteizeichen: Pille in der Parteifarbe mit dem Kurznamen, Zweitfarbe als Streifen. Farben nur als #RRGGBB,
+// sonst koennte ein Wert aus der Datenbank eigenes CSS einschleusen. Textfarbe nach Helligkeit, damit lesbar.
+// Sobald ein offizielles Logo abgelegt ist (p.logo), erscheint es statt des Kurznamens.
+const HEX = /^#[0-9a-f]{6}$/i;
+const istHell = h => { const n = parseInt(h.slice(1), 16); return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 150; };
+export function logo(p, klasse = '') {
+  const f = HEX.test(p?.farbe ?? '') ? p.farbe : '#6E7076', f2 = HEX.test(p?.farbe2 ?? '') ? p.farbe2 : f;
+  const inhalt = p?.logo ? `<img src="${esc(p.logo)}" alt="">` : esc(p?.kuerzel ?? '?');
+  return `<span class="logo ${klasse}" style="--c:${f};--c2:${f2};--t:${istHell(f) ? '#0B0B0C' : '#FFFFFF'}" aria-hidden="true">${inhalt}</span>`;
+}
+// Seitenzahl als Link in den Programm-Leser.
+export const seitenLink = (parteiId, n, text) => `<a class="seite-link" href="#programm/${esc(parteiId)}/${esc(n)}">${text ?? seite(n)} <span aria-hidden="true">→</span></a>`;
+export const termin = w => (w.datum ? datum(w.datum) : esc(w.zeitraum));
+
 export const datum = iso => new Date(iso + 'T12:00:00').toLocaleDateString(LOC(), { day: 'numeric', month: 'long', year: 'numeric' });
 export const seite = n => tr('Page {n}', { n });
 

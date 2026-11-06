@@ -2,19 +2,20 @@
 // Argumente dafuer und dagegen, Abstimmungen dazu. Jeder Weg endet an der Originalstelle.
 import { tr } from '../i18n.js';
 import { esc } from '../core.js';
-import { frage, thema, partei, programmVon, positionenZuFrage, argumenteZuFrage, abstimmungenZuFrage } from '../content.js';
-import { kopf, merkKnopf, haltung, stimme, rolle, datum, seite, herkunft, demoHinweis, safeUrl, extLink } from './teile.js';
+import { frage, thema, partei, positionenZuFrage, argumenteZuFrage, abstimmungenZuFrage, aussagenZuFrage } from '../content.js';
+import { kopf, merkKnopf, haltung, stimme, rolle, datum, seite, herkunft, demoHinweis, extLink, logo, seitenLink, pfeil } from './teile.js';
+import { aussagenBlock } from './parteien.js';
 
 const quelleLink = (url, text) => extLink(url, esc(text));
 
 function positionKarte(p) {
-  const pr = programmVon(p.partei), name = partei(p.partei)?.name ?? '';
+  const pt = partei(p.partei);
   const stelle = p.seite ? `<details class="stelle"><summary>${esc(p.quelle)}, ${seite(p.seite)}</summary>
       ${p.auszug ? `<blockquote class="auszug">„${esc(p.auszug)}“</blockquote>` : ''}
-      <p class="meta">${safeUrl(pr?.url) ? extLink(pr.url, tr('Open the original programme')) : tr('The original programme is not linked yet.')}</p></details>`
+      <p class="meta">${seitenLink(p.partei, p.seite, tr('Read on page {n} in the programme', { n: p.seite }))}</p></details>`
     : `<p class="src">${esc(p.quelle)}</p>`;
   return `<article class="pos">
-    <div class="pos-head"><a class="who" href="#partei/${esc(p.partei)}"><span class="swatch" aria-hidden="true"></span>${esc(name)}</a>
+    <div class="pos-head"><a class="who" href="#partei/${esc(p.partei)}">${logo(pt, 'klein')}${esc(pt?.name ?? '')}</a>
       <span class="stance">${haltung(p.haltung)}</span></div>
     <p>${esc(p.text)}</p>${stelle}</article>`;
 }
@@ -39,6 +40,7 @@ export function viewFrage(id) {
   <div class="row merk-row">${merkKnopf(f.id)}<span class="meta">${tr('All parties in alphabetical order. No ranking, no recommendation.')}</span></div>
 
   <div class="cards">${pos.map(positionKarte).join('')}</div>
+  <p><a class="btn" href="#vergleich/${esc(pos.filter(p => p.haltung !== 'keine_angabe').slice(0, 4).map(p => p.partei).join(','))}">${tr('Compare parties')} ${pfeil}</a></p>
 
   <h2 class="eyebrow section-label">${tr('What the parties say would change')}</h2>
   ${angekuendigt.length ? `<div class="cards">${angekuendigt.map(p => `<article class="card paper"><h3>${esc(partei(p.partei)?.name ?? '')}</h3>
@@ -54,6 +56,8 @@ export function viewFrage(id) {
   ${votes.length ? `<p class="note small">${tr('Parties in government usually vote together, even where their own programme says something different. That is why the role at the time of the vote is shown.')}</p>
     <div class="cards">${votes.map(abstimmungBlock).join('')}</div>`
     : `<p class="note">${tr('No vote has been linked to this question yet.')}</p>`}
+
+  ${aussagenBlock(aussagenZuFrage(f.id), true)}
 
   ${demoHinweis()}
   ${herkunft(`frage:${f.id}`)}`;

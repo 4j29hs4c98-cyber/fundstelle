@@ -188,5 +188,54 @@ textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--line); borde
 .search { display: flex; gap: 8px; margin-bottom: 18px; }
 .search input { flex: 1; min-width: 0; }
 
+
+/* Parteizeichen: Pille in Parteifarbe, Zweitfarbe als Streifen unten. Farben kommen aus katalog.js (nur #RRGGBB). */
+.logo { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 30px; padding: 0 9px; border-radius: 999px;
+  background: var(--c); color: var(--t); box-shadow: inset 0 -3px 0 var(--c2); font-family: var(--font-display); font-size: 12px; font-weight: 800;
+  letter-spacing: -.01em; white-space: nowrap; flex: none; vertical-align: middle; }
+.logo.klein { min-width: 24px; height: 24px; padding: 0 7px; font-size: 11px; }
+.logo img { height: 70%; width: auto; }
+.page-head h1 .logo { height: 34px; font-size: 14px; margin-right: 6px; vertical-align: 4px; }
+a.ballot { text-decoration: none; } .ballot .arrow { font-size: 24px; }
+.seite-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--ink); font-weight: 600; font-size: 13px; }
+.pos .src .seite-link { min-height: 0; font-family: var(--font-mono); font-size: 11px; }
+
+/* Vergleich */
+.pchips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 18px; }
+.pchip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px 0 8px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--muted); font-size: 14px; cursor: pointer; }
+.pchip[aria-pressed="true"] { border-color: var(--primary); color: var(--ink); font-weight: 600; box-shadow: inset 0 0 0 1px var(--primary); }
+.vfrage { margin-bottom: 22px; } .vfrage h3 { font-size: 17px; margin: 0 0 12px; } .vfrage h3 a { color: inherit; }
+.vgrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 12px; }
+.vz { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px; display: grid; gap: 8px; align-content: start; justify-items: start; }
+.vz p { margin: 0; font-size: 14px; color: var(--muted); } .vz.leer { border-style: dashed; }
+.args h4 { margin: 0 0 8px; font-size: 15px; }
+
+/* Startseite: eigene Frage, Antworten, Hinweis vor der Wahl */
+.fragefeld { margin-top: -6px; }
+.mini { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 4px; }
+.mini li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; }
+.mini li .seite-link { margin-left: auto; }
+.hinweis { background: var(--paper-warm); border: 1px solid var(--paper-warm-line); border-radius: var(--radius); padding: 16px 18px; margin-top: 16px; }
+.hinweis p { margin: 4px 0 12px; color: var(--muted); font-size: 14px; }
+
+/* Wahltermine */
+.wahl .tage { display: grid; justify-items: center; font-family: var(--font-display); font-size: 28px; font-weight: 800; line-height: 1; flex: none; }
+.wahl .tage small { font-size: 11px; font-weight: 600; color: var(--faint); }
+.wahl .meta a, .aussage .meta a { color: var(--ink); }
+
+/* Programm-Leser (Mockup) */
+.blaettern { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.blatt { background: var(--paper-warm); border: 1px solid var(--paper-warm-line); border-radius: 14px; padding: 22px 20px; display: grid; gap: 10px; box-shadow: var(--shadow); }
+.blatt p { margin: 0; } .blatt .meta a { color: var(--ink); }
+.blatt mark { background: var(--surface); color: var(--ink); padding: 2px 4px; border-radius: 4px; font-weight: 600; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.platz { display: block; height: 9px; border-radius: 5px; background: var(--paper-warm-line); }
+
+/* Profil */
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 2px; } legend { color: var(--muted); font-size: 14px; margin-bottom: 4px; padding: 0; }
+.check { display: flex !important; grid-template-columns: none; align-items: center; gap: 10px; min-height: 44px; color: var(--ink) !important; }
+.check input { width: 20px; height: 20px; accent-color: var(--primary); }
+select { width: 100%; min-height: 44px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); font: inherit; color: inherit; }
+
 @media (max-width: 400px) { .tabbar a { padding: 0 11px; min-width: 46px; } .page-head h1 { font-size: 28px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

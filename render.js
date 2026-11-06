@@ -9,9 +9,12 @@ import { viewParteien, viewPartei } from './views/parteien.js';
 import { viewPruefen } from './views/pruefen.js';
 import { viewAuswahl } from './views/auswahl.js';
 import { viewSettings } from './views/settings.js';
+import { viewVergleich } from './views/vergleich.js';
+import { viewProgramm } from './views/programm.js';
+import { viewWahlen } from './views/wahlen.js';
 
 const views = { start: viewStart, themen: viewThemen, thema: viewThema, frage: viewFrage, parteien: viewParteien, partei: viewPartei,
-  pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings };
+  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings };
 const FOCUS_KEYS = ['action', 'id', 'v', 'frage', 'bezug'];
 
 export function render() {

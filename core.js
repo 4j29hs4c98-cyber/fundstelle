@@ -12,13 +12,14 @@ export const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().t
 // Vier Bereiche in der Leiste (seitlich wischen wechselt zwischen ihnen). Dazu Detailseiten mit Parameter
 // (#frage/<id>), die feste Seite "Wie wir auswaehlen" und die Einstellungen hinter dem Zahnrad.
 export const TABS = ['start', 'themen', 'parteien', 'pruefen'];
-export const VIEWS = [...TABS, 'thema', 'frage', 'partei', 'auswahl', 'settings'];
-export const TAB_OF = { thema: 'themen', frage: 'themen', partei: 'parteien' };
-// Adressen aus Version 1, damit alte Lesezeichen weiter funktionieren.
-export const ALTE_ADRESSEN = { ueberblick: 'start', vergleich: 'themen', programme: 'parteien', kontext: 'pruefen' };
+// #vergleich/<id,id>, #programm/<partei>/<seite>, #wahlen.
+export const VIEWS = [...TABS, 'thema', 'frage', 'partei', 'vergleich', 'programm', 'wahlen', 'auswahl', 'settings'];
+export const TAB_OF = { thema: 'themen', frage: 'themen', partei: 'parteien', vergleich: 'parteien', programm: 'parteien', wahlen: 'start' };
+// Adressen aus Version 1, damit alte Lesezeichen weiter funktionieren. #vergleich ist wieder eine eigene Seite.
+export const ALTE_ADRESSEN = { ueberblick: 'start', programme: 'parteien', kontext: 'pruefen' };
 
-// param/suche/melden sind reiner Anzeigezustand, nichts davon wird gespeichert.
-export const S = { recs: new Map(), view: 'start', param: null, suche: '', melden: null };
+// param/suche/frage/alleWahlen/melden sind reiner Anzeigezustand, nichts davon wird gespeichert.
+export const S = { recs: new Map(), view: 'start', param: null, suche: '', frage: '', alleWahlen: false, melden: null };
 
 export const list = kind => [...S.recs.values()].filter(r => r.kind === kind && !r.deleted);
 export const get = id => { const r = S.recs.get(id); return r && !r.deleted ? r : null; };
