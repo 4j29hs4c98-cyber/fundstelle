@@ -15,22 +15,25 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 </head>
 <body>
-<nav class="tabbar" aria-label="Bereiche">
-  <a href="#ueberblick" data-nav="ueberblick">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>
-    <span data-i18n="Overview">Overview</span></a>
-  <a href="#vergleich" data-nav="vergleich">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10"/><path d="M12 20V4"/><path d="M19 20v-7"/></svg>
-    <span data-i18n="Compare">Compare</span></a>
-  <a href="#kontext" data-nav="kontext">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M3 8V5a2 2 0 0 1 2-2h3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/><path d="M8.5 12h7"/></svg>
-    <span data-i18n="Context">Context</span></a>
-  <a href="#programme" data-nav="programme">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
-    <span data-i18n="Programmes">Programmes</span></a>
-  <a href="#settings" data-nav="settings">
+<header class="topbar">
+  <a class="brand" href="#start">Politik app</a>
+  <a class="gear" href="#settings" data-nav="settings">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span data-i18n="Settings">Settings</span><span id="sync-dot" class="sync-dot" data-state="off" aria-hidden="true"></span></a>
+    <span class="sr-only" data-i18n="Settings">Settings</span><span id="sync-dot" class="sync-dot" data-state="off" aria-hidden="true"></span></a>
+</header>
+<nav class="tabbar" aria-label="Bereiche">
+  <a href="#start" data-nav="start">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+    <span data-i18n="Start">Start</span></a>
+  <a href="#themen" data-nav="themen">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg>
+    <span data-i18n="Topics">Topics</span></a>
+  <a href="#parteien" data-nav="parteien">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M8 13h8"/><path d="M8 17h5"/></svg>
+    <span data-i18n="Parties">Parties</span></a>
+  <a href="#pruefen" data-nav="pruefen">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <span data-i18n="Check">Check</span></a>
 </nav>
 <main id="main" tabindex="-1"></main>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>

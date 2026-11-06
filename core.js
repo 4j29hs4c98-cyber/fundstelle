@@ -9,10 +9,16 @@ import { tr } from './i18n.js';
 export const $ = (s, el = document) => el.querySelector(s);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
-export const VIEWS = ['ueberblick', 'vergleich', 'kontext', 'programme', 'settings'];
+// Vier Bereiche in der Leiste (seitlich wischen wechselt zwischen ihnen). Dazu Detailseiten mit Parameter
+// (#frage/<id>), die feste Seite "Wie wir auswaehlen" und die Einstellungen hinter dem Zahnrad.
+export const TABS = ['start', 'themen', 'parteien', 'pruefen'];
+export const VIEWS = [...TABS, 'thema', 'frage', 'partei', 'auswahl', 'settings'];
+export const TAB_OF = { thema: 'themen', frage: 'themen', partei: 'parteien' };
+// Adressen aus Version 1, damit alte Lesezeichen weiter funktionieren.
+export const ALTE_ADRESSEN = { ueberblick: 'start', vergleich: 'themen', programme: 'parteien', kontext: 'pruefen' };
 
-// frage/kontextOffen sind reiner Anzeigezustand, nichts davon wird gespeichert.
-export const S = { recs: new Map(), view: 'ueberblick', frage: 'mietpreisbremse', kontextOffen: false };
+// param/suche/melden sind reiner Anzeigezustand, nichts davon wird gespeichert.
+export const S = { recs: new Map(), view: 'start', param: null, suche: '', melden: null };
 
 export const list = kind => [...S.recs.values()].filter(r => r.kind === kind && !r.deleted);
 export const get = id => { const r = S.recs.get(id); return r && !r.deleted ? r : null; };

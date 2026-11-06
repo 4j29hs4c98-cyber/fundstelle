@@ -1,29 +1,34 @@
 // render.js — draws the current screen. Every change re-renders the screen, but scroll positions
 // and the focused control are kept, so the page never jumps.
-import { $, S } from './core.js';
+import { $, S, TAB_OF } from './core.js';
 import { tr, setLang, getLang } from './i18n.js';
-import { viewUeberblick } from './views/ueberblick.js';
-import { viewVergleich } from './views/vergleich.js';
-import { viewKontext } from './views/kontext.js';
-import { viewProgramme } from './views/programme.js';
+import { viewStart } from './views/start.js';
+import { viewThemen, viewThema } from './views/themen.js';
+import { viewFrage } from './views/frage.js';
+import { viewParteien, viewPartei } from './views/parteien.js';
+import { viewPruefen } from './views/pruefen.js';
+import { viewAuswahl } from './views/auswahl.js';
 import { viewSettings } from './views/settings.js';
 
-const views = { ueberblick: viewUeberblick, vergleich: viewVergleich, kontext: viewKontext, programme: viewProgramme, settings: viewSettings };
-const FOCUS_KEYS = ['action', 'id', 'v', 'thema'];
+const views = { start: viewStart, themen: viewThemen, thema: viewThema, frage: viewFrage, parteien: viewParteien, partei: viewPartei,
+  pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings };
+const FOCUS_KEYS = ['action', 'id', 'v', 'frage', 'bezug'];
 
 export function render() {
-  const main = $('#main'), keep = render.last === S.view, y = window.scrollY;
+  const seite = `${S.view}/${S.param ?? ''}`;
+  const main = $('#main'), keep = render.last === seite, y = window.scrollY;
   const ae = document.activeElement, sig = keep && main.contains(ae) ? { tag: ae.tagName, elId: ae.id, d: Object.fromEntries(FOCUS_KEYS.map(k => [k, ae.dataset[k]])) } : null;
   main.style.minHeight = keep ? `${main.offsetHeight}px` : '';
-  main.innerHTML = views[S.view]();
+  main.innerHTML = views[S.view](S.param);
   main.style.minHeight = '';
-  document.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', a.dataset.nav === S.view ? 'page' : 'false'));
+  const tab = TAB_OF[S.view] || S.view;
+  document.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', a.dataset.nav === tab ? 'page' : 'false'));
   if (keep) window.scrollTo(0, y); else window.scrollTo(0, 0);
   if (sig) {
     const el = sig.elId ? document.getElementById(sig.elId) : [...main.querySelectorAll(sig.tag)].find(e => FOCUS_KEYS.every(k => e.dataset[k] === sig.d[k]));
     el?.focus({ preventScroll: true });
   }
-  render.last = S.view;
+  render.last = seite;
 }
 export function applyLang(v) {
   let l = v; try { l ||= localStorage.getItem('lang'); } catch {}

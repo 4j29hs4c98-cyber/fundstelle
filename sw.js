@@ -1,8 +1,9 @@
 // sw.js — offline support. RELEASE RULE: bump VERSION on every release, and list every app file in SHELL
 // (scripts/check-release.mjs verifies both). A missing file here breaks offline mode for everyone.
-const VERSION = 'politik-v1';
+const VERSION = 'politik-v2';
 const SHELL = ['./', './index.html', './styles.css', './app.js', './core.js', './db.js', './sync.js', './i18n.js', './render.js', './actions.js',
-  './content.js', './views/ueberblick.js', './views/vergleich.js', './views/kontext.js', './views/programme.js', './views/settings.js',
+  './content.js', './views/teile.js', './views/start.js', './views/themen.js', './views/frage.js', './views/parteien.js', './views/pruefen.js',
+  './views/auswahl.js', './views/settings.js',
   './config.js', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim())));

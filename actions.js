@@ -3,24 +3,23 @@
 import * as sync from './sync.js';
 import { tr } from './i18n.js';
 import { S, get, list, save, remove, toast, undoable, uid } from './core.js';
-import { frageZuThema } from './content.js';
 import { render, applyLang, applyTheme } from './render.js';
 
 export const actions = {
-  // Ein gemerktes Thema ist ein Record des Nutzers, kein redaktioneller Inhalt.
-  async merken({ thema }) {
-    const vorhanden = list('merk').find(r => r.data.thema === thema);
-    if (vorhanden) { await undoable('Topic removed', [vorhanden.id], () => remove(vorhanden.id), render); return; }
-    await save('merk', uid(), { thema, created: new Date().toISOString() });
-    render(); toast('Topic remembered');
+  // Eine gemerkte Frage ist ein Record des Nutzers, kein redaktioneller Inhalt. Format: { frage: <id>, created }.
+  async merken({ frage }) {
+    const vorhanden = list('merk').find(r => r.data.frage === frage);
+    if (vorhanden) { await undoable('Question removed', [vorhanden.id], () => remove(vorhanden.id), render); return; }
+    await save('merk', uid(), { frage, created: new Date().toISOString() });
+    render(); toast('Question remembered');
   },
-  'open-thema'({ thema }) {
-    const f = frageZuThema(thema);
-    if (f) S.frage = f.id;
-    location.hash = '#vergleich';
+  // Entfernt einen gemerkten Eintrag aus Version 1 (Thema statt Frage).
+  async vergessen({ id }) { await undoable('Topic removed', [id], () => remove(id), render); },
+  // Oeffnet (bezug gesetzt) oder schliesst (bezug leer) das Formular "Fehler melden".
+  melden({ bezug }) {
+    S.melden = bezug || null; render();
+    if (S.melden) document.getElementById('melden-text')?.focus();
   },
-  frage({ id }) { S.frage = id; render(); },
-  'aussage-aufklappen'() { S.kontextOffen = true; render(); },
   theme({ v }) { try { localStorage.setItem('theme', v); } catch {} applyTheme(); render(); },
   lang({ v }) { applyLang(v); render(); },
   async 'sign-up'(_, el) {
@@ -38,6 +37,18 @@ export const actions = {
 };
 
 export const forms = {
+  suche(fd) { S.suche = String(fd.get('q') || '').trim().slice(0, 200); },
+  // Meldungen landen in einer Tabelle, die nur das Team lesen kann. Nur angemeldet, damit niemand anonym flutet.
+  async melden(fd) {
+    const text = String(fd.get('text') || '').trim(), bezug = String(fd.get('bezug') || '').slice(0, 200);
+    if (text.length < 3) throw new Error('Please describe the error in a few words.');
+    const client = sync.getClient();
+    if (!client) throw new Error('Reports need a connection to the server.');
+    if (!sync.status.user) throw new Error('Sign in under Settings to send a report.');
+    const { error } = await client.from('fehlermeldungen').insert({ bezug, text: text.slice(0, 1000) });
+    if (error) { console.error(error); throw new Error('The report could not be sent. Try again later.'); }
+    S.melden = null; toast('Thank you. The team will check it.');
+  },
   async 'sign-in'(fd) {
     try { await sync.signIn(fd.get('email').trim(), fd.get('password')); }
     catch (e) { throw new Error(sync.friendly(e)); }

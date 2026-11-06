@@ -29,7 +29,7 @@
   --shadow: 0 14px 34px -18px rgba(0,0,0,.8); }
 *, *::before, *::after { box-sizing: inherit; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
-button, input { font: inherit; color: inherit; }
+button, input, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 10px; }
 main { max-width: 760px; margin: 0 auto; padding: 16px 16px calc(110px + env(safe-area-inset-bottom, 0px)); }
 
@@ -121,15 +121,15 @@ input:not([type=checkbox]) { width: 100%; min-height: 44px; padding: 8px 14px; b
 .seg button[aria-pressed="true"] { background: var(--primary); color: var(--primary-ink); font-weight: 600; }
 
 .tabbar { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; background: var(--bar);
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: var(--bar);
   border-radius: 999px; padding: 6px; z-index: 10; box-shadow: 0 10px 26px -10px rgba(0,0,0,.45); }
-.tabbar { grid-template-columns: repeat(5, auto); justify-content: center; }
+.tabbar { grid-template-columns: repeat(4, auto); justify-content: center; }
 .tabbar a { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px;
   min-width: 52px; min-height: 48px; padding: 0 14px; border-radius: 999px; color: var(--bar-ink);
   text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap;
   transition: background-color .2s, color .2s; }
 .tabbar a svg { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-/* Beschriftung nur beim aktiven Bereich, sonst wird die Leiste bei fuenf Eintraegen zu eng. */
+/* Beschriftung nur beim aktiven Bereich, sonst wird die Leiste bei vier Eintraegen auf kleinen Telefonen zu eng. */
 .tabbar a span:not(.sync-dot) { display: none; }
 .tabbar a[aria-current="page"] { background: var(--bar-active-bg); color: var(--bar-active-ink); }
 .tabbar a[aria-current="page"] span:not(.sync-dot) { display: inline; }
@@ -141,6 +141,52 @@ input:not([type=checkbox]) { width: 100%; min-height: 44px; padding: 8px 14px; b
   padding: 12px 20px; border-radius: 999px; transition: .2s; z-index: 20; font-size: 14px; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); } .toast.has-action { pointer-events: auto; }
 .toast-action { background: none; border: 0; color: inherit; font-weight: 700; cursor: pointer; padding: 6px 8px; text-decoration: underline; }
+
+/* Kopfzeile mit Zahnrad oben rechts (Einstellungen sind kein eigener Bereich). */
+.topbar { max-width: 760px; margin: 0 auto; padding: 8px 8px 0 16px; display: flex; align-items: center; justify-content: space-between; }
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: -.02em; color: var(--ink); text-decoration: none; min-height: 44px; display: flex; align-items: center; }
+.gear { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--muted); }
+.gear svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.gear[aria-current="page"] { background: var(--primary); color: var(--primary-ink); }
+.gear .sync-dot { top: 7px; right: 7px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+main { padding-top: 4px; }
+
+.back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; }
+a.card.link { display: block; color: inherit; text-decoration: none; }
+a.card.link h3 + .meta, a.card.link .meta { display: block; margin-top: 6px; }
+.card.paper { background: var(--paper-warm); border-color: var(--paper-warm-line); }
+.card.paper p { color: var(--ink); }
+.note.small { font-size: 13px; margin: 10px 0 0; }
+.merk-row { align-items: center; margin: -8px 0 14px; flex-wrap: nowrap; }
+.merk-row .pin { margin: 0; }
+.pos-head a.who { color: var(--ink); text-decoration: none; min-height: 44px; }
+
+/* Programmstelle: echter Text aus dem Programm liegt auf Papier. */
+.stelle { margin-top: 14px; background: var(--paper-warm); border: 1px solid var(--paper-warm-line); border-radius: 14px; }
+.stelle summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; padding: 0 12px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.stelle[open] summary { border-bottom: 1px solid var(--paper-warm-line); }
+.stelle .meta { padding: 0 12px 12px; margin: 0; }
+.stelle .meta a, .herkunft a, .src-inline a, .vote a { color: var(--ink); }
+.auszug { margin: 12px; font-family: var(--font-display); font-size: 16px; font-weight: 600; line-height: 1.45; color: var(--ink); }
+.card .auszug { margin: 8px 0; }
+
+.args { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.args .panel { margin-top: 0; } .args h3 { margin: 0 0 8px; font-size: 15px; }
+.args ul { margin: 0; padding-left: 18px; display: grid; gap: 10px; } .args li { font-size: 14px; }
+.src-inline { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+.stimmen { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; }
+.stimmen dt { font-weight: 600; } .stimmen dd { margin: 0; }
+.said-voted { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.said-voted .eyebrow { margin-bottom: 8px; }
+.voted { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; margin: 6px 0 0 !important; font-size: 14px; color: var(--ink) !important; }
+
+.herkunft { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--line); }
+.herkunft .meta { margin: 0 0 12px; }
+textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); resize: vertical; }
+.search { display: flex; gap: 8px; margin-bottom: 18px; }
+.search input { flex: 1; min-width: 0; }
 
 @media (max-width: 400px) { .tabbar a { padding: 0 11px; min-width: 46px; } .page-head h1 { font-size: 28px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

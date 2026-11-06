@@ -1,8 +1,9 @@
 // app.js — entry point: event routing, URL routing (#home, #settings), sync wiring, startup.
 import * as db from './db.js';
 import * as sync from './sync.js';
-import { $, S, VIEWS, toast } from './core.js';
+import { $, S, VIEWS, TABS, TAB_OF, ALTE_ADRESSEN, toast } from './core.js';
 import { tr } from './i18n.js';
+import { loadContent } from './content.js';
 import { render, applyLang, applyTheme } from './render.js';
 import { actions, forms } from './actions.js';
 import { syncLine } from './views/settings.js';
@@ -28,7 +29,15 @@ document.addEventListener('change', async e => {
   } catch { toast('That file is not a valid backup.'); }
 });
 
-function route() { const v = location.hash.slice(1); S.view = VIEWS.includes(v) ? v : 'ueberblick'; render(); }
+// #frage/<id> -> view 'frage', param '<id>'. Unbekannte Adressen fuehren zum Start.
+function route() {
+  const [roh, ...rest] = location.hash.slice(1).split('/');
+  const v = ALTE_ADRESSEN[roh] || roh;
+  S.view = VIEWS.includes(v) ? v : 'start';
+  try { S.param = rest.length ? decodeURIComponent(rest.join('/')) : null; } catch { S.param = null; } // kaputte Adresse wie #frage/%E0
+  S.melden = null;
+  render();
+}
 window.addEventListener('hashchange', route);
 
 // Wischen nach links oder rechts wechselt den Bereich. Die Gesteuerung laeuft ueber den Hash,
@@ -48,7 +57,9 @@ window.addEventListener('hashchange', route);
     const dx = e.clientX - x0;
     id = null;
     if (locked !== 'x' || Math.abs(dx) < 60) return;
-    const i = VIEWS.indexOf(S.view), next = VIEWS[i + (dx < 0 ? 1 : -1)];
+    const tab = TAB_OF[S.view] || S.view, i = TABS.indexOf(tab);
+    if (i < 0) return;
+    const next = TABS[i + (dx < 0 ? 1 : -1)];
     if (next) location.hash = '#' + next;
   });
   main.addEventListener('pointercancel', () => { id = null; });
@@ -77,5 +88,7 @@ const syncHooks = { // how sync talks to the app
   (await db.loadAll()).forEach(r => S.recs.set(r.id, r));
   route();
   await sync.init(syncHooks);
+  // Redaktionelle Inhalte frisch laden; bis dahin (und offline) gilt der zuletzt geladene oder eingebaute Stand.
+  if (await loadContent(sync.getClient()) && !typing()) render();
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
 })();
