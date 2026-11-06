@@ -1,0 +1,14 @@
+{
+  "name": "politik-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "node scripts/serve.mjs 8080",
+    "check": "node scripts/check-release.mjs",
+    "test": "playwright test",
+    "release-check": "npm run check && npm test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.0"
+  }
+}

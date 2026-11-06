@@ -1,0 +1,14 @@
+# Runs the release check and the tests on every push and pull request.
+name: Checks
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 2 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci || npm install
+      - run: npx playwright install --with-deps chromium
+      - run: npm run release-check
