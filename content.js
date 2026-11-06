@@ -12,6 +12,8 @@
 // DEMO: Die Parteien heissen A bis F und alle Positionen, Auszuege und Abstimmungen sind erfunden. So wird
 // keine erfundene Aussage je einer echten Partei zugeschrieben. Inhalte sind deutsch, die Bedienung zweisprachig.
 
+import { PARTEIEN_DE } from './katalog.js';
+
 const P = { A: '6675c29e-7733-4cdb-8738-25ebb4c5d516', B: '98f32a21-44b3-4220-81d6-c0631e34bbae', C: '67e4a12b-4b7b-4c63-9cae-1296ad67c676',
   D: '452265a3-d1fc-4cca-9133-775e79068925', E: '7096c8f1-785d-46d8-84f6-a6f3906d46e2', F: 'b3f0f5c7-4fb2-4512-8b2f-28a1ac6adfdc' };
 const T = { wohnen: '3a18c189-c9a4-49dc-8ad9-7e49ac440fe4', klima: '2a2cf39a-2cac-490e-bc3f-6557b9efb890', rente: 'd864065a-5d5c-4ad4-8149-645b4a1602eb' };
@@ -68,10 +70,28 @@ const POS = [
 // Stimmen je Partei: [Stimme, Rolle zum Zeitpunkt der Abstimmung]
 const koalition = (a, b, f) => ({ [P.A]: [a, 'koalition'], [P.B]: [b, 'koalition'], [P.F]: [f, 'koalition'] });
 
+// Beispielparteien bekommen bewusst Grautoene: jede bunte Farbe erinnert an eine echte Partei.
+const GRAU = { A: '#2E2F33', B: '#45474D', C: '#5C5E65', D: '#73757C', E: '#8A8C93', F: '#A1A3AA' };
+
+// Aussagen von Politikerinnen und Politikern (MOCKUP). Spaeter sammelt ein Agent sie aus Nachrichtenagenturen und
+// offiziellen Kanaelen, ein Mensch gibt frei. Personen, Zitate und Quellen hier sind erfunden.
+const AUSSAGEN = [
+  [P.A, F.miete, 'Beispielperson A1', 'Fraktionsvorsitz', '2026-11-04', 'Interview',
+    'Eine befristete Mietpreisbremse reiche nicht, die Partei wolle sie dauerhaft und für mehr Landkreise.'],
+  [P.C, F.miete, 'Beispielperson C1', 'Wohnungspolitische Sprecherin', '2026-11-03', 'Pressemitteilung',
+    'Statt einer Verlängerung brauche es schnellere Baugenehmigungen, sonst entstehe keine neue Wohnung.'],
+  [P.D, F.co2, 'Beispielperson D1', 'Landesvorsitz', '2026-11-02', 'Soziale Medien',
+    'Ein höherer CO2-Preis sei nur mit einem Ausgleich für Pendlerinnen und Pendler zu machen.'],
+  [P.E, F.rente, 'Beispielperson E1', 'Spitzenkandidat', '2026-10-30', 'Talkshow',
+    'Das Renteneintrittsalter müsse sinken, die Finanzierung solle stärker aus Steuern kommen.'],
+].map(([partei, frage, person, rolle, datum, kanal, text], i) =>
+  ({ id: `aussage-${i + 1}`, partei, frage, person, rolle, datum, kanal, text, quelle: `${kanal}, erfunden`, url: null }));
+
 export const DEMO = {
   ist_demo: true, ki: false, stand: '2026-11-06',
   wahlen: [{ id: WAHL, name: 'Beispielwahl zum Landtag', datum: '2027-05-09', parlament: 'Beispielparlament' }],
-  parteien: Object.entries(P).map(([k, id]) => ({ id, kuerzel: k, name: `Partei ${k}` })),
+  parteien: Object.entries(P).map(([k, id]) => ({ id, kuerzel: k, name: `Partei ${k}`, farbe: GRAU[k] })),
+  aussagen: AUSSAGEN,
   themen: [
     { id: T.wohnen, titel: 'Wohnen und Mieten', kurz: 'Die Mietpreisbremse läuft aus. Sechs Programme sagen dazu etwas, vier davon ausführlich.', sort: 1 },
     { id: T.klima, titel: 'Klima und Energie', kurz: 'Beim CO2-Preis gehen die Programme am weitesten auseinander.', sort: 2 },
@@ -127,7 +147,9 @@ export async function loadContent(client) {
     const next = {
       ist_demo: pa.some(p => p.ist_demo), stand: new Date().toISOString().slice(0, 10),
       ki: po.some(p => p.erstellt_von === 'agent') || ar.some(a => a.erstellt_von === 'agent'),
-      wahlen: wa, parteien: pa.map(p => ({ id: p.id, kuerzel: p.kuerzel, name: p.anzeigename })),
+      wahlen: wa, parteien: pa.map(p => ({ id: p.id, kuerzel: p.kuerzel, name: p.anzeigename, farbe: GRAU[p.kuerzel] })),
+      // Aussagen gibt es noch nicht in der Datenbank (Mockup). Solange dort Beispieldaten liegen, gelten die eingebauten.
+      aussagen: pa.some(p => p.ist_demo) ? AUSSAGEN : [],
       themen: th.map(t => ({ id: t.id, titel: t.titel, kurz: t.kurzfassung, sort: t.sortierung })),
       fragen: fr.map(f => ({ id: f.id, thema: f.thema_id, frage: f.frage, kurz: f.kurz || f.frage, sort: f.sortierung })),
       programme: pr.map(p => ({ partei: p.partei_id, wahl: p.wahl_id, titel: p.titel, url: p.quelle_url, seiten: p.seiten })),
@@ -147,8 +169,13 @@ export async function loadContent(client) {
 const nachName = (a, b) => (partei(a.partei)?.name ?? '').localeCompare(partei(b.partei)?.name ?? '', 'de');
 const nachSort = (a, b) => (a.sort ?? 0) - (b.sort ?? 0);
 
-export const partei = id => C.parteien.find(p => p.id === id) || null;
+// Parteien mit Inhalten (C.parteien) und das Verzeichnis echter Parteien (katalog.js, noch ohne Positionen).
+export const partei = id => C.parteien.find(p => p.id === id) || PARTEIEN_DE.find(p => p.id === id) || null;
 export const parteienSortiert = () => [...C.parteien].sort((a, b) => a.name.localeCompare(b.name, 'de'));
+export const aussagenVon = id => (C.aussagen ?? []).filter(a => a.partei === id).sort((a, b) => b.datum.localeCompare(a.datum));
+export const aussagenZuFrage = id => (C.aussagen ?? []).filter(a => a.frage === id).sort((a, b) => b.datum.localeCompare(a.datum));
+export const positionenAufSeite = (parteiId, n) => C.positionen.filter(p => p.partei === parteiId && p.seite === n);
+export const fundstellenVon = id => C.positionen.filter(p => p.partei === id && p.seite).sort((a, b) => a.seite - b.seite);
 export const thema = id => C.themen.find(t => t.id === id) || null;
 export const themenSortiert = () => [...C.themen].sort(nachSort);
 export const frage = id => C.fragen.find(f => f.id === id) || null;
@@ -190,4 +217,26 @@ export function suche(text) {
       && passt([frage(p.frage)?.frage, p.text, p.auszug].join(' '))).sort(nachName),
     abstimmungen: woerter.length ? C.abstimmungen.filter(a => passt([a.titel, a.parlament].join(' '))) : [],
   };
+}
+
+// Freie Frage auf der Startseite ("Welche Partei unterstuetzt Obdachlose am besten?"). Anders als suche():
+// es reicht, wenn EIN Begriff passt, und Alltagswoerter werden ueber eine kleine Begriffsliste auf die Fragen
+// gelenkt. Ergebnis sind Fragen mit allen Positionen, nie eine Rangfolge der Parteien.
+const FRAGEWOERTER = new Set([...FUELLWOERTER, 'welche', 'welcher', 'wer', 'wie', 'was', 'wo', 'warum', 'gibt', 'moment', 'gerade', 'aktuell',
+  'besten', 'beste', 'besser', 'zukunft', 'machen', 'macht', 'unterstutzt', 'unterstutzen', 'projekte', 'politik', 'thema', 'dazu', 'denn',
+  'meisten', 'mehr', 'sich', 'fur', 'gegen', 'einsetzen', 'setzt']);
+const BEGRIFFE = { obdach: ['wohn', 'miet'], wohnungslos: ['wohn', 'miet'], wohnung: ['wohn', 'miet'], miet: ['miet'], bau: ['neubau', 'bau'],
+  klima: ['klima', 'co2', 'energie'], umwelt: ['klima', 'co2'], energie: ['energie', 'co2'], benzin: ['co2', 'pendler'], sprit: ['co2', 'pendler'],
+  pendl: ['pendler'], co2: ['co2'], rent: ['rente'], alter: ['rente'], senior: ['rente'] };
+export const istWertend = text => /\b(am besten|beste|besser|schlechteste|am meisten)\b/i.test(String(text));
+export function frageSuche(text) {
+  const tokens = norm(text).split(/[^\p{L}\p{N}]+/u).filter(w => w.length >= 3 && !FRAGEWOERTER.has(w));
+  if (!tokens.length) return null;
+  const staemme = tokens.map(w => [w, ...Object.entries(BEGRIFFE).filter(([k]) => w.startsWith(k)).flatMap(([, v]) => v)]);
+  const fragen = C.fragen.map(f => {
+    const heu = norm([thema(f.thema)?.titel, f.frage, f.kurz, ...C.positionen.filter(p => p.frage === f.id).flatMap(p => [p.text, p.auszug, p.aenderung]),
+      ...argumenteZuFrage(f.id).map(a => a.text)].join(' '));
+    return { f, treffer: staemme.filter(st => st.some(s => heu.includes(s))).length };
+  }).filter(x => x.treffer).sort((a, b) => b.treffer - a.treffer || nachSort(a.f, b.f));
+  return { fragen: fragen.map(x => x.f), wertend: istWertend(text) };
 }
