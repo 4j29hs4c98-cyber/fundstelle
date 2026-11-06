@@ -12,9 +12,10 @@ import { viewSettings } from './views/settings.js';
 import { viewVergleich } from './views/vergleich.js';
 import { viewProgramm } from './views/programm.js';
 import { viewWahlen } from './views/wahlen.js';
+import { viewGrundlagen } from './views/grundlagen.js';
 
 const views = { start: viewStart, themen: viewThemen, thema: viewThema, frage: viewFrage, parteien: viewParteien, partei: viewPartei,
-  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings };
+  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, grundlagen: viewGrundlagen, pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings };
 const FOCUS_KEYS = ['action', 'id', 'v', 'frage', 'bezug'];
 
 export function render() {
@@ -26,7 +27,8 @@ export function render() {
   main.style.minHeight = '';
   const tab = TAB_OF[S.view] || S.view;
   document.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', a.dataset.nav === tab ? 'page' : 'false'));
-  if (keep) window.scrollTo(0, y); else window.scrollTo(0, 0);
+  const ziel = keep ? null : main.querySelector('[data-ziel]');
+  if (keep) window.scrollTo(0, y); else if (ziel) ziel.scrollIntoView(); else window.scrollTo(0, 0);
   if (sig) {
     const el = sig.elId ? document.getElementById(sig.elId) : [...main.querySelectorAll(sig.tag)].find(e => FOCUS_KEYS.every(k => e.dataset[k] === sig.d[k]));
     el?.focus({ preventScroll: true });

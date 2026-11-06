@@ -27,5 +27,6 @@ export function viewWahlen() {
     <span class="meta">${S.alleWahlen ? tr('All elections') : filter} · <a href="#settings">${tr('Change profile')}</a></span></div>
   ${jahre.map(j => `<h2 class="eyebrow section-label">${j}</h2><div class="cards">${ws.filter(w => w.sort.startsWith(j)).map(wahlKarte).join('')}</div>`).join('')
     || `<p class="note">${tr('No upcoming elections match your profile.')}</p>`}
+  <p><a class="btn" href="#grundlagen/wahlen-und-parteien/wahlalter-in-bund-land-und-eu">${tr('Who may vote, from what age?')} ${'→'}</a></p>
   <p class="note small">${tr('Elections of mayors and district administrators are not listed yet, they take place on scattered dates.')}</p>`;
 }

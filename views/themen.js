@@ -3,6 +3,7 @@ import { tr } from '../i18n.js';
 import { esc } from '../core.js';
 import { themenSortiert, thema, fragenZuThema, positionenZuFrage } from '../content.js';
 import { kopf, pfeil, demoHinweis } from './teile.js';
+import { grundlagenLink } from './grundlagen.js';
 
 export function viewThemen() {
   return `${kopf(tr('Topics'), tr('What do the parties say about it?'), tr('Pick a topic, then a question. Every question shows all programmes side by side.'))}
@@ -12,6 +13,8 @@ export function viewThemen() {
       <div class="card-foot"><span class="meta">${tr('{n} questions', { n })}</span>
         <a class="go" href="#thema/${esc(t.id)}">${tr('Open')} ${pfeil}</a></div></article>`;
   }).join('')}</div>
+  <h2 class="eyebrow section-label">${tr('Basics')}</h2>
+  ${grundlagenLink()}
   ${demoHinweis()}`;
 }
 

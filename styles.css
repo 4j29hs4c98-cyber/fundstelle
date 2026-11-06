@@ -237,5 +237,16 @@ fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 2px; } legend {
 .check input { width: 20px; height: 20px; accent-color: var(--primary); }
 select { width: 100%; min-height: 44px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); font: inherit; color: inherit; }
 
+
+/* Grundlagen: Erklaerkarten und Glossar */
+.karte { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 0 16px; }
+.karte summary { cursor: pointer; padding: 14px 0; display: grid; gap: 4px; min-height: 44px; }
+.karte summary b { font-family: var(--font-display); font-size: 15px; } .karte summary span { color: var(--muted); font-size: 14px; }
+.karte[open] summary { border-bottom: 1px solid var(--line); } .karte p { font-size: 14px; } .karte a, .glossar a { color: var(--ink); }
+.karte .status { background: var(--sunken); border-radius: 999px; padding: 3px 10px; margin-right: 8px; }
+mark.pruefen { background: var(--paper-warm); color: var(--ink); border-radius: 4px; padding: 0 3px; }
+.glossar { margin: 0; display: grid; gap: 4px 0; } .glossar dt { font-weight: 700; margin-top: 10px; } .glossar dd { margin: 0; color: var(--muted); font-size: 14px; }
+.buchstabe { font-size: 18px; margin: 22px 0 0; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+
 @media (max-width: 400px) { .tabbar a { padding: 0 11px; min-width: 46px; } .page-head h1 { font-size: 28px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

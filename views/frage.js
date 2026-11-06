@@ -5,6 +5,7 @@ import { esc } from '../core.js';
 import { frage, thema, partei, positionenZuFrage, argumenteZuFrage, abstimmungenZuFrage, aussagenZuFrage } from '../content.js';
 import { kopf, merkKnopf, haltung, stimme, rolle, datum, seite, herkunft, demoHinweis, extLink, logo, seitenLink, pfeil } from './teile.js';
 import { aussagenBlock } from './parteien.js';
+import { begriffeBlock } from './grundlagen.js';
 
 const quelleLink = (url, text) => extLink(url, esc(text));
 
@@ -58,6 +59,7 @@ export function viewFrage(id) {
     : `<p class="note">${tr('No vote has been linked to this question yet.')}</p>`}
 
   ${aussagenBlock(aussagenZuFrage(f.id), true)}
+  ${begriffeBlock(f.frage, t?.titel, ...pos.flatMap(p => [p.text, p.auszug, p.aenderung]), ...args.map(a => a.text), ...votes.map(v => v.titel))}
 
   ${demoHinweis()}
   ${herkunft(`frage:${f.id}`)}`;
