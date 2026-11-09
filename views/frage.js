@@ -3,7 +3,7 @@
 import { tr } from '../i18n.js';
 import { esc } from '../core.js';
 import { frage, thema, partei, positionenZuFrage, argumenteZuFrage, abstimmungenZuFrage, aussagenZuFrage } from '../content.js';
-import { kopf, merkKnopf, haltung, stimme, rolle, datum, seite, herkunft, demoHinweis, extLink, logo, seitenLink, pfeil } from './teile.js';
+import { kopf, merkKnopf, haltung, stimme, rolle, datum, pdfSeite, herkunft, demoHinweis, extLink, logo, seitenLink, pfeil } from './teile.js';
 import { aussagenBlock } from './parteien.js';
 import { begriffeBlock } from './grundlagen.js';
 
@@ -11,7 +11,7 @@ const quelleLink = (url, text) => extLink(url, esc(text));
 
 function positionKarte(p) {
   const pt = partei(p.partei);
-  const stelle = p.seite ? `<details class="stelle"><summary>${esc(p.quelle)}, ${seite(p.seite)}</summary>
+  const stelle = p.seite ? `<details class="stelle"><summary>${esc(p.quelle)}, ${pdfSeite(p.seite)}</summary>
       ${p.auszug ? `<blockquote class="auszug">„${esc(p.auszug)}“</blockquote>` : ''}
       <p class="meta">${seitenLink(p.partei, p.seite, tr('Read on page {n} in the programme', { n: p.seite }))}</p></details>`
     : `<p class="src">${esc(p.quelle)}</p>`;
@@ -45,7 +45,7 @@ export function viewFrage(id) {
 
   <h2 class="eyebrow section-label">${tr('What the parties say would change')}</h2>
   ${angekuendigt.length ? `<div class="cards">${angekuendigt.map(p => `<article class="card paper"><h3>${esc(partei(p.partei)?.name ?? '')}</h3>
-      <p>${esc(p.aenderung)}</p><p class="meta">${esc(p.quelle)}, ${seite(p.seite)}</p></article>`).join('')}</div>
+      <p>${esc(p.aenderung)}</p><p class="meta">${esc(p.quelle)}, ${pdfSeite(p.seite)}</p></article>`).join('')}</div>
     <p class="note small">${tr('Only what each programme itself announces. The app does not predict effects of its own.')}</p>`
     : `<p class="note">${tr('No programme names a concrete change.')}</p>`}
 

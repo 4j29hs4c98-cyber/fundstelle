@@ -3,6 +3,8 @@
 //
 // Herkunft: von einem KI-Agenten am 09.11.2026 aus den Original-PDFs zusammengestellt, vom Team NOCH NICHT
 // geprueft. Deshalb ki: true und ungeprueft: true; die App zeigt das auf jeder Inhaltsseite.
+// Am 09.11.2026 maschinell abgeglichen (scripts/zitate-pruefen.mjs): jeder Auszug steht woertlich auf der genannten
+// PDF-Seite. Deshalb maschinell: true und in Supabase geprueft = 'maschinell'. Ob ein Zitat zur Frage passt, prueft das Team.
 // Regeln: Jeder Auszug ist woertlich (nur Silbentrennung entfernt). "seite" ist die PDF-Seite, damit der Link
 // das Original auf der richtigen Seite oeffnet; weicht die gedruckte Seitenzahl ab, steht sie in "quelle".
 // Gibt ein Programm zu einer Frage nichts her, lautet die Haltung keine_angabe; ein Auszug ist dann hoechstens
@@ -135,7 +137,7 @@ const ARG_IDS = ['59458aad-fc36-406b-8f8e-ff2800db3865', 'd1c4e2a0-6b1f-4c39-9a5
   'f2b6d8e0-4a1c-4f73-9e85-6d2c7a0b1e23', 'a8c1e3f5-7b2d-4c94-8f06-9e3a1b5c7d34', 'b3d5f7a9-1c3e-4da5-9b17-2f4b6c8e0a45'];
 
 export const EINGEBAUT = {
-  ist_demo: false, ki: true, ungeprueft: true, stand: '2026-11-09',
+  ist_demo: false, ki: true, ungeprueft: true, maschinell: true, stand: '2026-11-09',
   wahlen: [{ id: BTW, name: 'Bundestagswahl 2025', datum: '2025-02-23', parlament: 'Deutscher Bundestag' }],
   parteien: PARTEIEN_DE.filter(p => Object.values(P).includes(p.id)),
   aussagen: [],

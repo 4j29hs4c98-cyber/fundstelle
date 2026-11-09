@@ -1,5 +1,5 @@
-// scripts/inhalt-sql.mjs — erzeugt supabase/migrations/004_echte_parteien.sql aus EINGEBAUT (inhalt-2025.js).
-// So stehen in Supabase genau dieselben Inhalte wie offline in der App. Aufruf: node scripts/inhalt-sql.mjs
+// scripts/inhalt-sql.mjs — erzeugt eine Migration aus EINGEBAUT (inhalt-2025.js), mehrfach ausfuehrbar.
+// So stehen in Supabase genau dieselben Inhalte wie offline in der App. Aufruf: node scripts/inhalt-sql.mjs 005_name
 // Entfernt zuerst die erfundenen Beispieldaten (alles mit ist_demo = true, also Partei A bis F), dann kommen
 // die echten Parteien mit den Zitaten aus den Programmen 2025. Inhalte des KI-Agenten tragen erstellt_von = 'agent'
 // und geprueft = 'nein'; die App zeigt dazu den Hinweis "noch nicht geprueft".
@@ -10,9 +10,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { EINGEBAUT: I } = await import(pathToFileURL(path.join(root, 'inhalt-2025.js')).href);
 const v = x => x === null || x === undefined ? 'null' : typeof x === 'number' ? String(x) : `'${String(x).replace(/'/g, "''")}'`;
 const pub = `'veroeffentlicht'`, agent = `'agent', 'nein'`;
+// Positionen sind maschinell gegen die PDFs abgeglichen (scripts/zitate-pruefen.mjs), deshalb 'maschinell'.
+const agentGeprueft = I.maschinell ? `'agent', 'maschinell'` : agent;
 const ids = I.parteien.map(p => v(p.id)).join(', ');
 
-const out = [`-- 004_echte_parteien.sql — ERZEUGT von scripts/inhalt-sql.mjs aus inhalt-2025.js. Nicht von Hand aendern.
+const out = [`-- ${process.argv[2] || '004_echte_parteien'}.sql — ERZEUGT von scripts/inhalt-sql.mjs aus inhalt-2025.js. Nicht von Hand aendern.
 -- Ersetzt die erfundenen Parteien A bis F durch echte Parteien mit woertlichen Zitaten aus den Programmen zur
 -- Bundestagswahl 2025. Setzt 002_struktur.sql voraus. Mehrfach ausfuehrbar.
 begin;
@@ -42,7 +44,7 @@ out.push(`delete from public.positionen where partei_id in (${ids});`, `delete f
 out.push(...I.programme.map(p => `insert into public.programme (partei_id, wahl_id, titel, jahr, seiten, quelle_url, status, erstellt_von, geprueft)
   values (${v(p.partei)}, ${v(p.wahl)}, ${v(p.titel)}, 2025, ${v(p.seiten)}, ${v(p.url)}, ${pub}, ${agent});`));
 out.push(...I.positionen.map(p => `insert into public.positionen (frage_id, partei_id, haltung, zusammenfassung, quelle_text, quelle_seite, auszug, aenderung, status, erstellt_von, geprueft)
-  values (${v(p.frage)}, ${v(p.partei)}, ${v(p.haltung)}, ${v(p.text)}, ${v(p.quelle)}, ${v(p.seite)}, ${v(p.auszug)}, ${v(p.aenderung)}, ${pub}, ${agent});`));
+  values (${v(p.frage)}, ${v(p.partei)}, ${v(p.haltung)}, ${v(p.text)}, ${v(p.quelle)}, ${v(p.seite)}, ${v(p.auszug)}, ${v(p.aenderung)}, ${pub}, ${agentGeprueft});`));
 out.push(...I.argumente.map(a => `insert into public.argumente (id, frage_id, richtung, text, quelle_text, quelle_url, ist_demo, status, erstellt_von, geprueft)
   values (${v(a.id)}, ${v(a.frage)}, ${v(a.richtung)}, ${v(a.text)}, ${v(a.quelle)}, ${v(a.url)}, false, ${pub}, ${agent})
   on conflict (id) do update set frage_id = excluded.frage_id, text = excluded.text, richtung = excluded.richtung, quelle_text = excluded.quelle_text,
@@ -56,6 +58,9 @@ for (const a of I.abstimmungen) {
   on conflict (abstimmung_id, frage_id) do nothing;`));
 }
 out.push('commit;');
-const file = path.join(root, 'supabase/migrations/004_echte_parteien.sql');
+// Bereits angewendete Migrationen nie ueberschreiben: fuer jeden neuen Stand einen neuen Namen angeben.
+const name = process.argv[2] || '004_echte_parteien';
+if (!/^\d{3}_[a-z0-9_]+$/.test(name)) { console.error('Name wie 005_volt angeben.'); process.exit(1); }
+const file = path.join(root, `supabase/migrations/${name}.sql`);
 fs.writeFileSync(file, out.join('\n') + '\n');
 console.log(`geschrieben: ${path.relative(root, file)} (${out.length - 2} Anweisungsbloecke)`);

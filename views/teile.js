@@ -45,11 +45,12 @@ export function merkKnopf(frageId) {
   return `<button class="pin" data-action="merken" data-frage="${esc(frageId)}" aria-pressed="${an}" aria-label="${tr('Remember question')}">${an ? '★' : '☆'}</button>`;
 }
 
-// Hinweis, solange Inhalte nicht vom Team geprueft sind (KI-Zusammenstellung) oder noch alte Beispieldaten gelten.
-export const demoHinweis = () => (C.ist_demo ? `<section class="notice"><b>${tr('These are example data')}</b>
-  <p>${tr('The parties are called A to F and every position, quote and vote is invented. That keeps the prototype neutral and stops anyone reading it as a real statement about a real party.')}</p></section>`
-  : C.ungeprueft ? `<section class="notice"><b>${tr('Compiled by AI, not yet checked')}</b>
-  <p>${tr('The quotes come word for word from the parties’ programmes for the federal election 2025, with the page. An AI agent selected them and the team has not checked them yet. Open the original before you rely on a passage.')}</p></section>` : '');
+// Hinweis, solange Inhalte nicht vom Team geprueft sind (KI-Zusammenstellung).
+export const demoHinweis = () => (C.ungeprueft ? `<section class="notice"><b>${tr('Compiled by AI, not yet checked')}</b>
+  <p>${tr('The quotes come word for word from the parties’ programmes for the federal election 2025, with the page. An AI agent selected them and the team has not checked them yet. Open the original before you rely on a passage.')}</p>
+  ${C.maschinell ? `<p class="meta">${tr('A script has compared every quote with the original PDF and found it word for word on the stated page. Whether the quote fits the question still needs a person.')}</p>` : ''}</section>` : '');
+// PDF-Seite, nicht die gedruckte Seitenzahl: der Link oeffnet das PDF genau dort.
+export const pdfSeite = n => tr('PDF page {n}', { n });
 
 // Auf jeder Inhaltsseite: Stand, ob KI beteiligt war, und der Weg, einen Fehler zu melden.
 export function herkunft(bezug) {

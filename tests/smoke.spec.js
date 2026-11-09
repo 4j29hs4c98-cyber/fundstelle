@@ -43,7 +43,7 @@ test('die Programmstelle klappt mit woertlichem Auszug und Seite auf', async ({ 
   await expect(stelle.locator('.auszug')).toBeHidden();
   await stelle.locator('summary').click();
   await expect(stelle.locator('.auszug')).toContainText('Mietpreisbremse');
-  await expect(stelle.locator('summary')).toContainText('Page 39');
+  await expect(stelle.locator('summary')).toContainText('PDF page 39');
 });
 
 test('vom Thema zur Frage und zurueck', async ({ page }) => {
@@ -60,7 +60,7 @@ test('Nachpruefen findet die Fundstelle oder sagt klar, dass es keine gibt', asy
   await page.fill('#suche-q', 'Grünen Mietpreisbremse');
   await page.press('#suche-q', 'Enter');
   await expect(page.locator('.card.paper')).toHaveCount(1);
-  await expect(page.locator('.card.paper')).toContainText('Page 69');
+  await expect(page.locator('.card.paper')).toContainText('PDF page 69');
   await page.fill('#suche-q', 'SSW Mietpreisbremse');
   await page.press('#suche-q', 'Enter');
   await expect(page.locator('.notice').first()).toContainText('No passage found');

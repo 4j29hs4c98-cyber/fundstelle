@@ -43,6 +43,7 @@ export async function loadContent(client) {
       ist_demo: false, stand: new Date().toISOString().slice(0, 10),
       ki: po.some(p => p.erstellt_von === 'agent') || ar.some(a => a.erstellt_von === 'agent'),
       ungeprueft: po.some(p => p.geprueft !== 'mensch'),
+      maschinell: po.every(p => p.geprueft !== 'nein'),
       wahlen: wa, parteien: pa.map(p => mitKatalog({ id: p.id, kuerzel: p.kuerzel, name: p.anzeigename })),
       // Aktuelle Aussagen von Politikerinnen und Politikern gibt es noch nicht (offene Teamentscheidung).
       aussagen: [],
