@@ -32,7 +32,7 @@ export async function loadContent(client) {
     const [pa, th, fr, pr, po, wa, ar, ab, st, af] = await Promise.all([
       q('parteien', 'id,kuerzel,anzeigename,ist_demo'), q('themen', 'id,titel,kurzfassung,sortierung'),
       q('fragen', 'id,thema_id,frage,kurz,sortierung'), q('programme', 'partei_id,wahl_id,titel,quelle_url,seiten'),
-      q('positionen', 'frage_id,partei_id,haltung,zusammenfassung,quelle_text,quelle_seite,auszug,aenderung,erstellt_von,geprueft'),
+      q('positionen', 'frage_id,partei_id,haltung,zusammenfassung,quelle_text,quelle_seite,quelle_url,auszug,aenderung,erstellt_von,geprueft'),
       q('wahlen', 'id,name,datum,parlament'), q('argumente', 'id,frage_id,richtung,text,quelle_text,quelle_url,erstellt_von'),
       q('abstimmungen', 'id,parlament,datum,titel,quelle_text,quelle_url'), q('stimmverhalten', 'abstimmung_id,partei_id,stimme,rolle'),
       q('abstimmung_frage', 'abstimmung_id,frage_id'),
@@ -51,7 +51,7 @@ export async function loadContent(client) {
       fragen: fr.map(f => ({ id: f.id, thema: f.thema_id, frage: f.frage, kurz: f.kurz || f.frage, sort: f.sortierung })),
       programme: pr.map(p => ({ partei: p.partei_id, wahl: p.wahl_id, titel: p.titel, url: p.quelle_url, seiten: p.seiten })),
       positionen: po.map(p => ({ frage: p.frage_id, partei: p.partei_id, haltung: p.haltung, text: p.zusammenfassung || '', seite: p.quelle_seite,
-        auszug: p.auszug, aenderung: p.aenderung, quelle: p.quelle_text, agent: p.erstellt_von === 'agent' })),
+        auszug: p.auszug, aenderung: p.aenderung, quelle: p.quelle_text, url: p.quelle_url ?? null, agent: p.erstellt_von === 'agent' })),
       argumente: ar.map(a => ({ id: a.id, frage: a.frage_id, richtung: a.richtung, text: a.text, quelle: a.quelle_text, url: a.quelle_url, agent: a.erstellt_von === 'agent' })),
       abstimmungen: ab.map(a => ({ id: a.id, parlament: a.parlament, datum: a.datum, titel: a.titel, quelle: a.quelle_text, url: a.quelle_url,
         fragen: af.filter(x => x.abstimmung_id === a.id).map(x => x.frage_id),

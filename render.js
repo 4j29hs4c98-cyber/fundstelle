@@ -13,9 +13,10 @@ import { viewVergleich } from './views/vergleich.js';
 import { viewProgramm } from './views/programm.js';
 import { viewWahlen } from './views/wahlen.js';
 import { viewGrundlagen } from './views/grundlagen.js';
+import { viewEigene } from './views/eigene.js';
 
 const views = { start: viewStart, themen: viewThemen, thema: viewThema, frage: viewFrage, parteien: viewParteien, partei: viewPartei,
-  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, grundlagen: viewGrundlagen, pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings };
+  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, grundlagen: viewGrundlagen, pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings, eigene: viewEigene };
 const FOCUS_KEYS = ['action', 'id', 'v', 'frage', 'bezug'];
 
 export function render() {

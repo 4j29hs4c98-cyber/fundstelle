@@ -43,8 +43,12 @@ out.push(...I.parteien.map(p => `insert into public.parteien (id, kuerzel, anzei
 out.push(`delete from public.positionen where partei_id in (${ids});`, `delete from public.programme where partei_id in (${ids});`);
 out.push(...I.programme.map(p => `insert into public.programme (partei_id, wahl_id, titel, jahr, seiten, quelle_url, status, erstellt_von, geprueft)
   values (${v(p.partei)}, ${v(p.wahl)}, ${v(p.titel)}, 2025, ${v(p.seiten)}, ${v(p.url)}, ${pub}, ${agent});`));
-out.push(...I.positionen.map(p => `insert into public.positionen (frage_id, partei_id, haltung, zusammenfassung, quelle_text, quelle_seite, auszug, aenderung, status, erstellt_von, geprueft)
-  values (${v(p.frage)}, ${v(p.partei)}, ${v(p.haltung)}, ${v(p.text)}, ${v(p.quelle)}, ${v(p.seite)}, ${v(p.auszug)}, ${v(p.aenderung)}, ${pub}, ${agentGeprueft});`));
+// Positionen aus anderen offiziellen Quellen (Wahl-O-Mat, Bundestag) tragen deren Adresse in quelle_url.
+out.push(`alter table public.positionen add column if not exists quelle_url text;`,
+  `alter table public.positionen drop constraint if exists positionen_quelle_url_https;`,
+  `alter table public.positionen add constraint positionen_quelle_url_https check (quelle_url is null or quelle_url ~ '^https://');`);
+out.push(...I.positionen.map(p => `insert into public.positionen (frage_id, partei_id, haltung, zusammenfassung, quelle_text, quelle_seite, quelle_url, auszug, aenderung, status, erstellt_von, geprueft)
+  values (${v(p.frage)}, ${v(p.partei)}, ${v(p.haltung)}, ${v(p.text)}, ${v(p.quelle)}, ${v(p.seite)}, ${v(p.url)}, ${v(p.auszug)}, ${v(p.aenderung)}, ${pub}, ${agentGeprueft});`));
 out.push(...I.argumente.map(a => `insert into public.argumente (id, frage_id, richtung, text, quelle_text, quelle_url, ist_demo, status, erstellt_von, geprueft)
   values (${v(a.id)}, ${v(a.frage)}, ${v(a.richtung)}, ${v(a.text)}, ${v(a.quelle)}, ${v(a.url)}, false, ${pub}, ${agent})
   on conflict (id) do update set frage_id = excluded.frage_id, text = excluded.text, richtung = excluded.richtung, quelle_text = excluded.quelle_text,

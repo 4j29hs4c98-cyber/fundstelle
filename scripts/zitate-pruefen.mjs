@@ -21,6 +21,8 @@ const out = [];
 for (const p of I.positionen) {
   const name = I.parteien.find(x => x.id === p.partei).kuerzel;
   if (!p.auszug) { out.push({ name, frage: p.frage.slice(0, 4), ok: 'ohne Auszug' }); continue; }
+  // Andere Quellen (Wahl-O-Mat, Bundestag) liegen nicht als Programm-PDF vor; sie wurden bei der Recherche einzeln geprueft.
+  if (p.url || !p.seite) { out.push({ name, frage: p.frage.slice(0, 4), ok: 'andere Quelle, hier nicht pruefbar' }); continue; }
   const f = datei[p.partei], a = norm(p.auszug);
   const seiten = [p.seite, p.seite + 1, p.seite - 1];
   let fund = null;

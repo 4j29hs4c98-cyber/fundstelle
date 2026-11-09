@@ -14,6 +14,9 @@ function positionKarte(p) {
   const stelle = p.seite ? `<details class="stelle"><summary>${esc(p.quelle)}, ${pdfSeite(p.seite)}</summary>
       ${p.auszug ? `<blockquote class="auszug">„${esc(p.auszug)}“</blockquote>` : ''}
       <p class="meta">${seitenLink(p.partei, p.seite, tr('Read on page {n} in the programme', { n: p.seite }))}</p></details>`
+    : p.url ? `<details class="stelle"><summary>${esc(p.quelle)}</summary>
+      ${p.auszug ? `<blockquote class="auszug">„${esc(p.auszug)}“</blockquote>` : ''}
+      <p class="meta">${extLink(p.url, tr('Open source'))}</p></details>`
     : `<p class="src">${esc(p.quelle)}</p>`;
   return `<article class="pos">
     <div class="pos-head"><a class="who" href="#partei/${esc(p.partei)}">${logo(pt, 'klein')}${esc(pt?.name ?? '')}</a>
@@ -45,7 +48,7 @@ export function viewFrage(id) {
 
   <h2 class="eyebrow section-label">${tr('What the parties say would change')}</h2>
   ${angekuendigt.length ? `<div class="cards">${angekuendigt.map(p => `<article class="card paper"><h3>${esc(partei(p.partei)?.name ?? '')}</h3>
-      <p>${esc(p.aenderung)}</p><p class="meta">${esc(p.quelle)}, ${pdfSeite(p.seite)}</p></article>`).join('')}</div>
+      <p>${esc(p.aenderung)}</p><p class="meta">${esc(p.quelle)}${p.seite ? `, ${pdfSeite(p.seite)}` : ''}</p></article>`).join('')}</div>
     <p class="note small">${tr('Only what each programme itself announces. The app does not predict effects of its own.')}</p>`
     : `<p class="note">${tr('No programme names a concrete change.')}</p>`}
 

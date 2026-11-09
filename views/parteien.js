@@ -63,7 +63,7 @@ export function viewPartei(id) {
       return `<article class="pos"><div class="pos-head"><a class="who" href="#frage/${esc(f.id)}">${esc(f.kurz)}</a>
           <span class="stance">${haltung(pos.haltung)}</span></div>
         <p>${esc(pos.text)}</p>
-        ${pos.seite ? `<p class="src">${esc(pos.quelle)}, ${seitenLink(p.id, pos.seite)}</p>` : ''}
+        ${pos.seite ? `<p class="src">${esc(pos.quelle)}, ${seitenLink(p.id, pos.seite)}</p>` : pos.url ? `<p class="src">${extLink(pos.url, esc(pos.quelle))}</p>` : ''}
         ${abg ? `<div class="said-voted"><p class="eyebrow">${tr('Said and voted')}</p>${abg}</div>` : ''}</article>`;
     }).join('');
     return zeilen ? `<h2 class="eyebrow section-label">${esc(t.titel)}</h2><div class="cards">${zeilen}</div>` : '';

@@ -7,6 +7,12 @@ import { loadContent } from './content.js';
 import { render, applyLang, applyTheme } from './render.js';
 import { actions, forms } from './actions.js';
 import { syncLine } from './views/settings.js';
+import { tippen } from './recherche.js';
+import { ergebnisHtml } from './views/eigene.js';
+
+// Eigenes Thema: beim Tippen recherchiert der Agent. Nur der Ergebnisbereich wird neu gezeichnet, das Eingabefeld bleibt unberuehrt.
+const rechercheZeichnen = () => { const el = document.getElementById('recherche'); if (el) el.innerHTML = ergebnisHtml(); };
+document.addEventListener('input', e => { if (e.target.id === 'eigen-frage') tippen(e.target.value, rechercheZeichnen); });
 
 document.addEventListener('click', async e => {
   const el = e.target.closest('[data-action]');

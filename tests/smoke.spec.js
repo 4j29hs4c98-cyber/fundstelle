@@ -27,11 +27,11 @@ test('alte Adressen aus Version 1 fuehren in die neuen Bereiche', async ({ page 
   await expect(page.locator('.tabbar a[data-nav=parteien]')).toHaveAttribute('aria-current', 'page');
 });
 
-test('die Frage zeigt alle zehn Parteien alphabetisch, mit Argumenten und Abstimmung', async ({ page }) => {
+test('die Frage zeigt alle elf Parteien alphabetisch, mit Argumenten und Abstimmung', async ({ page }) => {
   await page.goto(`/#frage/${MIETE}`);
-  await expect(page.locator('.pos')).toHaveCount(10);
+  await expect(page.locator('.pos')).toHaveCount(11);
   await expect(page.locator('.pos .who').first()).toContainText('AfD');
-  await expect(page.locator('.pos .who').last()).toContainText('SSW');
+  await expect(page.locator('.pos .who').last()).toContainText('Volt');
   await expect(page.locator('.args li')).toHaveCount(2);
   await expect(page.locator('.vote .stimmen dt')).toHaveCount(6);
   await expect(page.locator('.vote')).toContainText('in government');
@@ -101,4 +101,24 @@ test('Deutsch erscheint nach dem Umschalten der Sprache', async ({ page }) => {
   await page.click('[data-action=lang][data-v=de]');
   await expect(page.locator('#main h1')).toHaveText('Einstellungen');
   await expect(page.locator('.tabbar a[data-nav=pruefen]')).toHaveText('Prüfen');
+});
+
+// Regel vom 09.11.2026: nur dafuer oder dagegen, nie "keine Angabe" oder "teilweise".
+test('keine Frage zeigt eine unklare Haltung', async ({ page }) => {
+  for (const id of [MIETE]) {
+    await page.goto(`/#frage/${id}`);
+    await expect(page.locator('.pos').first()).toBeVisible();
+    await expect(page.locator('.stance', { hasText: /No statement|In part|Keine Angabe|Teilweise/ })).toHaveCount(0);
+  }
+});
+
+test('eigenes Thema: beim Tippen meldet sich der Agent und verlangt ohne Konto eine Anmeldung', async ({ page }) => {
+  await page.goto('/#themen');
+  await page.locator('a[href="#eigene"]').first().click();
+  const feld = page.locator('#eigen-frage');
+  await feld.fill('Soll');
+  await expect(page.locator('#recherche')).toContainText('12');
+  await feld.fill('Soll es ein Tempolimit auf Autobahnen geben?');
+  await expect(page.locator('#recherche [role=status]')).toContainText(/Sign in|anmelden|not switched on|nicht eingeschaltet/, { timeout: 8000 });
+  await expect(feld).toBeFocused();
 });

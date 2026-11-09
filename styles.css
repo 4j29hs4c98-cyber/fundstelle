@@ -250,3 +250,7 @@ mark.pruefen { background: var(--paper-warm); color: var(--ink); border-radius: 
 
 @media (max-width: 400px) { .tabbar a { padding: 0 11px; min-width: 46px; } .page-head h1 { font-size: 28px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Eigenes Thema */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field > span { font-weight: 600; font-size: 14px; }

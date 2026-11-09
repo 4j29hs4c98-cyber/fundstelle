@@ -6,6 +6,7 @@ import { S, get, list, save, remove, toast, undoable, uid } from './core.js';
 import { render, applyLang, applyTheme } from './render.js';
 import { WAHLARTEN, BUNDESLAENDER } from './katalog.js';
 import { C } from './content.js';
+import { R } from './recherche.js';
 import { PROFIL_ID } from './profil.js';
 import { vergleichAus, vergleichLink, MAX_VERGLEICH } from './views/vergleich.js';
 
@@ -17,6 +18,14 @@ export const actions = {
     await save('merk', uid(), { frage, created: new Date().toISOString() });
     render(); toast('Question remembered');
   },
+  // Eigenes Thema speichern: Frage und gepruefte Ergebnisse als Record des Nutzers. Format: { frage, ergebnisse, stand }.
+  async 'eigen-speichern'() {
+    if (R.status !== 'fertig' || !R.ergebnisse.length) return;
+    const id = uid();
+    await save('eigenes', id, { frage: R.frage, ergebnisse: R.ergebnisse.map(e => ({ ...e })), stand: new Date().toISOString() });
+    toast('Topic saved'); location.hash = `#eigene/${id}`;
+  },
+  async 'eigen-loeschen'({ id }) { location.hash = '#eigene'; await undoable('Topic deleted', [id], () => remove(id), render); },
   // Entfernt einen gemerkten Eintrag aus Version 1 (Thema statt Frage).
   async vergessen({ id }) { await undoable('Topic removed', [id], () => remove(id), render); },
   // Oeffnet (bezug gesetzt) oder schliesst (bezug leer) das Formular "Fehler melden".

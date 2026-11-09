@@ -13,6 +13,8 @@ export function viewThemen() {
       <div class="card-foot"><span class="meta">${tr('{n} questions', { n })}</span>
         <a class="go" href="#thema/${esc(t.id)}">${tr('Open')} ${pfeil}</a></div></article>`;
   }).join('')}</div>
+  <a class="card link" href="#eigene"><h3>${tr('Ask your own question')}</h3>
+    <span class="meta">${tr('An agent researches all programmes while you type.')}</span></a>
   <h2 class="eyebrow section-label">${tr('Basics')}</h2>
   ${grundlagenLink()}
   ${demoHinweis()}`;

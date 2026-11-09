@@ -26,7 +26,7 @@ const P = [
   ['a2bbca41-0896-4a23-9a83-5c77b8ce9f4b', 'FREIE WÄHLER', 'Freie Wähler', '#F7A800', null, 'https://www.freiewaehler.eu',
     'https://ni.freiewaehler.eu/template/elemente/71/Verantwortung%20f%C3%BCr%20Deutschland_FREIE%20W%C3%84HLER%20Wahlprogramm%202025.pdf'],
   ['aa5e822f-271e-450d-84b2-4e528204e30a', 'Volt', 'Volt Deutschland', '#502379', null, 'https://voltdeutschland.org',
-    'https://voltdeutschland.org/storage/assets-bonn/pdf/programm-leichte-sprache-volt-bundestags-wahl-2025.pdf'],
+    'https://voltdeutschland.org/storage/assets-btw25/volt-programm-bundestagswahl-2025.pdf'],
   ['e338320e-ac96-4322-b022-3ccc0f3fe507', 'SSW', 'Südschleswigscher Wählerverband', '#003C8F', null, 'https://www.ssw.de',
     'https://ssw.de/fileadmin/user_upload/daten/aktuelles/2025/BTW25/SSW-Wahlprogramm_BTW_2025.pdf'],
   ['132e61c2-8c8d-4b4e-ac3e-a5e41606016a', 'ÖDP', 'Ökologisch-Demokratische Partei', '#FF6400', null, 'https://www.oedp.de', null],

@@ -7,15 +7,14 @@
 // PDF-Seite. Deshalb maschinell: true und in Supabase geprueft = 'maschinell'. Ob ein Zitat zur Frage passt, prueft das Team.
 // Regeln: Jeder Auszug ist woertlich (nur Silbentrennung entfernt). "seite" ist die PDF-Seite, damit der Link
 // das Original auf der richtigen Seite oeffnet; weicht die gedruckte Seitenzahl ab, steht sie in "quelle".
-// Gibt ein Programm zu einer Frage nichts her, lautet die Haltung keine_angabe; ein Auszug ist dann hoechstens
-// die naechstgelegene Stelle und die Zusammenfassung sagt das ausdruecklich.
+// Es gibt nur dafuer oder dagegen. Ohne klare, belegte Richtung erscheint eine Partei bei der Frage nicht (siehe POS).
 // scripts/inhalt-sql.mjs erzeugt aus diesen Daten supabase/migrations/004_echte_parteien.sql.
 
 import { PARTEIEN_DE } from './katalog.js';
 
 const id = k => PARTEIEN_DE.find(p => p.kuerzel === k).id;
 const P = { CDU: id('CDU'), CSU: id('CSU'), SPD: id('SPD'), GRUENE: id('GRÜNE'), FDP: id('FDP'), AFD: id('AfD'),
-  LINKE: id('Die Linke'), BSW: id('BSW'), FW: id('FREIE WÄHLER'), SSW: id('SSW') };
+  LINKE: id('Die Linke'), BSW: id('BSW'), FW: id('FREIE WÄHLER'), SSW: id('SSW'), VOLT: id('Volt') };
 export const T = { wohnen: '3a18c189-c9a4-49dc-8ad9-7e49ac440fe4', klima: '2a2cf39a-2cac-490e-bc3f-6557b9efb890', rente: 'd864065a-5d5c-4ad4-8149-645b4a1602eb' };
 const F = { miete: 'c2fcc20d-f7ff-4f12-b03a-7a4dce5ba1f8', co2: '584471ef-30b5-4334-a3d7-e51f20d929aa', rente: '95c54175-3b25-4055-a704-52ebec90696f' };
 const BTW = '0544b90d-2bbf-4a4c-aa15-3ac785928ef7';
@@ -31,16 +30,21 @@ const PROGRAMME = [
   ['LINKE', 'Alle wollen regieren. Wir wollen verändern. Wahlprogramm (Langfassung)', 'https://www.die-linke.de/fileadmin/user_upload/Wahlprogramm_Langfassung_Linke-BTW25_01.pdf', 0],
   ['BSW', 'Unser Land verdient mehr! Wahlprogramm für die Bundestagswahl 2025', 'https://bsw-vg.de/wp-content/themes/bsw/assets/downloads/BSW%20Wahlprogramm%202025.pdf', 0],
   ['FW', 'Verantwortung für Deutschland. Bundestagswahlprogramm 2025-2029', 'https://ni.freiewaehler.eu/template/elemente/71/Verantwortung%20f%C3%BCr%20Deutschland_FREIE%20W%C3%84HLER%20Wahlprogramm%202025.pdf', 2],
+  ['VOLT', 'Programm Volt Deutschland zur Bundestagswahl 2025', 'https://voltdeutschland.org/storage/assets-btw25/volt-programm-bundestagswahl-2025.pdf', 0],
   ['SSW', 'Deine Stimme für den Norden. Wahlprogramm zur Bundestagswahl am 23. Februar 2025', 'https://ssw.de/fileadmin/user_upload/daten/aktuelles/2025/BTW25/SSW-Wahlprogramm_BTW_2025.pdf', 0],
 ];
 const versatz = Object.fromEntries(PROGRAMME.map(([k, , , d]) => [k, d]));
 
 // Die Union hat ein gemeinsames Programm: dieselbe Stelle gilt fuer CDU und CSU.
 const UNION = ['CDU', 'CSU'];
-// [Frage, Partei(en), Haltung, Zusammenfassung, PDF-Seite, woertlicher Auszug, was die Partei selbst als Aenderung ankuendigt]
+// [Frage, Partei(en), Haltung, Zusammenfassung, PDF-Seite im Programm, woertlicher Auszug, angekuendigte Aenderung, andere Quelle]
+// Regel vom 09.11.2026 (Lennox): nur dafuer oder dagegen. Gibt das Programm keine klare Richtung, zaehlt eine offizielle
+// Quelle der Partei (Wahl-O-Mat-Antwort, Fraktionsantrag, Ausschussbericht); die steht dann als "andere Quelle" mit Link.
+// Gibt es auch die nicht, erscheint die Partei bei dieser Frage nicht.
 const POS = [
-  [F.miete, UNION, 'keine_angabe', 'Keine Fundstelle zur Mietpreisbremse. Das Programm bekennt sich allgemein zu Regeln zur Miethöhe als Teil des Mieterschutzes (nächstgelegene Stelle).', 73,
-    'Deutschland ist Mieterland. Wir stehen für einen wirksamen und angemessenen Mieterschutz – dazu gehören auch die Regeln zur Miethöhe.', null],
+  [F.miete, UNION, 'dagegen', 'Die Unionsfraktion wollte die Mietpreisbremse nur bis 2029 verlängern und danach auslaufen lassen; eine Entfristung lehnte sie ab.', null,
+    'Danach trete die Mietpreisbremse außer Kraft. Sie sei als befristetes Instrument konzipiert gewesen und bleibe dies auch.', null,
+    { url: 'https://dserver.bundestag.de/btd/21/006/2100631.pdf#page=11', titel: 'Bundestag, Drucksache 21/631 vom 25.06.2025, PDF-Seite 11 (Bericht des Rechtsausschusses, indirekte Rede)' }],
   [F.miete, 'SPD', 'dafuer', 'Will die Mietpreisbremse unbefristet gelten lassen und auf Wohnungen ausweiten, die bis 2019 bezogen wurden.', 20,
     'Die Mietpreisbremse soll unbefristet und auch für Immobilien, die bis 2019 bezogen wurden, gelten, um langfristig für stabile und bezahlbare Mieten in angespannten Wohnungsmärkten zu sorgen. Wir werden dafür sorgen, dass die Mietpreisbremse nicht durch zum Beispiel (teil-)möblierte und befristete Wohnungsangebote umgangen werden kann.',
     'Mietpreisbremse entfristen, auf Wohnungen mit Erstbezug bis 2019 ausweiten und Umgehung über möblierte oder befristete Vermietung unterbinden.'],
@@ -51,28 +55,30 @@ const POS = [
     'Die Mietpreisbremse ist nachweislich eine Investitionsbremse. Deshalb lassen wir sie auslaufen.', 'Mietpreisbremse auslaufen lassen.'],
   [F.miete, 'AFD', 'dagegen', 'Lehnt die Mietpreisbremse als staatliche Überregulierung und Investitionshemmnis ab.', 39,
     'Die AfD steht für ein ausgewogenes Mietrecht und lehnt staatliche Überregulierungen sowie Investitionshemmnisse wie die Mietpreisbremse oder den Mietendeckel ab.', null],
-  [F.miete, 'LINKE', 'teilweise', 'Hält die Mietpreisbremse für zu schwach, kritisiert, dass sie nicht verlängert und verschärft wurde, und fordert stattdessen einen strengeren bundesweiten Mietendeckel.', 8,
-    'Die Ampel hat es nicht einmal geschafft, die Mietpreisbremse zu verlängern, geschweige denn sie zu verschärfen.',
-    'Bundesweiter Mietendeckel und als Sofortmaßnahme Ausschluss von Mieterhöhungen für sechs Jahre.'],
+  [F.miete, 'LINKE', 'dafuer', 'Will die Mietpreisbremse entfristen, flächendeckend gelten lassen und verschärfen, zusätzlich zu einem Mietenstopp.', null,
+    '1. die bisherige Mietpreisbremse nachgeschärft wird, sodass a) die Mietpreisbremse entfristet wird und flächendeckend gilt;',
+    'Bundesweiter Mietendeckel und als Sofortmaßnahme Ausschluss von Mieterhöhungen für sechs Jahre.',
+    { url: 'https://dserver.bundestag.de/btd/21/003/2100355.pdf#page=2', titel: 'Antrag der Bundestagsfraktion Die Linke, Drucksache 21/355 vom 03.06.2025, PDF-Seite 2' }],
   [F.miete, 'BSW', 'dagegen', 'Will die Mietpreisbremse durch eine strengere Regel ersetzen, einen bundesweiten Mietendeckel. Das „dagegen“ heißt hier: mehr Regulierung, nicht weniger.', 28,
     'Wir fordern einen bundesweiten Mietendeckel statt einer wirkungslosen Mietpreisbremse.',
     'Mietendeckel statt Mietpreisbremse; Mieten in überteuerten Regionen bis Ende des Jahrzehnts einfrieren.'],
-  [F.miete, 'FW', 'keine_angabe', 'Keine Fundstelle zur Mietpreisbremse. Das Programm lehnt nur einen Mietendeckel ab und setzt auf Wohnungsbau (nächstgelegene Stelle).', 85,
-    'Statt für einen investitionsfeindlichen Mietendeckel stehen wir für zweckgebundene Bürgeranleihen nach Münchener Vorbild.', null],
-  [F.miete, 'SSW', 'keine_angabe', 'Keine Fundstelle: Das Programm nennt die Mietpreisbremse nicht.', null, null, null],
+  [F.miete, 'FW', 'dagegen', 'Lehnte im Wahl-O-Mat 2025 eine weitere gesetzliche Begrenzung der Mieten bei Neuvermietung ab und setzt auf Wohnungsbau und Bürgeranleihen.', null,
+    'Statt für einen investitionsfeindlichen Mietendeckel stehen wir für zweckgebundene Bürgeranleihen nach Münchener Vorbild.', null,
+    { url: 'https://www.wahl-o-mat.de/bundestagswahl2025/app/main_app.html', titel: 'Wahl-O-Mat zur Bundestagswahl 2025 (bpb), These 6 „Begrenzung der Mietpreise“, Antwort: stimme nicht zu' }],
+  [F.miete, 'SSW', 'dafuer', 'Unterstützt die Weiterführung der Mietpreisbremse.', null,
+    'Als SSW unterstützen wir darum auch die Forderungen zur Weiterführung der Mietpreisbremse und des bundesweiten Mietendeckels.', null,
+    { url: 'https://www.wahl-o-mat.de/bundestagswahl2025/app/main_app.html', titel: 'Wahl-O-Mat zur Bundestagswahl 2025 (bpb), These 6 „Begrenzung der Mietpreise“, Antwort: stimme zu' }],
+  [F.miete, 'VOLT', 'dafuer', 'Stimmte im Wahl-O-Mat 2025 zu, dass Mieten bei Neuvermietung weiterhin gesetzlich begrenzt werden sollen.', null,
+    'Volts Lösung für ein Recht auf bezahlbaren Wohnraum ist dessen Verankerung im Grundgesetz und die damit einhergehende Verpflichtung zu reglementierten Mieten, unteranderem durch Sozialbindung und mehr genossenschaftliche und kommunale Trägerschaften.', null,
+    { url: 'https://www.wahl-o-mat.de/bundestagswahl2025/app/main_app.html', titel: 'Wahl-O-Mat zur Bundestagswahl 2025 (bpb), These 6 „Begrenzung der Mietpreise“, Antwort: stimme zu' }],
 
-  [F.co2, UNION, 'teilweise', 'Will die CO2-Bepreisung zum Leitinstrument ausbauen und die Einnahmen zurückgeben, nennt aber keinen schnelleren Preispfad.', 24,
-    'Die CO2-Bepreisung bauen wir im Instrumentenmix zum Leitinstrument aus und geben deren Einnahmen an Verbraucher und Wirtschaft zurück.',
-    'Klimabonus einführen; mit den CO2-Einnahmen zuerst Stromsteuer und Netzentgelte senken.'],
-  [F.co2, 'SPD', 'teilweise', 'Hält am beschlossenen Preispfad fest und will ab 2027 eine Überforderung verhindern, etwa mit einem Klimageld.', 33,
-    'Der bereits gesetzlich beschlossene CO2-Preis pro Tonne von 55 Euro in 2025 und maximal 65 Euro in 2026 gilt. Wenn ab 2027 die europäische Regelung in Kraft tritt, werden wir durch geeignete Maßnahmen auf europäischer und nationaler Ebene (zum Beispiel Klimageld) dafür Sorge tragen, dass niemand überfordert wird.',
+  [F.co2, UNION, 'dagegen', 'Die Unionsfraktion hat beschlossen, den nationalen CO2-Preis 2027 einzufrieren, statt ihn steigen zu lassen.', null,
+    'Die Fraktion der CDU/CSU erklärte, mit der Gesetzesänderung die Zusage einzuhalten, den nationalen CO₂Preis im kommenden Jahr einzufrieren.',
+    'CO2-Preis 2027 einfrieren (Drittes Gesetz zur Änderung des Brennstoffemissionshandelsgesetzes).',
+    { url: 'https://dserver.bundestag.de/btd/21/086/2108626.pdf#page=20', titel: 'Bundestag, Drucksache 21/8626 vom 14.10.2026, PDF-Seite 20 (Bericht des Umweltausschusses, indirekte Rede, Vorabfassung)' }],
+  [F.co2, 'SPD', 'dagegen', 'Hält am beschlossenen Preispfad fest und sieht den CO2-Preis für Haushalte nur als ergänzendes Instrument.', 33,
+    'Ein Preis auf den Ausstoß von CO2 für private Haushalte und kleine Unternehmen kann für uns immer nur ein ergänzendes Instrument sein. Der bereits gesetzlich beschlossene CO2-Preis pro Tonne von 55 Euro in 2025 und maximal 65 Euro in 2026 gilt.',
     'Entlastung etwa durch ein Klimageld ab 2027.'],
-  [F.co2, 'GRUENE', 'teilweise', 'Wollen den europäischen Emissionshandel wie geplant umsetzen und die Einnahmen als Klimageld auszahlen, fordern aber keinen schnelleren Anstieg.', 38,
-    'Dazu gehört die Umsetzung der Emissionshandelssysteme auf europäischer Ebene wie geplant. So stärken wir den CO₂-Preis als einen zentralen Hebel für mehr Klimaschutz in Deutschland und Europa.',
-    'Sozial gestaffeltes Klimageld, das mit den Einnahmen steigt (S. 40).'],
-  [F.co2, 'FDP', 'teilweise', 'Will den EU-Emissionshandel mit marktgebildetem Preis und eine Klimadividende pro Kopf, nennt aber keinen beschleunigten Pfad.', 40,
-    'Wir Freie Demokraten wollen eine Klimadividende einführen, um Einnahmen aus dem Emissionshandel direkt und pauschal pro Kopf an die Bürgerinnen und Bürger zurückzuzahlen.',
-    'Klimadividende pro Kopf; Klimaneutralitätsziel von 2045 auf 2050 verschieben.'],
   [F.co2, 'AFD', 'dagegen', 'Will alle CO2-Abgaben ersatzlos abschaffen.', 58, 'Wir fordern eine ersatzlose Abschaffung der CO₂-Abgaben.', 'CO2-Abgaben abschaffen.'],
   [F.co2, 'LINKE', 'dagegen', 'Lehnt den Emissionshandel für Wärme und Verkehr ab und will dort feste Emissionsgrenzen statt eines CO2-Preises.', 33,
     'Wir lehnen den Emissionshandel in den Sektoren Wärme und Verkehr (ETS-2) ab: Stattdessen müssen verbindliche Klimaziele und Emissionsgrenzen gesetzt werden.',
@@ -80,11 +86,6 @@ const POS = [
   [F.co2, 'BSW', 'dagegen', 'Will den CO2-Preis abschaffen.', 10,
     'Den CO2-Preis, der alles teurer macht, ohne dass es für die meisten Menschen Alternativen gibt, wollen wir abschaffen.',
     'CO2-Preis abschaffen; EU-Emissionshandel globalisieren oder abschaffen (S. 11).'],
-  [F.co2, 'FW', 'keine_angabe', 'Keine Fundstelle zum allgemeinen CO2-Preis. Nur für die Luftfahrt befürwortet das Programm eine langfristig festgeschriebene Bepreisung (nächstgelegene Stelle).', 39,
-    'Verlässliche politische Rahmenbedingungen, die eine Bepreisung der CO2 -Äquivalente über einen Zertifikate-Handel langfristig festschreiben, schaffen die Voraussetzung dafür, dass die Branche in die Entwicklung und den Umstieg investiert.', null],
-  [F.co2, 'SSW', 'teilweise', 'Will den steigenden CO2-Preis mit einem Pro-Kopf-Klimageld sozialverträglich machen.', 23,
-    'Wir wollen ein Pro-Kopf-Klimageld, das private Haushalte entlastet, umweltbewusstes Verhalten belohnt und die steigende CO2-Steuer so sozialverträglich ausgestalten.',
-    'Pro-Kopf-Klimageld nach österreichischem Vorbild.'],
 
   [F.rente, UNION, 'dagegen', 'Hält an der geltenden Regelung fest, also an der Rente mit 67 ab 2031, ohne weitere Anhebung.', 34,
     'An der bestehenden gesetzlichen Regelung zum Renteneintrittsalter halten wir fest. Die Regelung für besonders langjährige Versicherte mit 45 Versicherungsjahren behalten wir mit Blick auf die Planungssicherheit für Unternehmen und rentennahe Jahrgänge bei.',
@@ -93,12 +94,10 @@ const POS = [
     'Das haben sich gerade Menschen verdient, die früh begonnen haben zu arbeiten. Eine Anhebung der Regelaltersgrenze lehnen wir ab.', null],
   [F.rente, 'GRUENE', 'dagegen', 'Halten an der Rente mit 67 fest und wollen freiwilliges längeres Arbeiten erleichtern.', 98,
     'Wir halten an der Rente mit 67 fest. Aber wir schaffen Anreize und machen es den Menschen leichter, länger zu arbeiten, wenn sie dies wollen, auch über die Regelaltersgrenze hinaus.', null],
-  [F.rente, 'FDP', 'teilweise', 'Will keine feste Anhebung, sondern einen frei wählbaren Renteneintritt nach schwedischem Vorbild.', 21,
-    'Wir Freie Demokraten stehen für einen wirklich flexiblen Renteneintritt. Die Menschen sollen nach schwedischem Vorbild künftig selbst entscheiden, wann der Ruhestand beginnt, sofern dann keine Sozialleistungen beantragt werden müssen.',
-    'Flexibler Renteneintritt nach schwedischem Vorbild.'],
-  [F.rente, 'AFD', 'keine_angabe', 'Keine Fundstelle zur Regelaltersgrenze. Das Programm fordert einen flexiblen Renteneintritt und Anreize für freiwilliges längeres Arbeiten (nächstgelegene Stelle).', 19,
-    'Wir wollen der Rentenversicherung mehr Beitragszahler zuführen, die Verrentung flexibler und gerechter gestalten und Anreize für eine freiwillige Verlängerung der Lebensarbeitszeit setzen, indem wir:',
-    'Flexibles Renteneintrittsalter, abschlagsfrei nach 45 beitragsberechtigten Arbeitsjahren.'],
+  [F.rente, 'AFD', 'dagegen', 'Die AfD-Fraktion lehnt eine Anhebung der Regelaltersgrenze über 67 Jahre hinaus ab.', null,
+    'Der Deutsche Bundestag lehnt eine weitere Anhebung der Regelaltersgrenze über das 67. Lebensjahr hinaus ab und fordert verbesserte Möglichkeiten für einen abschlagsfreien Rentenzugang in Abhängigkeit von der Beitragsleistung.',
+    'Abschlagsfreie Rente nach 45 Arbeitsjahren.',
+    { url: 'https://dserver.bundestag.de/btd/21/021/2102165.pdf#page=1', titel: 'Antrag der AfD-Bundestagsfraktion, Drucksache 21/2165 vom 13.10.2025, PDF-Seite 1' }],
   [F.rente, 'LINKE', 'dagegen', 'Will die Regelaltersgrenze auf 65 Jahre senken.', 15,
     'Die Rente erst ab 67 bedeutet Rentenkürzungen für alle, insbesondere in Berufen, in denen Erwerbstätige nicht so lange durchhalten können. Wir fordern eine Regelaltersgrenze von 65 Jahren.',
     'Regelaltersgrenze 65; nach 40 Beitragsjahren abschlagsfrei ab 60.'],
@@ -143,8 +142,8 @@ export const EINGEBAUT = {
   aussagen: [],
   themen: [
     { id: T.wohnen, titel: 'Wohnen und Mieten', kurz: 'Die Mietpreisbremse gilt bis Ende 2029. Was die Programme zur Bundestagswahl 2025 dazu sagen.', sort: 1 },
-    { id: T.klima, titel: 'Klima und Energie', kurz: 'Kein Programm fordert ausdrücklich einen schnelleren Anstieg des CO2-Preises. Drei lehnen ihn ab.', sort: 2 },
-    { id: T.rente, titel: 'Rente und Alterssicherung', kurz: 'Fast alle Programme lehnen eine weitere Anhebung des Rentenalters ab, eines will einen frei wählbaren Eintritt.', sort: 3 },
+    { id: T.klima, titel: 'Klima und Energie', kurz: 'Keine Partei fordert einen schnelleren Anstieg des CO2-Preises. Fünf lehnen ihn ausdrücklich ab.', sort: 2 },
+    { id: T.rente, titel: 'Rente und Alterssicherung', kurz: 'Alle Parteien mit klarer Aussage lehnen eine weitere Anhebung des Rentenalters ab.', sort: 3 },
   ],
   fragen: [
     { id: F.miete, thema: T.wohnen, kurz: 'Mietpreisbremse', frage: 'Soll die Mietpreisbremse über 2029 hinaus verlängert werden?', sort: 1 },
@@ -152,8 +151,8 @@ export const EINGEBAUT = {
     { id: F.rente, thema: T.rente, kurz: 'Renteneintritt', frage: 'Soll das Renteneintrittsalter nach 2031 weiter steigen?', sort: 1 },
   ],
   programme: PROGRAMME.map(([k, titel, url]) => ({ partei: P[k], wahl: BTW, titel, url, seiten: null })),
-  positionen: POS.flatMap(([frage, wer, haltung, text, seite, auszug, aenderung]) => [wer].flat().map(k =>
-    ({ frage, partei: P[k], haltung, text, seite, auszug, aenderung, quelle: quelle(k, seite), agent: true }))),
+  positionen: POS.flatMap(([frage, wer, haltung, text, seite, auszug, aenderung, andere]) => [wer].flat().map(k =>
+    ({ frage, partei: P[k], haltung, text, seite, auszug, aenderung, quelle: andere ? andere.titel : quelle(k, seite), url: andere?.url ?? null, agent: true }))),
   argumente: ARGUMENTE.map(([frage, richtung, text, q, url], i) => ({ id: ARG_IDS[i], frage, richtung, text, quelle: q, url, agent: true })),
   abstimmungen: [
     { id: '7c9a2265-9404-4a78-a18b-8ba0e37e910b', parlament: 'Deutscher Bundestag', datum: '2025-06-26',
