@@ -20,8 +20,11 @@ test('jede Seite oeffnet ohne Fehler und ohne seitliches Scrollen', async ({ pag
 });
 
 test('alte Adressen aus Version 1 fuehren in die neuen Bereiche', async ({ page }) => {
+  await page.goto('/#programme');
+  await expect(page.locator('.tabbar a[data-nav=parteien]')).toHaveAttribute('aria-current', 'page');
+  // Seit Version 2 ist #vergleich eine eigene Seite unter Parteien (Parteien nebeneinander).
   await page.goto('/#vergleich');
-  await expect(page.locator('.tabbar a[data-nav=themen]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.tabbar a[data-nav=parteien]')).toHaveAttribute('aria-current', 'page');
 });
 
 test('die Frage zeigt alle zehn Parteien alphabetisch, mit Argumenten und Abstimmung', async ({ page }) => {
@@ -66,6 +69,8 @@ test('Nachpruefen findet die Fundstelle oder sagt klar, dass es keine gibt', asy
 test('eine gemerkte Frage erscheint auf dem Start und ueberlebt das Neuladen', async ({ page }) => {
   await page.goto(`/#frage/${RENTE}`);
   await page.click(`[data-action=merken][data-frage="${RENTE}"]`);
+  // Erst neu laden, wenn das Speichern fertig ist (der Stern zeigt es an).
+  await expect(page.locator(`[data-action=merken][data-frage="${RENTE}"]`)).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
   await expect(page.locator(`[data-action=merken][data-frage="${RENTE}"]`)).toHaveAttribute('aria-pressed', 'true');
   await page.goto('/#start');
