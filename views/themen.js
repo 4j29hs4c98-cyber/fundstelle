@@ -9,11 +9,11 @@ export function viewThemen() {
   return `${kopf(tr('Topics'), tr('What do the parties say about it?'), tr('Pick a topic, then a question. Every question shows all programmes side by side.'))}
   <div class="cards">${themenSortiert().map(t => {
     const n = fragenZuThema(t.id).length;
-    return `<article class="card"><h3>${esc(t.titel)}</h3><p>${esc(t.kurz ?? '')}</p>
-      <div class="card-foot"><span class="meta">${tr('{n} questions', { n })}</span>
-        <a class="go" href="#thema/${esc(t.id)}">${tr('Open')} ${pfeil}</a></div></article>`;
+    return `<a class="card link" href="#thema/${esc(t.id)}"><div class="card-row"><h3>${esc(t.titel)}</h3>${pfeil}</div>
+      <p>${esc(t.kurz ?? '')}</p><span class="meta">${tr('{n} questions', { n })}</span></a>`;
   }).join('')}</div>
-  <a class="card link" href="#eigene"><h3>${tr('Ask your own question')}</h3>
+  <h2 class="eyebrow section-label">${tr('Not listed?')}</h2>
+  <a class="card link" href="#eigene"><div class="card-row"><h3>${tr('Ask your own question')}</h3>${pfeil}</div>
     <span class="meta">${tr('An agent researches all programmes while you type.')}</span></a>
   <h2 class="eyebrow section-label">${tr('Basics')}</h2>
   ${grundlagenLink()}
@@ -26,7 +26,7 @@ export function viewThema(id) {
   return `${kopf(tr('Topic'), esc(t.titel), esc(t.kurz ?? ''), { href: '#themen', text: tr('All topics') })}
   <div class="cards">${fragenZuThema(t.id).map(f => {
     const n = positionenZuFrage(f.id).filter(p => p.haltung !== 'keine_angabe').length;
-    return `<a class="card link" href="#frage/${esc(f.id)}"><h3>${esc(f.frage)}</h3>
+    return `<a class="card link" href="#frage/${esc(f.id)}"><div class="card-row"><h3>${esc(f.frage)}</h3>${pfeil}</div>
       <span class="meta">${tr('{n} programmes take a position', { n })}</span></a>`;
   }).join('') || `<p class="note">${tr('No questions on this topic yet.')}</p>`}</div>`;
 }

@@ -12,15 +12,14 @@ export function viewParteien() {
   <h2 class="eyebrow section-label">${tr('Parties with content')}</h2>
   <div class="cards">${parteienSortiert().map(p => {
     const pr = programmVon(p.id);
-    return `<article class="card"><div class="prog-head">${logo(p)}<b>${esc(p.voll ?? p.name)}</b>
-        ${pr?.seiten ? `<span class="meta">${tr('{n} pages', { n: pr.seiten })}</span>` : ''}</div>
-      <div class="card-foot"><a class="btn" href="#programm/${esc(p.id)}">${tr('Read programme')}</a>
-        <a class="go" href="#partei/${esc(p.id)}">${tr('Open')} ${pfeil}</a></div></article>`;
+    return `<a class="card link" href="#partei/${esc(p.id)}"><div class="prog-head">${logo(p)}<b>${esc(p.voll ?? p.name)}</b>
+        ${pr?.seiten ? `<span class="meta">${tr('{n} pages', { n: pr.seiten })}</span>` : ''}${pfeil}</div></a>`;
   }).join('')}</div>
   <h2 class="eyebrow section-label">${tr('More parties, content follows')}</h2>
   <div class="cards">${ohneInhalt().map(p => `<a class="card link" href="#partei/${esc(p.id)}"><div class="prog-head">${logo(p)}<b>${esc(p.voll)}</b></div>
     <span class="meta">${p.programm ? tr('Programme 2025 linked') : tr('No programme PDF found yet')}</span></a>`).join('')}</div>
-  <p class="note small">${tr('Which parties appear needs a fixed rule before launch, ideally all parties admitted to the election in question.')}</p>
+  <details class="mehr"><summary>${tr('Why these parties?')}</summary>
+    <p class="note small">${tr('Which parties appear needs a fixed rule before launch, ideally all parties admitted to the election in question.')}</p></details>
   ${demoHinweis()}`;
 }
 

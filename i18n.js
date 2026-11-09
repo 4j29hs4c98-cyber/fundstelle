@@ -241,6 +241,11 @@ const DE = {
   'Who may vote, from what age?': 'Wer darf ab wann wählen?',
   'Choose a topic': 'Thema wählen',
   'Choose parties, then compare.': 'Parteien wählen, dann vergleichen.',
+  'Where do you want to start?': 'Womit möchten Sie anfangen?',
+  'Let the agent research it': 'Den Agenten recherchieren lassen',
+  'Not listed?': 'Nicht dabei?',
+  'Why these parties?': 'Warum diese Parteien?',
+  'Why the role is shown': 'Warum die Rolle angezeigt wird',
 };
 let lang = 'en';
 export const setLang = l => { lang = l === 'de' ? 'de' : 'en'; };

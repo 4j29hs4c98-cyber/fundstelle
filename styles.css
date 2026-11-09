@@ -40,7 +40,7 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -.025em; }
 .page-head .sub, .note { color: var(--muted); }
 .page-head .sub { margin: 10px 0 0; font-size: 15px; }
 .eyebrow { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); }
-.section-label { margin: 26px 0 12px; font-family: var(--font); }
+.section-label { margin: 32px 0 12px; font-family: var(--font); color: var(--muted); }
 
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; margin-top: 16px; }
 .panel h2 { font-size: 16px; margin: 0 0 10px; font-weight: 700; } .panel h2 + * { margin-top: 0; }
@@ -61,7 +61,7 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -.025em; }
 
 .notice { border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 16px 18px; margin-top: 16px; }
 .notice b { display: block; font-size: 14px; } .notice p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
-.hint { background: var(--sunken); border-radius: 999px; padding: 12px 18px; color: var(--muted); font-size: 13px; margin: 16px 0 0; }
+.hint { color: var(--faint); font-size: 12px; text-align: center; margin: 24px 0 0; }
 
 .ballot { display: flex; align-items: center; justify-content: space-between; gap: 16px;
   background: var(--primary); color: var(--primary-ink); border-radius: var(--radius); padding: 20px; margin-top: 16px; }
@@ -249,8 +249,104 @@ mark.pruefen { background: var(--paper-warm); color: var(--ink); border-radius: 
 .buchstabe { font-size: 18px; margin: 22px 0 0; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
 
 @media (max-width: 400px) { .tabbar a { padding: 0 11px; min-width: 46px; } .page-head h1 { font-size: 28px; } }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
 /* Eigenes Thema */
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field > span { font-weight: 600; font-size: 14px; }
+
+/* ---------- Startseite: die drei Hauptwege ---------- */
+.wege { display: grid; gap: 10px; }
+.weg { display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 14px 14px 14px 16px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); color: var(--ink); text-decoration: none; }
+.weg-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--primary); color: var(--primary-ink); flex: none; }
+.weg-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.weg-text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.weg-text b { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.02em; }
+.weg-text span { color: var(--muted); font-size: 13px; line-height: 1.4; }
+@media (min-width: 700px) {
+  .wege { grid-template-columns: repeat(3, 1fr); }
+  .weg { flex-direction: column; align-items: flex-start; padding: 18px; min-height: 0; }
+  .weg > .arrow { align-self: flex-end; margin-top: auto; }
+}
+.profil-tipp { display: flex !important; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 16px; padding: 14px 18px; box-shadow: none; }
+.profil-tipp b { font-size: 14px; } a.card.link.profil-tipp .meta { margin: 0; color: var(--ink); font-weight: 600; }
+
+/* Pfeil in ganzen Karten-Links: ruhiger Kreis, der beim Zeigen leicht nach rechts rueckt. */
+a.card.link .arrow, .weg > .arrow, .prog-head > .arrow { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--sunken); color: var(--ink); font-size: 14px; line-height: 1; }
+.prog-head > .arrow { margin-left: auto; } .prog-head > .meta + .arrow { margin-left: 0; }
+a.card.link .card-row { align-items: center; }
+a.card.link p { color: var(--muted); }
+
+/* ---------- Aufklappbare Hinweise ---------- */
+details > summary { list-style: none; } details > summary::-webkit-details-marker { display: none; }
+.notice.demo { padding: 0 18px; }
+.notice.demo summary, details.mehr summary { display: flex; align-items: center; gap: 10px; min-height: 48px; cursor: pointer; }
+.notice.demo summary b { font-size: 13px; }
+.notice.demo p:last-child { margin-bottom: 16px; }
+details.mehr { margin: 4px 0 12px; }
+details.mehr summary { min-height: 44px; font-size: 13px; font-weight: 600; color: var(--muted); }
+details.mehr .note.small { margin: 0 0 6px; }
+/* Chevron rechts, dreht sich beim Oeffnen. */
+.notice.demo summary::after, details.mehr summary::before, .stelle summary::after, .karte summary::after {
+  content: ""; width: 7px; height: 7px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor;
+  transform: rotate(45deg); transition: transform .25s ease; flex: none; color: var(--muted); }
+.notice.demo summary::after, .stelle summary::after { margin-left: auto; margin-right: 4px; }
+details.mehr summary::before { transform: rotate(-45deg); }
+.notice.demo[open] summary::after, .stelle[open] summary::after, .karte[open] summary::after { transform: rotate(225deg); }
+details.mehr[open] summary::before { transform: rotate(45deg); }
+.stelle summary { gap: 10px; }
+.karte summary { position: relative; padding-right: 26px; }
+.karte summary::after { position: absolute; right: 4px; top: 22px; }
+.karte[open] summary::after { top: 25px; }
+
+/* Weiches Auf- und Zuklappen, wo der Browser es kann; sonst blendet der Inhalt nur ein. */
+@supports (interpolate-size: allow-keywords) {
+  :root { interpolate-size: allow-keywords; }
+  details::details-content { block-size: 0; overflow: clip; transition: block-size .3s cubic-bezier(.2,.7,.2,1), content-visibility .3s allow-discrete; }
+  details[open]::details-content { block-size: auto; }
+}
+details[open] > :not(summary) { animation: einblenden .3s ease both; }
+
+/* ---------- Bewegung: Seitenwechsel, Druck- und Zeige-Zustaende ---------- */
+main { overflow-x: clip; }
+@keyframes einblenden { from { opacity: 0; } to { opacity: 1; } }
+@keyframes auf { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes vor { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes zurueck { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+#main.enter > * { animation: auf .34s cubic-bezier(.2,.7,.2,1) both; }
+#main.enter[data-dir="vor"] > * { animation-name: vor; }
+#main.enter[data-dir="zurueck"] > * { animation-name: zurueck; }
+/* Leichte Staffelung der ersten Elemente: Ueberschrift zuerst, dann der Inhalt. */
+#main.enter > :nth-child(2) { animation-delay: 30ms; } #main.enter > :nth-child(3) { animation-delay: 60ms; }
+#main.enter > :nth-child(4) { animation-delay: 90ms; } #main.enter > :nth-child(5) { animation-delay: 120ms; }
+#main.enter > :nth-child(n+6) { animation-delay: 150ms; }
+
+a.card.link, .weg, .go, .btn, .qchip, .pchip, .seg button, .pin, .ballot, .gear, .back {
+  transition: transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .2s ease, border-color .2s ease, background-color .2s ease, color .2s ease, opacity .2s ease; }
+a.card.link .arrow, .weg > .arrow, .go .arrow { transition: transform .2s cubic-bezier(.2,.7,.2,1), background-color .2s ease; }
+a.card.link:active, .weg:active, .ballot:active { transform: scale(.985); }
+.go:active, .btn:active, .qchip:active, .pchip:active, .seg button:active, .pin:active, .tabbar a:active { transform: scale(.96); }
+@media (hover: hover) {
+  a.card.link:hover, .weg:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  a.card.link:hover .arrow, .weg:hover > .arrow, .go:hover .arrow { transform: translateX(3px); }
+  a.card.link:hover .arrow, .weg:hover > .arrow { background: var(--primary); color: var(--primary-ink); }
+  .go:hover { opacity: .9; }
+  .btn:not(.primary):hover, .qchip:not([aria-pressed="true"]):hover, .pchip:hover { background: var(--sunken); border-color: var(--line-strong); }
+  .btn.primary:hover { opacity: .9; }
+  .back:hover, .seite-link:hover { color: var(--ink); }
+  .tabbar a:not([aria-current="page"]):hover { color: #FFFFFF; background: rgba(255,255,255,.08); }
+  .gear:not([aria-current="page"]):hover { background: var(--sunken); color: var(--ink); }
+  details > summary:hover::after, details.mehr > summary:hover::before { color: var(--ink); }
+}
+input:not([type=checkbox]), textarea, select { transition: border-color .2s ease, box-shadow .2s ease; }
+input:not([type=checkbox]):focus, textarea:focus, select:focus { border-color: var(--line-strong); box-shadow: 0 0 0 4px var(--sunken); outline: none; }
+input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  details::details-content { transition: none !important; }
+}
+
+/* Auf breiten Bildschirmen schwebt die Leiste kompakt in der Mitte statt ueber die volle Breite. */
+@media (min-width: 800px) { .tabbar { left: 50%; right: auto; transform: translateX(-50%); } }

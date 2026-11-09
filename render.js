@@ -1,6 +1,6 @@
 // render.js — draws the current screen. Every change re-renders the screen, but scroll positions
 // and the focused control are kept, so the page never jumps.
-import { $, S, TAB_OF } from './core.js';
+import { $, S, TAB_OF, TABS } from './core.js';
 import { tr, setLang, getLang } from './i18n.js';
 import { viewStart } from './views/start.js';
 import { viewThemen, viewThema } from './views/themen.js';
@@ -24,9 +24,11 @@ export function render() {
   const main = $('#main'), keep = render.last === seite, y = window.scrollY;
   const ae = document.activeElement, sig = keep && main.contains(ae) ? { tag: ae.tagName, elId: ae.id, d: Object.fromEntries(FOCUS_KEYS.map(k => [k, ae.dataset[k]])) } : null;
   main.style.minHeight = keep ? `${main.offsetHeight}px` : '';
+  if (keep) main.classList.remove('enter'); // neue Kinder derselben Seite sollen nicht erneut einblenden
   main.innerHTML = views[S.view](S.param);
   main.style.minHeight = '';
   const tab = TAB_OF[S.view] || S.view;
+  if (!keep) einblenden(main, tab);
   document.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', a.dataset.nav === tab ? 'page' : 'false'));
   const ziel = keep ? null : main.querySelector('[data-ziel]');
   if (keep) window.scrollTo(0, y); else if (ziel) ziel.scrollIntoView(); else window.scrollTo(0, 0);
@@ -35,6 +37,18 @@ export function render() {
     el?.focus({ preventScroll: true });
   }
   render.last = seite;
+  render.lastTab = tab;
+}
+
+// Sanfter Uebergang nur beim Wechsel der Seite, nie beim Neuzeichnen derselben Seite (sonst flackert jede Eingabe).
+// Zwischen Bereichen der Tab-Leiste gleitet der Inhalt aus der passenden Richtung, tiefere Seiten steigen leicht auf.
+// Das CSS schaltet die Bewegung bei prefers-reduced-motion ab.
+function einblenden(main, tab) {
+  const vorher = TABS.indexOf(render.lastTab), jetzt = TABS.indexOf(tab);
+  main.dataset.dir = vorher < 0 || jetzt < 0 || vorher === jetzt || !TABS.includes(S.view) ? 'auf' : jetzt > vorher ? 'vor' : 'zurueck';
+  main.classList.remove('enter');
+  void main.offsetWidth; // Neustart der Animation erzwingen
+  main.classList.add('enter');
 }
 export function applyLang(v) {
   let l = v; try { l ||= localStorage.getItem('lang'); } catch {}

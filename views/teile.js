@@ -46,9 +46,10 @@ export function merkKnopf(frageId) {
 }
 
 // Hinweis, solange Inhalte nicht vom Team geprueft sind (KI-Zusammenstellung).
-export const demoHinweis = () => (C.ungeprueft ? `<section class="notice"><b>${tr('Compiled by AI, not yet checked')}</b>
+// Aufklappbar, damit der lange Text nicht jede Seite fuellt. Die Ueberschrift bleibt immer sichtbar.
+export const demoHinweis = () => (C.ungeprueft ? `<details class="notice demo"><summary><b>${tr('Compiled by AI, not yet checked')}</b></summary>
   <p>${tr('The quotes come word for word from the parties’ programmes for the federal election 2025, with the page. An AI agent selected them and the team has not checked them yet. Open the original before you rely on a passage.')}</p>
-  ${C.maschinell ? `<p class="meta">${tr('A script has compared every quote with the original PDF and found it word for word on the stated page. Whether the quote fits the question still needs a person.')}</p>` : ''}</section>` : '');
+  ${C.maschinell ? `<p class="meta">${tr('A script has compared every quote with the original PDF and found it word for word on the stated page. Whether the quote fits the question still needs a person.')}</p>` : ''}</details>` : '');
 // PDF-Seite, nicht die gedruckte Seitenzahl: der Link oeffnet das PDF genau dort.
 export const pdfSeite = n => tr('PDF page {n}', { n });
 

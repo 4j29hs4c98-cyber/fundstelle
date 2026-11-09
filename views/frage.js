@@ -57,7 +57,8 @@ export function viewFrage(id) {
     <section class="panel"><h3>${tr('Against')}</h3><ul>${liste('dagegen')}</ul></section></div>
 
   <h2 class="eyebrow section-label">${tr('Votes on this')}</h2>
-  ${votes.length ? `<p class="note small">${tr('Parties in government usually vote together, even where their own programme says something different. That is why the role at the time of the vote is shown.')}</p>
+  ${votes.length ? `<details class="mehr"><summary>${tr('Why the role is shown')}</summary>
+    <p class="note small">${tr('Parties in government usually vote together, even where their own programme says something different. That is why the role at the time of the vote is shown.')}</p></details>
     <div class="cards">${votes.map(abstimmungBlock).join('')}</div>`
     : `<p class="note">${tr('No vote has been linked to this question yet.')}</p>`}
 

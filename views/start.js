@@ -43,7 +43,8 @@ function antwortKarte(f) {
 function antwort(text) {
   const r = frageSuche(text);
   if (!r || !r.fragen.length) return `<section class="notice"><b>${tr('Nothing in the programmes on this yet.')}</b>
-    <p>${tr('The app covers only three questions so far. Under Check you can search for exact words.')}</p></section>`;
+    <p>${tr('The app covers only three questions so far. Under Check you can search for exact words.')}</p>
+    <p><a class="go" href="#eigene">${tr('Let the agent research it')} ${pfeil}</a></p></section>`;
   return `${r.wertend ? `<p class="note small">${tr('Who does something “best” is your call. The app shows what each programme says, with the page.')}</p>` : ''}
     <div class="cards">${r.fragen.slice(0, 3).map(antwortKarte).join('')}</div>`;
 }
@@ -54,6 +55,17 @@ function hinweis(w, pr) {
   if (tage > HINWEIS_TAGE) return '';
   return `<section class="hinweis" role="status"><b>${tr('In {n} days: {name}', { n: tage, name: esc(w.name) })}</b>
     <p>${tr('See what the parties say on your topics.')}</p><a class="go" href="${esc(vergleichLink([], pr.themen[0]))}">${tr('Compare')} ${pfeil}</a></section>`;
+}
+
+// Die drei Hauptwege, gross und eindeutig. Symbole wie in der Tab-Leiste, damit man sie wiedererkennt.
+const ICON = {
+  themen: '<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>',
+  parteien: '<path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M8 13h8"/><path d="M8 17h5"/>',
+  eigene: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.4"/><path d="M12 16.5h.01"/>',
+};
+function weg(href, icon, titel, text) {
+  return `<a class="weg" href="${href}"><span class="weg-icon" aria-hidden="true"><svg viewBox="0 0 24 24">${ICON[icon]}</svg></span>
+    <span class="weg-text"><b>${titel}</b><span>${text}</span></span>${pfeil}</a>`;
 }
 
 export function viewStart() {
@@ -68,12 +80,18 @@ export function viewStart() {
   </form>
   ${S.frage ? antwort(S.frage) : ''}
 
+  <h2 class="eyebrow section-label">${tr('Where do you want to start?')}</h2>
+  <nav class="wege" aria-label="${tr('Where do you want to start?')}">
+    ${weg('#themen', 'themen', tr('Topics'), tr('What do the parties say about it?'))}
+    ${weg('#parteien', 'parteien', tr('Parties'), tr('What does a party stand for?'))}
+    ${weg('#eigene', 'eigene', tr('Ask your own question'), tr('An agent researches all programmes while you type.'))}
+  </nav>
+
   ${hinweis(w, pr)}
   ${w ? `<a class="ballot" href="#wahlen"><div><b>${esc(w.name)}</b><span>${termin(w)}</span></div>
     ${w.datum ? `<span class="n" aria-label="${tr('{n} days to go', { n: tageBis(w.datum) })}">${tageBis(w.datum)}</span>` : `<span class="arrow" aria-hidden="true">→</span>`}</a>` : ''}
-  ${hatProfil() ? '' : `<section class="notice"><b>${tr('Which elections matter to you?')}</b>
-    <p>${tr('Choose your state, the kinds of election and your topics. Start then shows only what concerns you.')}</p>
-    <p><a href="#settings">${tr('Set up profile')} →</a></p></section>`}
+  ${hatProfil() ? '' : `<a class="card link profil-tipp" href="#settings"><b>${tr('Which elections matter to you?')}</b>
+    <span class="meta">${tr('Set up profile')} →</span></a>`}
 
   ${meine.length ? `<h2 class="eyebrow section-label">${tr('For you')}</h2>
     <div class="cards">${meine.map(f => `<a class="card link" href="#frage/${esc(f.id)}"><h3>${esc(f.frage)}</h3><span class="meta">${esc(thema(f.thema)?.titel ?? '')}</span></a>`).join('')}</div>` : ''}
@@ -83,7 +101,7 @@ export function viewStart() {
 
   <h2 class="eyebrow section-label">${tr('Saved for later')}</h2>
   ${gemerkt.length ? `<div class="cards">${gemerkt.join('')}</div>`
-    : `<p class="note">${tr('Tap the star on a question to find it here again.')}</p>`}
+    : `<p class="note small">${tr('Tap the star on a question to find it here again.')}</p>`}
 
   ${demoHinweis()}
   <p class="hint">${tr('Swipe sideways to change section.')}</p>`;
