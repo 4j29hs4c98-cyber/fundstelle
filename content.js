@@ -228,7 +228,7 @@ const FRAGEWOERTER = new Set([...FUELLWOERTER, 'welche', 'welcher', 'wer', 'wie'
 const BEGRIFFE = { obdach: ['wohn', 'miet'], wohnungslos: ['wohn', 'miet'], wohnung: ['wohn', 'miet'], miet: ['miet'], bau: ['neubau', 'bau'],
   klima: ['klima', 'co2', 'energie'], umwelt: ['klima', 'co2'], energie: ['energie', 'co2'], benzin: ['co2', 'pendler'], sprit: ['co2', 'pendler'],
   pendl: ['pendler'], co2: ['co2'], rent: ['rente'], alter: ['rente'], senior: ['rente'] };
-export const istWertend = text => /\b(am besten|beste|besser|schlechteste|am meisten)\b/i.test(String(text));
+export const istWertend = text => /(am besten|am meisten|\bbeste|\bbesser|\bschlecht)/i.test(String(text));
 export function frageSuche(text) {
   const tokens = norm(text).split(/[^\p{L}\p{N}]+/u).filter(w => w.length >= 3 && !FRAGEWOERTER.has(w));
   if (!tokens.length) return null;
@@ -236,7 +236,8 @@ export function frageSuche(text) {
   const fragen = C.fragen.map(f => {
     const heu = norm([thema(f.thema)?.titel, f.frage, f.kurz, ...C.positionen.filter(p => p.frage === f.id).flatMap(p => [p.text, p.auszug, p.aenderung]),
       ...argumenteZuFrage(f.id).map(a => a.text)].join(' '));
-    return { f, treffer: staemme.filter(st => st.some(s => heu.includes(s))).length };
+    const woerter = heu.split(/[^\p{L}\p{N}]+/u);
+    return { f, treffer: staemme.filter(st => st.some(s => woerter.some(w => w.startsWith(s)))).length };
   }).filter(x => x.treffer).sort((a, b) => b.treffer - a.treffer || nachSort(a.f, b.f));
   return { fragen: fragen.map(x => x.f), wertend: istWertend(text) };
 }

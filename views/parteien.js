@@ -6,11 +6,10 @@ import { PARTEIEN_DE } from '../katalog.js';
 import { parteienSortiert, partei, programmVon, themenSortiert, fragenZuThema, positionVon, abstimmungenZuFrage, aussagenVon, frage } from '../content.js';
 import { kopf, pfeil, haltung, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink } from './teile.js';
 
-const alleDemo = () => parteienSortiert().slice(0, 2).map(p => p.id).join(',');
 
 export function viewParteien() {
   return `${kopf(tr('Parties'), tr('What does a party stand for?'), tr('Each programme sorted by topic, next to how the party voted.'))}
-  <p><a class="go" href="#vergleich/${esc(alleDemo())}">${tr('Compare parties')} ${pfeil}</a></p>
+  <p><a class="go" href="#vergleich/">${tr('Compare parties')} ${pfeil}</a></p>
   <h2 class="eyebrow section-label">${tr('Example parties with content')}</h2>
   <div class="cards">${parteienSortiert().map(p => {
     const pr = programmVon(p.id);

@@ -41,7 +41,7 @@ export function viewFrage(id) {
   <div class="row merk-row">${merkKnopf(f.id)}<span class="meta">${tr('All parties in alphabetical order. No ranking, no recommendation.')}</span></div>
 
   <div class="cards">${pos.map(positionKarte).join('')}</div>
-  <p><a class="btn" href="#vergleich/${esc(pos.filter(p => p.haltung !== 'keine_angabe').slice(0, 4).map(p => p.partei).join(','))}">${tr('Compare parties')} ${pfeil}</a></p>
+  <p><a class="btn" href="#vergleich//${esc(f.thema)}">${tr('Compare parties')} ${pfeil}</a></p>
 
   <h2 class="eyebrow section-label">${tr('What the parties say would change')}</h2>
   ${angekuendigt.length ? `<div class="cards">${angekuendigt.map(p => `<article class="card paper"><h3>${esc(partei(p.partei)?.name ?? '')}</h3>

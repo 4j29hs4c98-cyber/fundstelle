@@ -8,7 +8,8 @@ import { kopf, logo, seite, pfeil, safeUrl, demoHinweis } from './teile.js';
 
 const zurueck = () => ({ href: '#parteien', text: tr('All parties') });
 const platz = (n, k) => Array.from({ length: k }, (_, i) => `<span class="platz" style="width:${70 + ((n * 7 + i * 13) % 28)}%"></span>`).join('');
-const original = (url, n) => { const u = safeUrl(url); return u ? `<a class="go" href="${esc(n ? `${u}#page=${n}` : u)}" target="_blank" rel="noopener">${n ? tr('Open the original on page {n}', { n }) : tr('Open the original programme')} ${pfeil}</a>` : ''; };
+const mitSeite = (u, n) => { const x = new URL(u); if (n) x.hash = `page=${n}`; return x.href; };
+const original = (url, n) => { const u = safeUrl(url); return u ? `<a class="go" href="${esc(mitSeite(u, n))}" target="_blank" rel="noopener">${n ? tr('Open the original on page {n}', { n }) : tr('Open the original programme')} ${pfeil}</a>` : ''; };
 
 function echtesProgramm(p) {
   return `${kopf(tr('Programme'), `${logo(p)} ${esc(p.voll)}`, tr('Programme for the federal election 2025'), zurueck())}
@@ -21,7 +22,7 @@ export function viewProgramm(param) {
   const p = partei(id);
   if (!p) return kopf(tr('Programme'), tr('This programme is not available.'), '', zurueck());
   if (p.echt) return echtesProgramm(p);
-  const pr = programmVon(id), max = pr?.seiten || 1, fund = fundstellenVon(id);
+  const pr = programmVon(id), fund = fundstellenVon(id), max = Math.max(pr?.seiten || 0, ...fund.map(s => s.seite), 1);
   const n = Math.min(max, Math.max(1, parseInt(roh, 10) || fund[0]?.seite || 1));
   const stellen = positionenAufSeite(id, n);
   const blatt = `<article class="blatt" aria-label="${tr('Page {n}', { n })}">

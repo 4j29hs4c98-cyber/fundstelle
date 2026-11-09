@@ -7,7 +7,7 @@ import { meineWahlen, profil, hatProfil } from '../profil.js';
 import { tageBis } from '../content.js';
 import { kopf, termin, extLink } from './teile.js';
 
-const artName = id => tr(WAHLARTEN.find(w => w.id === id)?.name ?? id);
+const artName = id => { const w = WAHLARTEN.find(x => x.id === id); return w ? tr(w.name) : esc(id); }; // id kann aus einem Backup stammen
 const landName = id => BUNDESLAENDER.find(l => l.id === id)?.name ?? '';
 
 export function wahlKarte(w) {

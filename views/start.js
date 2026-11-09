@@ -5,7 +5,7 @@ import { esc, list, S } from '../core.js';
 import { tageBis, neueAbstimmungen, frage, thema, fragenZuThema, partei, positionenZuFrage, frageSuche, ALTE_THEMEN } from '../content.js';
 import { profil, hatProfil, naechsteEigeneWahl } from '../profil.js';
 import { kopf, pfeil, datum, termin, logo, haltung, seitenLink, demoHinweis, safeUrl } from './teile.js';
-import { MAX_VERGLEICH } from './vergleich.js';
+import { vergleichLink } from './vergleich.js';
 
 const HINWEIS_TAGE = 90;
 
@@ -30,8 +30,6 @@ function gemerkteKarten() {
   ];
 }
 
-// Parteien, die zu einer Frage Stellung beziehen (fuer den Vergleichs-Knopf), hoechstens vier.
-const vergleichZu = f => positionenZuFrage(f.id).filter(p => p.haltung !== 'keine_angabe').slice(0, MAX_VERGLEICH).map(p => p.partei).join(',');
 
 function antwortKarte(f) {
   const zeilen = positionenZuFrage(f.id).map(p => `<li>${logo(partei(p.partei), 'klein')}<b>${esc(partei(p.partei)?.name ?? '')}</b>
@@ -39,7 +37,7 @@ function antwortKarte(f) {
   return `<article class="card"><span class="meta">${esc(thema(f.thema)?.titel ?? '')}</span><h3>${esc(f.frage)}</h3>
     <ul class="mini">${zeilen}</ul>
     <div class="row"><a class="go" href="#frage/${esc(f.id)}">${tr('All details')} ${pfeil}</a>
-      <a class="btn" href="#vergleich/${esc(vergleichZu(f))}">${tr('Compare these parties')}</a></div></article>`;
+      <a class="btn" href="${esc(vergleichLink([], f.thema))}">${tr('Compare parties')}</a></div></article>`;
 }
 
 function antwort(text) {
@@ -55,7 +53,7 @@ function hinweis(w, pr) {
   const tage = tageBis(w.datum);
   if (tage > HINWEIS_TAGE) return '';
   return `<section class="hinweis" role="status"><b>${tr('In {n} days: {name}', { n: tage, name: esc(w.name) })}</b>
-    <p>${tr('See what the parties say on your topics.')}</p><a class="go" href="#vergleich/${esc(vergleichZu(fragenZuThema(pr.themen[0])[0] ?? {}))}">${tr('Compare')} ${pfeil}</a></section>`;
+    <p>${tr('See what the parties say on your topics.')}</p><a class="go" href="${esc(vergleichLink([], pr.themen[0]))}">${tr('Compare')} ${pfeil}</a></section>`;
 }
 
 export function viewStart() {

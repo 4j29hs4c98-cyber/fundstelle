@@ -7,7 +7,7 @@ import { render, applyLang, applyTheme } from './render.js';
 import { WAHLARTEN, BUNDESLAENDER } from './katalog.js';
 import { C } from './content.js';
 import { PROFIL_ID } from './profil.js';
-import { auswahlAus, MAX_VERGLEICH } from './views/vergleich.js';
+import { vergleichAus, vergleichLink, MAX_VERGLEICH } from './views/vergleich.js';
 
 export const actions = {
   // Eine gemerkte Frage ist ein Record des Nutzers, kein redaktioneller Inhalt. Format: { frage: <id>, created }.
@@ -26,10 +26,11 @@ export const actions = {
   },
   // Partei im Vergleich an- oder abwaehlen. Die Auswahl lebt in der Adresse, deshalb nur den Hash setzen.
   vergleich({ id }) {
-    const jetzt = S.view === 'vergleich' ? auswahlAus(S.param) : [];
-    if (!jetzt.includes(id) && jetzt.length >= MAX_VERGLEICH) { toast('At most four parties at once.'); return; }
-    location.hash = '#vergleich/' + (jetzt.includes(id) ? jetzt.filter(x => x !== id) : [...jetzt, id]).join(',');
+    const v = vergleichAus(S.view === 'vergleich' ? S.param : '');
+    if (!v.ids.includes(id) && v.ids.length >= MAX_VERGLEICH) { toast('At most four parties at once.'); return; }
+    location.hash = vergleichLink(v.ids.includes(id) ? v.ids.filter(x => x !== id) : [...v.ids, id], v.thema);
   },
+  'vergleich-thema'({ id }) { location.hash = vergleichLink(vergleichAus(S.view === 'vergleich' ? S.param : '').ids, id); },
   'alle-wahlen'() { S.alleWahlen = !S.alleWahlen; render(); },
   theme({ v }) { try { localStorage.setItem('theme', v); } catch {} applyTheme(); render(); },
   lang({ v }) { applyLang(v); render(); },
