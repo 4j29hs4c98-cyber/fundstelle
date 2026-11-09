@@ -1,6 +1,6 @@
 // sw.js — offline support. RELEASE RULE: bump VERSION on every release, and list every app file in SHELL
 // (scripts/check-release.mjs verifies both). A missing file here breaks offline mode for everyone.
-const VERSION = 'fundstelle-v9';
+const VERSION = 'fundstelle-v10';
 const SHELL = ['./', './index.html', './styles.css', './app.js', './core.js', './db.js', './sync.js', './i18n.js', './render.js', './actions.js',
   './content.js', './inhalt-2025.js', './katalog.js', './profil.js', './grundlagen.js', './views/teile.js', './views/start.js', './views/themen.js', './views/frage.js', './views/parteien.js', './views/pruefen.js',
   './views/auswahl.js', './views/settings.js', './views/vergleich.js', './views/programm.js', './views/wahlen.js', './views/grundlagen.js', './views/eigene.js', './recherche.js',

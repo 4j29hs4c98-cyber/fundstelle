@@ -33,13 +33,16 @@ export function ergebnisHtml() {
     fertig: R.ergebnisse.length ? tr('Done: {n} programmes take a clear position.', { n: R.ergebnisse.length }) : tr('Done: no programme answers this question clearly.'),
     anmelden: tr('Sign in to let the agent research. Research is limited per account.'),
     aus: tr('The research agent is not switched on yet.'),
-    fehler: tr('Research failed. Change the question slightly to try again.'),
+    fehler: /^Zu viele/.test(R.fehler ?? '') ? tr('Too many research requests. Please try again later.') : tr('Research failed. Change the question slightly to try again.'),
   }[R.status] ?? '';
-  const speichern = R.status === 'fertig' && R.ergebnisse.length
+  // Konnte ein Programm nicht gelesen werden, ist das Ergebnis unvollstaendig: deutlich sagen und nicht speichern lassen.
+  const luecke = R.status === 'fertig' && R.fehlgeschlagen
+    ? `<p class="note">${tr('{n} programmes could not be read. The result is incomplete; parties may be missing.', { n: R.fehlgeschlagen })}</p>` : '';
+  const speichern = R.status === 'fertig' && R.ergebnisse.length && !R.fehlgeschlagen
     ? `<p><button class="btn" data-action="eigen-speichern">${tr('Save topic')}</button></p>` : '';
   const anmelden = R.status === 'anmelden' ? `<p><a class="go" href="#settings">${tr('Sign in')} ${pfeil}</a></p>` : '';
   return `${status ? `<p class="meta" role="status"${R.status === 'laeuft' ? ' aria-busy="true"' : ''}>${esc(status)}</p>` : ''}
-    ${ergebnisListe(R.ergebnisse)}${speichern}${anmelden}${R.ergebnisse.length ? HINWEIS() : ''}`;
+    ${luecke}${ergebnisListe(R.ergebnisse)}${speichern}${anmelden}${R.ergebnisse.length ? HINWEIS() : ''}`;
 }
 
 function gespeichertes(id) {
