@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 
 const MIETE = 'c2fcc20d-f7ff-4f12-b03a-7a4dce5ba1f8';
 const RENTE = '95c54175-3b25-4055-a704-52ebec90696f';
-const PARTEI_C = '67e4a12b-4b7b-4c63-9cae-1296ad67c676';
+const SPD = '32ad76bd-db22-420d-89c2-0ba593d4f289';
 
 test.beforeEach(async ({ page }) => {
   page.on('pageerror', e => { throw e; });            // jeder JavaScript-Fehler laesst den Test scheitern
@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('jede Seite oeffnet ohne Fehler und ohne seitliches Scrollen', async ({ page }) => {
-  for (const v of ['start', 'themen', 'thema/3a18c189-c9a4-49dc-8ad9-7e49ac440fe4', `frage/${MIETE}`, 'parteien', `partei/${PARTEI_C}`, 'pruefen', 'auswahl', 'settings']) {
+  for (const v of ['start', 'themen', 'thema/3a18c189-c9a4-49dc-8ad9-7e49ac440fe4', `frage/${MIETE}`, 'parteien', `partei/${SPD}`, `programm/${SPD}/20`, `vergleich/${SPD}`, 'pruefen', 'auswahl', 'settings']) {
     await page.goto(`/#${v}`);
     await expect(page.locator('#main h1')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
@@ -24,11 +24,11 @@ test('alte Adressen aus Version 1 fuehren in die neuen Bereiche', async ({ page 
   await expect(page.locator('.tabbar a[data-nav=themen]')).toHaveAttribute('aria-current', 'page');
 });
 
-test('die Frage zeigt alle sechs Parteien alphabetisch, mit Argumenten und Abstimmung', async ({ page }) => {
+test('die Frage zeigt alle zehn Parteien alphabetisch, mit Argumenten und Abstimmung', async ({ page }) => {
   await page.goto(`/#frage/${MIETE}`);
-  await expect(page.locator('.pos')).toHaveCount(6);
-  await expect(page.locator('.pos .who').first()).toContainText('Partei A');
-  await expect(page.locator('.pos .who').last()).toContainText('Partei F');
+  await expect(page.locator('.pos')).toHaveCount(10);
+  await expect(page.locator('.pos .who').first()).toContainText('AfD');
+  await expect(page.locator('.pos .who').last()).toContainText('SSW');
   await expect(page.locator('.args li')).toHaveCount(2);
   await expect(page.locator('.vote .stimmen dt')).toHaveCount(6);
   await expect(page.locator('.vote')).toContainText('in government');
@@ -39,8 +39,8 @@ test('die Programmstelle klappt mit woertlichem Auszug und Seite auf', async ({ 
   const stelle = page.locator('.pos .stelle').first();
   await expect(stelle.locator('.auszug')).toBeHidden();
   await stelle.locator('summary').click();
-  await expect(stelle.locator('.auszug')).toContainText('unbefristet');
-  await expect(stelle.locator('summary')).toContainText('Page 34');
+  await expect(stelle.locator('.auszug')).toContainText('Mietpreisbremse');
+  await expect(stelle.locator('summary')).toContainText('Page 39');
 });
 
 test('vom Thema zur Frage und zurueck', async ({ page }) => {
@@ -54,11 +54,11 @@ test('vom Thema zur Frage und zurueck', async ({ page }) => {
 
 test('Nachpruefen findet die Fundstelle oder sagt klar, dass es keine gibt', async ({ page }) => {
   await page.goto('/#pruefen');
-  await page.fill('#suche-q', 'Partei C Mietpreisbremse');
+  await page.fill('#suche-q', 'Grünen Mietpreisbremse');
   await page.press('#suche-q', 'Enter');
   await expect(page.locator('.card.paper')).toHaveCount(1);
-  await expect(page.locator('.card.paper')).toContainText('Page 51');
-  await page.fill('#suche-q', 'Partei E Mietpreisbremse');
+  await expect(page.locator('.card.paper')).toContainText('Page 69');
+  await page.fill('#suche-q', 'SSW Mietpreisbremse');
   await page.press('#suche-q', 'Enter');
   await expect(page.locator('.notice').first()).toContainText('No passage found');
 });

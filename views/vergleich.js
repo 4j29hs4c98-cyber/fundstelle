@@ -3,8 +3,7 @@
 // Neutralitaet: Links von anderen Seiten setzen hoechstens das Thema vor, nie die Parteien (sonst gewinnt das Alphabet).
 import { tr } from '../i18n.js';
 import { esc } from '../core.js';
-import { PARTEIEN_DE } from '../katalog.js';
-import { C, partei, parteienSortiert, thema, themenSortiert, fragenZuThema, positionVon, argumenteZuFrage } from '../content.js';
+import { partei, parteienSortiert, ohneInhalt, thema, themenSortiert, fragenZuThema, positionVon, argumenteZuFrage } from '../content.js';
 import { profil } from '../profil.js';
 import { kopf, logo, haltung, seitenLink, demoHinweis, herkunft } from './teile.js';
 
@@ -14,8 +13,6 @@ export function vergleichAus(param) {
   return { ids: [...new Set(ids.split(','))].filter(id => partei(id)).slice(0, MAX_VERGLEICH), thema: thema(t) ? t : '' };
 }
 export const vergleichLink = (ids, t = '') => `#vergleich/${ids.join(',')}${t ? `/${t}` : ''}`;
-// Echte Parteien ohne Inhalte, alphabetisch (keine Rangfolge nach Groesse).
-const ohneInhalt = () => PARTEIEN_DE.filter(p => !C.parteien.some(c => c.id === p.id)).sort((a, b) => a.name.localeCompare(b.name, 'de'));
 
 function chip(p, v) {
   return `<button class="pchip" data-action="vergleich" data-id="${esc(p.id)}" aria-pressed="${v.ids.includes(p.id)}">${logo(p, 'klein')}<span>${esc(p.name)}</span></button>`;
@@ -52,7 +49,7 @@ export function viewVergleich(param) {
   <div class="qbar">${themaChip('', tr('All topics'), v)}${themenSortiert().map(t => themaChip(t.id, esc(t.titel), v)).join('')}</div>
   <p class="eyebrow">${tr('Parties')}</p>
   <div class="pchips">${parteienSortiert().map(p => chip(p, v)).join('')}</div>
-  ${rest.length ? `<p class="eyebrow">${tr('Real parties, content follows')}</p><div class="pchips">${rest.map(p => chip(p, v)).join('')}</div>` : ''}
+  ${rest.length ? `<p class="eyebrow">${tr('More parties, content follows')}</p><div class="pchips">${rest.map(p => chip(p, v)).join('')}</div>` : ''}
   ${inhalt}
   ${demoHinweis()}
   ${herkunft('vergleich')}`;

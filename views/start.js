@@ -43,7 +43,7 @@ function antwortKarte(f) {
 function antwort(text) {
   const r = frageSuche(text);
   if (!r || !r.fragen.length) return `<section class="notice"><b>${tr('Nothing in the programmes on this yet.')}</b>
-    <p>${tr('The example programmes only cover a few questions. Under Check you can search for exact words.')}</p></section>`;
+    <p>${tr('The app covers only three questions so far. Under Check you can search for exact words.')}</p></section>`;
   return `${r.wertend ? `<p class="note small">${tr('Who does something “best” is your call. The app shows what each programme says, with the page.')}</p>` : ''}
     <div class="cards">${r.fragen.slice(0, 3).map(antwortKarte).join('')}</div>`;
 }

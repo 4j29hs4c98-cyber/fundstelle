@@ -3,7 +3,7 @@
 // ungeklaert); uebrige Zeilen sind Platzhalter. Ist das Original verlinkt, oeffnet es auf derselben Seite (#page=N).
 import { tr } from '../i18n.js';
 import { esc } from '../core.js';
-import { partei, programmVon, positionenAufSeite, fundstellenVon, frage } from '../content.js';
+import { partei, hatInhalt, programmVon, positionenAufSeite, fundstellenVon, frage } from '../content.js';
 import { kopf, logo, seite, pfeil, safeUrl, demoHinweis } from './teile.js';
 
 const zurueck = () => ({ href: '#parteien', text: tr('All parties') });
@@ -21,25 +21,28 @@ export function viewProgramm(param) {
   const [id, roh] = String(param ?? '').split('/');
   const p = partei(id);
   if (!p) return kopf(tr('Programme'), tr('This programme is not available.'), '', zurueck());
-  if (p.echt) return echtesProgramm(p);
-  const pr = programmVon(id), fund = fundstellenVon(id), max = Math.max(pr?.seiten || 0, ...fund.map(s => s.seite), 1);
+  const pr = programmVon(id);
+  if (!hatInhalt(id) || !pr) return echtesProgramm(p);
+  // Ohne bekannte Seitenzahl reicht das Blaettern bis zur letzten Fundstelle.
+  const fund = fundstellenVon(id), max = Math.max(pr.seiten || 0, ...fund.map(s => s.seite), 1);
+  const von = x => (pr.seiten ? tr('Page {n} of {m}', { n: x, m: max }) : seite(x));
   const n = Math.min(max, Math.max(1, parseInt(roh, 10) || fund[0]?.seite || 1));
   const stellen = positionenAufSeite(id, n);
   const blatt = `<article class="blatt" aria-label="${tr('Page {n}', { n })}">
-      <p class="meta">${esc(pr?.titel ?? '')} · ${tr('Page {n} of {m}', { n, m: max })}</p>
+      <p class="meta">${esc(pr.titel)} · ${von(n)}</p>
       ${platz(n, 4)}
       ${stellen.map(s => `<p><mark>${esc(s.auszug ?? s.text)}</mark></p>
         <p class="meta"><a href="#frage/${esc(s.frage)}">${esc(frage(s.frage)?.kurz ?? '')} ${pfeil}</a></p>`).join('')}
       ${platz(n + 3, stellen.length ? 3 : 6)}
     </article>`;
-  return `${kopf(tr('Programme'), `${logo(p)} ${esc(p.name)}`, esc(pr?.titel ?? ''), { href: `#partei/${esc(id)}`, text: p.name })}
+  return `${kopf(tr('Programme'), `${logo(p)} ${esc(p.voll ?? p.name)}`, esc(pr.titel), { href: `#partei/${esc(id)}`, text: p.name })}
   <nav class="blaettern" aria-label="${tr('Pages')}">
     ${n > 1 ? `<a class="btn" href="#programm/${esc(id)}/${n - 1}">← ${seite(n - 1)}</a>` : '<span></span>'}
-    <b>${tr('Page {n} of {m}', { n, m: max })}</b>
+    <b>${von(n)}</b>
     ${n < max ? `<a class="btn" href="#programm/${esc(id)}/${n + 1}">${seite(n + 1)} →</a>` : '<span></span>'}
   </nav>
   ${blatt}
-  <p class="note small">${tr('Mockup: only the highlighted passage is from the (example) programme, the grey lines stand for the rest of the page.')}</p>
+  <p class="note small">${tr('Mockup: only the highlighted passage is quoted from the programme, the grey lines stand for the rest of the page. Page numbers are those of the PDF.')}</p>
   ${original(pr?.url, n)}
   <h2 class="eyebrow section-label">${tr('Passages in this programme')}</h2>
   <div class="cards">${fund.map(s => `<a class="card link" href="#programm/${esc(id)}/${s.seite}"><h3>${seite(s.seite)} · ${esc(frage(s.frage)?.kurz ?? '')}</h3>

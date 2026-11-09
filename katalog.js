@@ -1,37 +1,37 @@
 // katalog.js — Verzeichnis echter Parteien und Wahltermine in Deutschland. Reine Tatsachen, keine Positionen.
-// Echten Parteien werden hier bewusst KEINE Aussagen zugeordnet; das passiert erst, wenn echte Programme
-// ausgewertet und geprueft sind. Farben sind Erkennungszeichen, keine Wertung.
+// Positionen stehen hier nicht, sondern in content.js, und nur als woertliches Zitat mit Seitenzahl. Farben sind Erkennungszeichen, keine Wertung.
 // Logos: Feld "logo" (Pfad unter icons/parteien/) bleibt leer, bis offizielle Logos mit Erlaubnis abgelegt sind.
 // Recherche vom 06.11.2026. Farbwerte aus der Farbtabelle der Wikipedia, nicht aus den Gestaltungsrichtlinien
 // der Parteien; unsicher sind die Linke, die Tierschutzpartei und alle Zweitfarben.
 
 const CDU_CSU_2025 = 'https://www.cdu.de/app/uploads/2025/01/km_btw_2025_wahlprogramm_langfassung_ansicht.pdf';
+// Feste UUIDs, weil dieselben IDs in Supabase stehen (Tabelle parteien). Nie aendern.
 // [id, Kurzname, voller Name, Farbe, Zweitfarbe, Website, Programm zur Bundestagswahl 2025 (oder null)]
 const P = [
-  ['de-cdu', 'CDU', 'Christlich Demokratische Union Deutschlands', '#51B8C2', '#151518', 'https://www.cdu.de', CDU_CSU_2025],
-  ['de-csu', 'CSU', 'Christlich-Soziale Union in Bayern', '#008AC5', null, 'https://www.csu.de', CDU_CSU_2025],
-  ['de-spd', 'SPD', 'Sozialdemokratische Partei Deutschlands', '#E3000F', null, 'https://www.spd.de',
+  ['27cb31a1-5427-4aa3-9c38-3998d3d6ccf6', 'CDU', 'Christlich Demokratische Union Deutschlands', '#51B8C2', '#151518', 'https://www.cdu.de', CDU_CSU_2025],
+  ['82a589fb-b9bf-4a06-91d5-2eb2be2d0df4', 'CSU', 'Christlich-Soziale Union in Bayern', '#008AC5', null, 'https://www.csu.de', CDU_CSU_2025],
+  ['32ad76bd-db22-420d-89c2-0ba593d4f289', 'SPD', 'Sozialdemokratische Partei Deutschlands', '#E3000F', null, 'https://www.spd.de',
     'https://www.spd.de/fileadmin/Dokumente/Beschluesse/Programm/2025_SPD_Regierungsprogramm.pdf'],
-  ['de-gruene', 'GRÜNE', 'Bündnis 90/Die Grünen', '#409A3C', '#FFF17A', 'https://www.gruene.de',
+  ['88c662bc-56a3-47e1-a72f-9bd13342e487', 'GRÜNE', 'Bündnis 90/Die Grünen', '#409A3C', '#FFF17A', 'https://www.gruene.de',
     'https://cms.gruene.de/uploads/assets/20250318_Regierungsprogramm_DIGITAL_DINA5.pdf'],
-  ['de-fdp', 'FDP', 'Freie Demokratische Partei', '#FFED00', '#E5007D', 'https://www.fdp.de',
+  ['605a6b11-ae88-41f0-af95-ed4c457aac32', 'FDP', 'Freie Demokratische Partei', '#FFED00', '#E5007D', 'https://www.fdp.de',
     'https://www.fdp.de/sites/default/files/2024-12/fdp-wahlprogramm_2025.pdf'],
-  ['de-afd', 'AfD', 'Alternative für Deutschland', '#00A2DE', null, 'https://www.afd.de',
+  ['9823eced-6ef4-485f-a509-dd754f98f4ba', 'AfD', 'Alternative für Deutschland', '#00A2DE', null, 'https://www.afd.de',
     'https://www.afd.de/wp-content/uploads/2025/02/AfD_Bundestagswahlprogramm2025_web.pdf'],
-  ['de-linke', 'Die Linke', 'Die Linke', '#BE3075', null, 'https://www.die-linke.de',
+  ['e257cff5-1d3a-472e-99f9-2b8a28ee9f70', 'Die Linke', 'Die Linke', '#BE3075', null, 'https://www.die-linke.de',
     'https://www.die-linke.de/fileadmin/user_upload/Wahlprogramm_Langfassung_Linke-BTW25_01.pdf'],
   // Seit 01.10.2026 "Buendnis Soziale Gerechtigkeit und Wirtschaftliche Vernunft", Kurzname bleibt BSW.
-  ['de-bsw', 'BSW', 'Bündnis Soziale Gerechtigkeit und Wirtschaftliche Vernunft', '#792351', null, 'https://bsw-vg.de',
+  ['f7d4cb3d-ef85-442c-9a9f-f7ed9609984e', 'BSW', 'Bündnis Soziale Gerechtigkeit und Wirtschaftliche Vernunft', '#792351', null, 'https://bsw-vg.de',
     'https://bsw-vg.de/wp-content/themes/bsw/assets/downloads/BSW%20Wahlprogramm%202025.pdf'],
-  ['de-fw', 'FREIE WÄHLER', 'Freie Wähler', '#F7A800', null, 'https://www.freiewaehler.eu',
+  ['a2bbca41-0896-4a23-9a83-5c77b8ce9f4b', 'FREIE WÄHLER', 'Freie Wähler', '#F7A800', null, 'https://www.freiewaehler.eu',
     'https://ni.freiewaehler.eu/template/elemente/71/Verantwortung%20f%C3%BCr%20Deutschland_FREIE%20W%C3%84HLER%20Wahlprogramm%202025.pdf'],
-  ['de-volt', 'Volt', 'Volt Deutschland', '#502379', null, 'https://voltdeutschland.org',
+  ['aa5e822f-271e-450d-84b2-4e528204e30a', 'Volt', 'Volt Deutschland', '#502379', null, 'https://voltdeutschland.org',
     'https://voltdeutschland.org/storage/assets-bonn/pdf/programm-leichte-sprache-volt-bundestags-wahl-2025.pdf'],
-  ['de-ssw', 'SSW', 'Südschleswigscher Wählerverband', '#003C8F', null, 'https://www.ssw.de',
+  ['e338320e-ac96-4322-b022-3ccc0f3fe507', 'SSW', 'Südschleswigscher Wählerverband', '#003C8F', null, 'https://www.ssw.de',
     'https://ssw.de/fileadmin/user_upload/daten/aktuelles/2025/BTW25/SSW-Wahlprogramm_BTW_2025.pdf'],
-  ['de-oedp', 'ÖDP', 'Ökologisch-Demokratische Partei', '#FF6400', null, 'https://www.oedp.de', null],
-  ['de-tierschutz', 'Tierschutzpartei', 'Partei Mensch Umwelt Tierschutz', '#00545F', null, 'https://www.tierschutzpartei.de', null],
-  ['de-partei', 'Die PARTEI', 'Partei für Arbeit, Rechtsstaat, Tierschutz, Elitenförderung und basisdemokratische Initiative', '#B5152B', null,
+  ['132e61c2-8c8d-4b4e-ac3e-a5e41606016a', 'ÖDP', 'Ökologisch-Demokratische Partei', '#FF6400', null, 'https://www.oedp.de', null],
+  ['52a5f638-91a1-498b-acb9-9e4ca3ab2e19', 'Tierschutzpartei', 'Partei Mensch Umwelt Tierschutz', '#00545F', null, 'https://www.tierschutzpartei.de', null],
+  ['bff8cca0-8f0e-4c0d-a988-701dcf174c7c', 'Die PARTEI', 'Partei für Arbeit, Rechtsstaat, Tierschutz, Elitenförderung und basisdemokratische Initiative', '#B5152B', null,
     'https://www.die-partei.de', null],
 ];
 export const PARTEIEN_DE = P.map(([id, kuerzel, voll, farbe, farbe2, web, programm]) =>

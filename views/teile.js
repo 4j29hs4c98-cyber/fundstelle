@@ -45,12 +45,15 @@ export function merkKnopf(frageId) {
   return `<button class="pin" data-action="merken" data-frage="${esc(frageId)}" aria-pressed="${an}" aria-label="${tr('Remember question')}">${an ? '★' : '☆'}</button>`;
 }
 
+// Hinweis, solange Inhalte nicht vom Team geprueft sind (KI-Zusammenstellung) oder noch alte Beispieldaten gelten.
 export const demoHinweis = () => (C.ist_demo ? `<section class="notice"><b>${tr('These are example data')}</b>
-  <p>${tr('The parties are called A to F and every position, quote and vote is invented. That keeps the prototype neutral and stops anyone reading it as a real statement about a real party.')}</p></section>` : '');
+  <p>${tr('The parties are called A to F and every position, quote and vote is invented. That keeps the prototype neutral and stops anyone reading it as a real statement about a real party.')}</p></section>`
+  : C.ungeprueft ? `<section class="notice"><b>${tr('Compiled by AI, not yet checked')}</b>
+  <p>${tr('The quotes come word for word from the parties’ programmes for the federal election 2025, with the page. An AI agent selected them and the team has not checked them yet. Open the original before you rely on a passage.')}</p></section>` : '');
 
 // Auf jeder Inhaltsseite: Stand, ob KI beteiligt war, und der Weg, einen Fehler zu melden.
 export function herkunft(bezug) {
-  const ki = C.ki ? tr('Partly compiled with AI, checked by people.') : tr('Compiled by people.');
+  const ki = C.ungeprueft ? tr('Compiled with AI, not yet checked by people.') : C.ki ? tr('Partly compiled with AI, checked by people.') : tr('Compiled by people.');
   const offen = S.melden === bezug;
   return `<footer class="herkunft">
     <p class="meta">${ki} ${tr('As of {d}', { d: datum(C.stand) })} · <a href="#auswahl">${tr('How we select')}</a></p>

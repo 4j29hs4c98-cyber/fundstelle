@@ -6,7 +6,7 @@ import { suche, partei, frage } from '../content.js';
 import { kopf, pfeil, seite, datum, demoHinweis, safeUrl } from './teile.js';
 
 function ergebnis(r) {
-  if (!r) return `<p class="note">${tr('For example: “Partei A Mietpreisbremse” or “CO2-Preis Pendler”.')}</p>`;
+  if (!r) return `<p class="note">${tr('For example: “SPD Mietpreisbremse” or “CO2-Preis Klimageld”.')}</p>`;
   const wer = r.parteien.map(p => esc(p.name)).join(', ');
   const treffer = r.positionen.map(p => `<a class="card paper link" href="#frage/${esc(p.frage)}">
       <span class="meta">${esc(partei(p.partei)?.name ?? '')} · ${esc(frage(p.frage)?.kurz ?? '')}</span>
