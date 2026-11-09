@@ -20,7 +20,7 @@ const mitKatalog = p => ({ ...p, ...(PARTEIEN_DE.find(k => k.id === p.id) ?? { e
 
 // Der aktuell gueltige Inhalt. "export let" ist eine Live-Bindung: Ansichten sehen nach loadContent() den neuen Stand.
 export let C = EINGEBAUT;
-const CACHE_KEY = 'inhalt-v3';
+const CACHE_KEY = 'inhalt-v4';
 const LISTEN = ['wahlen', 'parteien', 'themen', 'fragen', 'programme', 'positionen', 'argumente', 'abstimmungen'];
 try { const c = JSON.parse(localStorage.getItem(CACHE_KEY)); if (c?.parteien?.length && LISTEN.every(k => Array.isArray(c[k]))) C = c; } catch {}
 

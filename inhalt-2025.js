@@ -142,7 +142,7 @@ export const EINGEBAUT = {
   aussagen: [],
   themen: [
     { id: T.wohnen, titel: 'Wohnen und Mieten', kurz: 'Die Mietpreisbremse gilt bis Ende 2029. Was die Programme zur Bundestagswahl 2025 dazu sagen.', sort: 1 },
-    { id: T.klima, titel: 'Klima und Energie', kurz: 'Keine Partei fordert einen schnelleren Anstieg des CO2-Preises. Fünf lehnen ihn ausdrücklich ab.', sort: 2 },
+    { id: T.klima, titel: 'Klima und Energie', kurz: 'Keine Partei fordert einen schnelleren Anstieg des CO2-Preises. Fünf sprechen sich in Programm oder Bundestag dagegen aus.', sort: 2 },
     { id: T.rente, titel: 'Rente und Alterssicherung', kurz: 'Alle Parteien mit klarer Aussage lehnen eine weitere Anhebung des Rentenalters ab.', sort: 3 },
   ],
   fragen: [

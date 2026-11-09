@@ -18,7 +18,7 @@ delete from public.wahlen where ist_demo;
 insert into public.wahlen (id, name, datum, parlament, ist_demo, status) values ('0544b90d-2bbf-4a4c-aa15-3ac785928ef7', 'Bundestagswahl 2025', '2025-02-23', 'Deutscher Bundestag', false, 'veroeffentlicht')
   on conflict (id) do update set name = excluded.name, datum = excluded.datum, parlament = excluded.parlament, ist_demo = false, status = excluded.status;
 update public.themen set titel = 'Wohnen und Mieten', kurzfassung = 'Die Mietpreisbremse gilt bis Ende 2029. Was die Programme zur Bundestagswahl 2025 dazu sagen.', sortierung = 1 where id = '3a18c189-c9a4-49dc-8ad9-7e49ac440fe4';
-update public.themen set titel = 'Klima und Energie', kurzfassung = 'Keine Partei fordert einen schnelleren Anstieg des CO2-Preises. Fünf lehnen ihn ausdrücklich ab.', sortierung = 2 where id = '2a2cf39a-2cac-490e-bc3f-6557b9efb890';
+update public.themen set titel = 'Klima und Energie', kurzfassung = 'Keine Partei fordert einen schnelleren Anstieg des CO2-Preises. Fünf sprechen sich in Programm oder Bundestag dagegen aus.', sortierung = 2 where id = '2a2cf39a-2cac-490e-bc3f-6557b9efb890';
 update public.themen set titel = 'Rente und Alterssicherung', kurzfassung = 'Alle Parteien mit klarer Aussage lehnen eine weitere Anhebung des Rentenalters ab.', sortierung = 3 where id = 'd864065a-5d5c-4ad4-8149-645b4a1602eb';
 update public.fragen set frage = 'Soll die Mietpreisbremse über 2029 hinaus verlängert werden?', kurz = 'Mietpreisbremse', sortierung = 1 where id = 'c2fcc20d-f7ff-4f12-b03a-7a4dce5ba1f8';
 update public.fragen set frage = 'Soll der CO2-Preis schneller steigen als bisher geplant?', kurz = 'CO2-Preis', sortierung = 1 where id = '584471ef-30b5-4334-a3d7-e51f20d929aa';

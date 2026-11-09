@@ -44,4 +44,24 @@ as $$
 $$;
 revoke execute on function public.programm_suche(uuid, text, int) from public, anon, authenticated;
 
+-- Zaehlt und erlaubt eine Recherche in EINEM Schritt (keine Luecke fuer parallele Anfragen). Grenzen je Nutzer und
+-- Stunde sowie fuer alle zusammen je Tag, damit die Kosten gedeckelt sind. Fragen werden nach 30 Tagen geloescht.
+create or replace function public.recherche_erlauben(p_user uuid, p_frage text, p_je_stunde int, p_je_tag_gesamt int)
+returns boolean
+language plpgsql
+set search_path = public
+as $$
+begin
+  perform pg_advisory_xact_lock(hashtext('recherche_log'));
+  delete from public.recherche_log where created_at < now() - interval '30 days';
+  if (select count(*) from public.recherche_log where user_id = p_user and created_at > now() - interval '1 hour') >= p_je_stunde
+     or (select count(*) from public.recherche_log where created_at > now() - interval '1 day') >= p_je_tag_gesamt then
+    return false;
+  end if;
+  insert into public.recherche_log (user_id, frage) values (p_user, left(p_frage, 200));
+  return true;
+end;
+$$;
+revoke execute on function public.recherche_erlauben(uuid, text, int, int) from public, anon, authenticated;
+
 commit;
