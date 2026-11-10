@@ -4,6 +4,23 @@ import { tr } from '../i18n.js';
 import { esc } from '../core.js';
 import { parteienSortiert, ohneInhalt, hatInhalt, partei, programmVon, themenSortiert, fragenZuThema, positionVon, abstimmungenZuFrage, aussagenVon, frage } from '../content.js';
 import { kopf, pfeil, haltung, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink } from './teile.js';
+import { profilVon, PROFIL_STAND } from '../parteiprofile.js';
+
+// "Kurz gesagt" vor den Themen: vier Saetze, jeder mit Quellennummer; die Quellen samt Zitat aufklappbar.
+// Die Nummern sind bewusst keine Links: ein #-Sprung wuerde vom Hash-Router als Seitenwechsel gelesen.
+function profilBlock(p) {
+  const saetze = profilVon(p.id);
+  if (!saetze) return '';
+  const text = saetze.map((s, i) => `${esc(s.text)}<sup class="fn" aria-label="${esc(tr('Source {n}', { n: i + 1 }))}">${i + 1}</sup>`).join(' ');
+  const quellen = saetze.map(s => `<li><span class="meta">${tr(s.art === 'programm' ? 'Election programme 2025' : 'Outside source')}</span>
+    ${extLink(s.url, esc(s.quelle))}${s.zitat ? `<blockquote class="auszug">„${esc(s.zitat)}“</blockquote>` : ''}</li>`).join('');
+  return `<section class="profil" aria-labelledby="profil-titel">
+    <p class="eyebrow" id="profil-titel">${tr('In short: what does {name} stand for?', { name: esc(p.name) })}</p>
+    <p class="profil-text">${text}</p>
+    <details class="mehr"><summary>${tr('Sources ({n})', { n: saetze.length })}</summary><ol class="profil-quellen">${quellen}</ol></details>
+    <p class="note small">${tr('Summarised in our own words from the 2025 programme and neutral sources such as the bpb. Researched by an AI agent on {d}, not yet checked by people.', { d: datum(PROFIL_STAND) })}</p>
+  </section>`;
+}
 
 
 export function viewParteien() {
@@ -43,6 +60,7 @@ export function aussagenBlock(liste, mitPartei = false) {
 
 function echtePartei(p) {
   return `${kopf(tr('Party'), `${logo(p)} ${esc(p.voll)}`, '', { href: '#parteien', text: tr('All parties') })}
+  ${profilBlock(p)}
   <div class="row">${safeUrl(p.programm) ? `<a class="go" href="#programm/${esc(p.id)}">${tr('Read programme')} ${pfeil}</a>` : ''}
     ${extLink(p.web, tr('Party website'))}</div>
   <section class="notice"><b>${tr('No positions recorded yet.')}</b>
@@ -70,6 +88,7 @@ export function viewPartei(id) {
 
   return `${kopf(tr('Party'), `${logo(p)} ${esc(p.voll ?? p.name)}`, pr ? `${esc(pr.titel)}${pr.seiten ? ` · ${tr('{n} pages', { n: pr.seiten })}` : ''}` : '',
     { href: '#parteien', text: tr('All parties') })}
+  ${profilBlock(p)}
   <div class="row"><a class="go" href="#programm/${esc(p.id)}">${tr('Read programme')} ${pfeil}</a>
     <a class="btn" href="#vergleich/${esc(p.id)}">${tr('Compare with …')}</a></div>
   ${bloecke || `<p class="note">${tr('No positions recorded yet.')}</p>`}

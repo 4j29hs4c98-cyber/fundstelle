@@ -350,3 +350,12 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 
 /* Auf breiten Bildschirmen schwebt die Leiste kompakt in der Mitte statt ueber die volle Breite. */
 @media (min-width: 800px) { .tabbar { left: 50%; right: auto; transform: translateX(-50%); } }
+
+/* "Kurz gesagt" auf der Parteiseite: ruhige Flaeche vor den Themen, Quellen als hochgestellte Nummern. */
+.profil { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 18px 6px; margin-top: 16px; box-shadow: var(--shadow); }
+.profil-text { margin: 8px 0 4px; font-size: 16px; line-height: 1.6; }
+.profil sup.fn { font-size: 11px; line-height: 0; margin-left: 2px; color: var(--muted); }
+.profil-quellen .meta { display: block; margin-bottom: 2px; }
+.profil-quellen { margin: 0 0 8px; padding-left: 20px; font-size: 13px; }
+.profil-quellen li { margin: 0 0 10px; }
+.profil-quellen .auszug { margin: 6px 0 0; }

@@ -122,3 +122,23 @@ test('eigenes Thema: beim Tippen meldet sich der Agent und verlangt ohne Konto e
   await expect(page.locator('#recherche [role=status]')).toContainText(/Sign in|anmelden|not switched on|nicht eingeschaltet/, { timeout: 8000 });
   await expect(feld).toBeFocused();
 });
+
+test('die Parteiseite beginnt mit einer kurzen Zusammenfassung samt Quellen', async ({ page }) => {
+  await page.goto('/#partei/9823eced-6ef4-485f-a509-dd754f98f4ba');
+  const profil = page.locator('section.profil');
+  await expect(profil).toBeVisible();
+  await expect(profil.locator('sup.fn')).toHaveCount(4);
+  // Die Zusammenfassung steht vor den Themen.
+  const vorThemen = await page.evaluate(() => {
+    const p = document.querySelector('section.profil'), t = document.querySelector('.pos');
+    return !!(p && t && (p.compareDocumentPosition(t) & Node.DOCUMENT_POSITION_FOLLOWING));
+  });
+  expect(vorThemen).toBe(true);
+  await profil.locator('details summary').click();
+  await expect(profil.locator('.profil-quellen li')).toHaveCount(4);
+  await expect(profil.locator('.profil-quellen a[href^="https://"]')).toHaveCount(4);
+  // Je Partei zwei externe Quellen und zwei Programmstellen; die Nummern sind keine Links, die vom Router wegfuehren.
+  await expect(profil.locator('.profil-quellen .meta', { hasText: /Outside source|Externe Quelle/ })).toHaveCount(2);
+  await expect(profil.locator('sup.fn a')).toHaveCount(0);
+  await expect(page).toHaveURL(/#partei\//);
+});
