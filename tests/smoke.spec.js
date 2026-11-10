@@ -142,3 +142,25 @@ test('die Parteiseite beginnt mit einer kurzen Zusammenfassung samt Quellen', as
   await expect(profil.locator('sup.fn a')).toHaveCount(0);
   await expect(page).toHaveURL(/#partei\//);
 });
+
+test('eigenes Thema: Ja/Nein-Bubble vorn, darunter das Warum; offene Fragen ohne Bubble', async ({ page }) => {
+  await page.goto('/#eigene');
+  const html = await page.evaluate(async () => {
+    const { R } = await import('/recherche.js');
+    const { ergebnisHtml } = await import('/views/eigene.js');
+    const basis = { zusammenfassung: 'Zwei bis drei Saetze zur Begruendung.', auszug: 'Ein woertliches Zitat aus dem Programm.', seite: 3, quelle_url: 'https://example.org/p.pdf' };
+    Object.assign(R, { status: 'fertig', typ: 'ja_nein', fertig: 2, gesamt: 2, fehlgeschlagen: 0, ergebnisse: [
+      { ...basis, partei: '32ad76bd-db22-420d-89c2-0ba593d4f289', haltung: 'dafuer' },
+      { ...basis, partei: '9823eced-6ef4-485f-a509-dd754f98f4ba', haltung: 'dagegen' }] });
+    const jaNein = ergebnisHtml();
+    Object.assign(R, { typ: 'offen', ergebnisse: [{ ...basis, partei: '32ad76bd-db22-420d-89c2-0ba593d4f289', haltung: null }] });
+    return { jaNein, offen: ergebnisHtml() };
+  });
+  await page.setContent(`<div id="a">${html.jaNein}</div><div id="b">${html.offen}</div>`);
+  await expect(page.locator('#a .bubble.ja')).toHaveCount(1);
+  await expect(page.locator('#a .bubble.nein')).toHaveCount(1);
+  await expect(page.locator('#a .bubble.ja')).toContainText(/Yes|Ja/);
+  await expect(page.locator('#a .pos.eigen').first().locator('.warum')).toContainText('Begruendung');
+  await expect(page.locator('#b .bubble')).toHaveCount(0);
+  await expect(page.locator('#b .warum')).toContainText('Position');
+});

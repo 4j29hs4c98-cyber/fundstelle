@@ -22,7 +22,7 @@ export const actions = {
   async 'eigen-speichern'() {
     if (R.status !== 'fertig' || !R.ergebnisse.length) return;
     const id = uid();
-    await save('eigenes', id, { frage: R.frage, ergebnisse: R.ergebnisse.map(e => ({ ...e })), stand: new Date().toISOString() });
+    await save('eigenes', id, { frage: R.frage, typ: R.typ, ergebnisse: R.ergebnisse.map(e => ({ ...e })), stand: new Date().toISOString() });
     toast('Topic saved'); location.hash = `#eigene/${id}`;
   },
   async 'eigen-loeschen'({ id }) { location.hash = '#eigene'; await undoable('Topic deleted', [id], () => remove(id), render); },

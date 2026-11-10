@@ -30,7 +30,7 @@ function karteHtml(b, k, offen) {
 
 function uebersicht() {
   const buchstaben = [...new Set(G.glossar.map(g => g.begriff[0].toUpperCase()))];
-  return `${kopf(tr('Topics'), tr('How politics works'), tr('Short, neutral explanations of the terms that come up in programmes and votes.'), { href: '#themen', text: tr('All topics') })}
+  return `${kopf(tr('Topics'), tr('How politics works'), tr('Short, neutral explanations of the terms that come up in programmes and votes.'), { href: '#start', text: tr('Start') })}
   <section class="notice"><b>${tr('Draft, not checked yet')}</b><p>${tr('Every card is a suggestion until someone in the team has checked it. Open points are marked.')}</p></section>
   <h2 class="eyebrow section-label">${tr('Areas')}</h2>
   <div class="cards">${G.bereiche.map(b => `<a class="card link" href="#grundlagen/${esc(b.id)}"><h3>${esc(b.titel)}</h3>

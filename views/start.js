@@ -62,6 +62,7 @@ const ICON = {
   themen: '<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>',
   parteien: '<path d="M5 3h9l5 5v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M8 13h8"/><path d="M8 17h5"/>',
   eigene: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.4"/><path d="M12 16.5h.01"/>',
+  grundlagen: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5z"/><path d="M4 19a2 2 0 0 1 2-2h13"/><path d="M9 7h6"/>',
 };
 function weg(href, icon, titel, text) {
   return `<a class="weg" href="${href}"><span class="weg-icon" aria-hidden="true"><svg viewBox="0 0 24 24">${ICON[icon]}</svg></span>
@@ -85,6 +86,7 @@ export function viewStart() {
     ${weg('#themen', 'themen', tr('Topics'), tr('What do the parties say about it?'))}
     ${weg('#parteien', 'parteien', tr('Parties'), tr('What does a party stand for?'))}
     ${weg('#eigene', 'eigene', tr('Ask your own question'), tr('An agent researches all programmes while you type.'))}
+    ${weg('#grundlagen', 'grundlagen', tr('How politics works'), tr('Short, neutral explanations of the terms that come up in programmes and votes.'))}
   </nav>
 
   ${hinweis(w, pr)}

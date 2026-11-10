@@ -359,3 +359,17 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 .profil-quellen { margin: 0 0 8px; padding-left: 20px; font-size: 13px; }
 .profil-quellen li { margin: 0 0 10px; }
 .profil-quellen .auszug { margin: 6px 0 0; }
+
+/* Eigenes Thema: Ja/Nein-Bubble vorn in der Karte. Wort und Zeichen tragen die Bedeutung, die Farbe unterstuetzt nur
+   (Rot-Gruen-Schwaeche). Ausnahme von der Regel "keine Gut/Schlecht-Farben" auf Wunsch von Lennox, 10.11.2026. */
+.eigen-head { justify-content: flex-start; gap: 10px; }
+.bubble { flex: none; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 6px 14px;
+  font-size: 14px; font-weight: 700; letter-spacing: .02em; }
+.bubble.ja { background: #DDF3E3; color: #145A2A; }
+.bubble.nein { background: #FBE0DC; color: #8A1F12; }
+.warum { margin: 10px 0 0; line-height: 1.55; }
+.warum .eyebrow { display: block; margin-bottom: 4px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bubble.ja { background: #173D24; color: #A8E6BA; }
+  :root:not([data-theme="light"]) .bubble.nein { background: #4A1E18; color: #F5B5AA; } }
+:root[data-theme="dark"] .bubble.ja { background: #173D24; color: #A8E6BA; }
+:root[data-theme="dark"] .bubble.nein { background: #4A1E18; color: #F5B5AA; }

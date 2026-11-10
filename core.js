@@ -14,7 +14,7 @@ export const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().t
 export const TABS = ['start', 'themen', 'parteien', 'pruefen'];
 // #vergleich/<id,id>, #programm/<partei>/<seite>, #wahlen.
 export const VIEWS = [...TABS, 'thema', 'frage', 'partei', 'vergleich', 'programm', 'wahlen', 'grundlagen', 'auswahl', 'settings', 'eigene'];
-export const TAB_OF = { thema: 'themen', frage: 'themen', partei: 'parteien', vergleich: 'parteien', programm: 'parteien', wahlen: 'start', grundlagen: 'themen', eigene: 'themen' };
+export const TAB_OF = { thema: 'themen', frage: 'themen', partei: 'parteien', vergleich: 'parteien', programm: 'parteien', wahlen: 'start', grundlagen: 'start', eigene: 'themen' };
 // Adressen aus Version 1, damit alte Lesezeichen weiter funktionieren. #vergleich ist wieder eine eigene Seite.
 export const ALTE_ADRESSEN = { ueberblick: 'start', programme: 'parteien', kontext: 'pruefen' };
 

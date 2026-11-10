@@ -9,10 +9,11 @@ export const MIN_LAENGE = 12, MAX_LAENGE = 200;
 const PAUSE_MS = 2000;
 
 // Zustand der aktuellen Recherche. status: leer | laeuft | fertig | anmelden | aus | fehler
-export const R = { frage: '', status: 'leer', ergebnisse: [], fertig: 0, gesamt: 0, fehler: null, fehlgeschlagen: 0 };
+// typ kommt vom Server: 'ja_nein' (Ja oder Nein je Partei) oder 'offen' (nur Zusammenfassung, keine Richtung).
+export const R = { frage: '', status: 'leer', typ: null, ergebnisse: [], fertig: 0, gesamt: 0, fehler: null, fehlgeschlagen: 0 };
 let lauf = null, timer = null, laufNr = 0;
 
-const zuruecksetzen = (status, fehler = null) => Object.assign(R, { status, ergebnisse: [], fertig: 0, gesamt: 0, fehler, fehlgeschlagen: 0 });
+const zuruecksetzen = (status, fehler = null) => Object.assign(R, { status, typ: null, ergebnisse: [], fertig: 0, gesamt: 0, fehler, fehlgeschlagen: 0 });
 
 export function tippen(text, zeichnen) {
   clearTimeout(timer);
@@ -78,13 +79,14 @@ async function lesen(body, ctrl, zeichnen, nr) {
 
 function verarbeiten(zeile) {
   let e; try { e = JSON.parse(zeile); } catch { return; }
-  if (e.start) { R.gesamt = Number(e.parteien) || 0; return; }
+  if (e.start) { R.gesamt = Number(e.parteien) || 0; R.typ = e.typ === 'offen' ? 'offen' : 'ja_nein'; return; }
   if (e.fertig) { R.status = 'fertig'; return 'fertig'; }
   R.fertig += 1;
   if (e.fehler) R.fehlgeschlagen += 1;
-  if (e.ok && (e.haltung === 'dafuer' || e.haltung === 'dagegen') && e.auszug && Number.isInteger(e.seite)) {
+  const richtungOk = R.typ === 'offen' ? e.haltung == null : e.haltung === 'dafuer' || e.haltung === 'dagegen';
+  if (e.ok && richtungOk && e.auszug && e.zusammenfassung && Number.isInteger(e.seite)) {
     if (R.ergebnisse.some(x => x.partei === e.partei)) return;
-    R.ergebnisse = [...R.ergebnisse, { partei: e.partei, haltung: e.haltung, zusammenfassung: String(e.zusammenfassung ?? ''),
+    R.ergebnisse = [...R.ergebnisse, { partei: e.partei, haltung: e.haltung ?? null, zusammenfassung: String(e.zusammenfassung ?? ''),
       auszug: String(e.auszug), seite: e.seite, quelle_url: e.quelle_url ?? null }];
   }
 }
