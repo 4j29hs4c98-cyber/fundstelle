@@ -1,6 +1,6 @@
 // views/wahlen.js — alle kommenden Wahltermine, nach Jahr. Standard: nur was zum Profil passt; ein Schalter zeigt alle.
 // Nicht festgelegte Termine stehen als "voraussichtlich ...", nie als erfundenes genaues Datum.
-import { tr } from '../i18n.js';
+import { tr, plural } from '../i18n.js';
 import { esc, S } from '../core.js';
 import { WAHLARTEN, BUNDESLAENDER } from '../katalog.js';
 import { meineWahlen, profil, hatProfil } from '../profil.js';
@@ -14,7 +14,7 @@ export function wahlKarte(w) {
   const tage = w.datum ? tageBis(w.datum) : null;
   return `<article class="card wahl"><div class="card-row"><div><span class="meta">${artName(w.art)}${w.land ? ` · ${esc(landName(w.land))}` : ''}</span>
       <h3>${esc(w.name)}</h3><p>${termin(w)}</p></div>
-      ${tage !== null ? `<span class="tage" aria-label="${tr('{n} days to go', { n: tage })}">${tage}<small>${tr('days')}</small></span>` : ''}</div>
+      ${tage !== null ? `<span class="tage" aria-label="${plural(tage, tr('1 day to go'), tr('{n} days to go', { n: tage }))}">${tage}<small>${plural(tage, tr('day'), tr('days'))}</small></span>` : ''}</div>
     <p class="meta">${extLink(w.quelle, tr('Source'))}</p></article>`;
 }
 

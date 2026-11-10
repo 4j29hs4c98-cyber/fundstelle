@@ -1,10 +1,10 @@
 // views/start.js — "Was ist gerade los?": eigene Frage stellen, naechste eigene Wahl, Hinweise zu den eigenen Themen,
 // neue Abstimmungen (fuehren zur Frage), fuer spaeter Gemerktes.
-import { tr } from '../i18n.js';
+import { tr, plural } from '../i18n.js';
 import { esc, list, S } from '../core.js';
 import { tageBis, neueAbstimmungen, frage, thema, fragenZuThema, partei, positionenZuFrage, frageSuche, ALTE_THEMEN } from '../content.js';
 import { profil, hatProfil, naechsteEigeneWahl } from '../profil.js';
-import { kopf, pfeil, datum, termin, logo, haltung, seitenLink, demoHinweis, safeUrl } from './teile.js';
+import { kopf, pfeil, datum, termin, marke, haltung, seitenLink, demoHinweis, safeUrl } from './teile.js';
 import { vergleichLink } from './vergleich.js';
 
 const HINWEIS_TAGE = 90;
@@ -32,7 +32,7 @@ function gemerkteKarten() {
 
 
 function antwortKarte(f) {
-  const zeilen = positionenZuFrage(f.id).map(p => `<li>${logo(partei(p.partei), 'klein')}<b>${esc(partei(p.partei)?.name ?? '')}</b>
+  const zeilen = positionenZuFrage(f.id).map(p => `<li>${marke(partei(p.partei), 'klein', 'b')}
     <span class="stance">${haltung(p.haltung)}</span>${p.seite ? seitenLink(p.partei, p.seite) : ''}</li>`).join('');
   return `<article class="card"><span class="meta">${esc(thema(f.thema)?.titel ?? '')}</span><h3>${esc(f.frage)}</h3>
     <ul class="mini">${zeilen}</ul>
@@ -53,7 +53,7 @@ function hinweis(w, pr) {
   if (!pr.hinweise || !w?.datum || !pr.themen.length) return '';
   const tage = tageBis(w.datum);
   if (tage > HINWEIS_TAGE) return '';
-  return `<section class="hinweis" role="status"><b>${tr('In {n} days: {name}', { n: tage, name: esc(w.name) })}</b>
+  return `<section class="hinweis" role="status"><b>${plural(tage, tr('Tomorrow: {name}', { name: esc(w.name) }), tr('In {n} days: {name}', { n: tage, name: esc(w.name) }))}</b>
     <p>${tr('See what the parties say on your topics.')}</p><a class="go" href="${esc(vergleichLink([], pr.themen[0]))}">${tr('Compare')} ${pfeil}</a></section>`;
 }
 
@@ -91,7 +91,7 @@ export function viewStart() {
 
   ${hinweis(w, pr)}
   ${w ? `<a class="ballot" href="#wahlen"><div><b>${esc(w.name)}</b><span>${termin(w)}</span></div>
-    ${w.datum ? `<span class="n" aria-label="${tr('{n} days to go', { n: tageBis(w.datum) })}">${tageBis(w.datum)}</span>` : `<span class="arrow" aria-hidden="true">→</span>`}</a>` : ''}
+    ${w.datum ? `<span class="n" aria-label="${plural(tageBis(w.datum), tr('1 day to go'), tr('{n} days to go', { n: tageBis(w.datum) }))}">${tageBis(w.datum)}</span>` : `<span class="arrow" aria-hidden="true">→</span>`}</a>` : ''}
   ${hatProfil() ? '' : `<a class="card link profil-tipp" href="#settings"><b>${tr('Which elections matter to you?')}</b>
     <span class="meta">${tr('Set up profile')} →</span></a>`}
 

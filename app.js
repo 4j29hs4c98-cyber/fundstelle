@@ -2,7 +2,7 @@
 import * as db from './db.js';
 import * as sync from './sync.js';
 import { $, S, VIEWS, TABS, TAB_OF, ALTE_ADRESSEN, toast } from './core.js';
-import { tr } from './i18n.js';
+import { tr, plural } from './i18n.js';
 import { loadContent } from './content.js';
 import { render, applyLang, applyTheme } from './render.js';
 import { actions, forms } from './actions.js';
@@ -31,7 +31,7 @@ document.addEventListener('change', async e => {
   try { // merge: newer version of each record wins (same rule as sync)
     const recs = JSON.parse(await e.target.files[0].text()).records || [];
     const merged = recs.filter(r => r?.id && r.kind && (!S.recs.get(r.id) || r.updated_at > S.recs.get(r.id).updated_at)).map(r => ({ ...r, synced: false }));
-    merged.forEach(r => S.recs.set(r.id, r)); await db.putMany(merged); sync.schedule(); render(); toast(tr('Imported {n} items', { n: merged.length }));
+    merged.forEach(r => S.recs.set(r.id, r)); await db.putMany(merged); sync.schedule(); render(); toast(plural(merged.length, tr('Imported 1 item'), tr('Imported {n} items', { n: merged.length })));
   } catch { toast('That file is not a valid backup.'); }
 });
 

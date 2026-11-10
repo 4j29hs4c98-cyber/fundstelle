@@ -1,5 +1,5 @@
 // views/themen.js — "Was sagen die Parteien zu X?": Themen, dann die Fragen eines Themas.
-import { tr } from '../i18n.js';
+import { tr, plural } from '../i18n.js';
 import { esc } from '../core.js';
 import { themenSortiert, thema, fragenZuThema, positionenZuFrage } from '../content.js';
 import { kopf, pfeil, demoHinweis } from './teile.js';
@@ -10,7 +10,7 @@ export function viewThemen() {
   <div class="cards">${themenSortiert().map(t => {
     const n = fragenZuThema(t.id).length;
     return `<a class="card link" href="#thema/${esc(t.id)}"><div class="card-row"><h3>${esc(t.titel)}</h3>${pfeil}</div>
-      <p>${esc(t.kurz ?? '')}</p><span class="meta">${tr('{n} questions', { n })}</span></a>`;
+      <p>${esc(t.kurz ?? '')}</p><span class="meta">${plural(n, tr('1 question'), tr('{n} questions', { n }))}</span></a>`;
   }).join('')}</div>
   ${gespeicherteThemen()}
   <h2 class="eyebrow section-label">${tr('Not listed?')}</h2>
@@ -26,6 +26,6 @@ export function viewThema(id) {
   <div class="cards">${fragenZuThema(t.id).map(f => {
     const n = positionenZuFrage(f.id).filter(p => p.haltung !== 'keine_angabe').length;
     return `<a class="card link" href="#frage/${esc(f.id)}"><div class="card-row"><h3>${esc(f.frage)}</h3>${pfeil}</div>
-      <span class="meta">${tr('{n} programmes take a position', { n })}</span></a>`;
+      <span class="meta">${plural(n, tr('1 programme takes a position'), tr('{n} programmes take a position', { n }))}</span></a>`;
   }).join('') || `<p class="note">${tr('No questions on this topic yet.')}</p>`}</div>`;
 }

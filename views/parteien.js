@@ -3,7 +3,7 @@
 import { tr } from '../i18n.js';
 import { esc } from '../core.js';
 import { parteienSortiert, ohneInhalt, hatInhalt, partei, programmVon, themenSortiert, fragenZuThema, positionVon, abstimmungenZuFrage, aussagenVon, frage } from '../content.js';
-import { kopf, pfeil, haltungZeile, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink } from './teile.js';
+import { kopf, pfeil, haltungZeile, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink, quelleZeile } from './teile.js';
 import { profilVon } from '../parteiprofile.js';
 
 // "Kurz gesagt" vor den Themen: vier Saetze, jeder mit Quellennummer; die Quellen samt Zitat aufklappbar.
@@ -79,7 +79,7 @@ export function viewPartei(id) {
       return `<article class="pos"><h3 class="pos-frage"><a href="#frage/${esc(f.id)}">${esc(f.frage)}</a></h3>
         ${haltungZeile(pos.haltung)}
         <p>${esc(pos.text)}</p>
-        ${pos.seite ? `<p class="src">${esc(pos.quelle)}, ${seitenLink(p.id, pos.seite)}</p>` : pos.url ? `<p class="src">${extLink(pos.url, esc(pos.quelle))}</p>` : ''}
+        ${quelleZeile(p.id, pos)}
         ${abg ? `<div class="said-voted"><p class="eyebrow">${tr('Said and voted')}</p>${abg}</div>` : ''}</article>`;
     }).join('');
     return zeilen ? `<h2 class="eyebrow section-label">${esc(t.titel)}</h2><div class="cards">${zeilen}</div>` : '';

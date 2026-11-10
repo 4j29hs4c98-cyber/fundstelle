@@ -20,15 +20,23 @@ export const safeUrl = u => { try { const x = new URL(u); return x.protocol === 
 export const extLink = (url, text) => { const u = safeUrl(url); return u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${text}</a>` : text; };
 export const rolle = r => (ROLLE[r] ? tr(ROLLE[r]) : '');
 
-// Parteizeichen: Pille in der Parteifarbe mit dem Kurznamen, Zweitfarbe als Streifen. Farben nur als #RRGGBB,
+// Parteizeichen: flache Pille in der Parteifarbe mit dem Kurznamen, fuer alle Parteien gleich. Farben nur als #RRGGBB,
 // sonst koennte ein Wert aus der Datenbank eigenes CSS einschleusen. Textfarbe nach Helligkeit, damit lesbar.
 // Sobald ein offizielles Logo abgelegt ist (p.logo), erscheint es statt des Kurznamens.
 const HEX = /^#[0-9a-f]{6}$/i;
 const istHell = h => { const n = parseInt(h.slice(1), 16); return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 150; };
+export const parteiFarbe = p => (HEX.test(p?.farbe ?? '') ? p.farbe : '#6E7076');
 export function logo(p, klasse = '') {
-  const f = HEX.test(p?.farbe ?? '') ? p.farbe : '#6E7076', f2 = HEX.test(p?.farbe2 ?? '') ? p.farbe2 : f;
+  const f = parteiFarbe(p);
   const inhalt = p?.logo ? `<img src="${esc(p.logo)}" alt="">` : esc(p?.kuerzel ?? '?');
-  return `<span class="logo ${klasse}" style="--c:${f};--c2:${f2};--t:${istHell(f) ? '#0B0B0C' : '#FFFFFF'}" aria-hidden="true">${inhalt}</span>`;
+  return `<span class="logo ${klasse}" style="--c:${f};--t:${istHell(f) ? '#0B0B0C' : '#FFFFFF'}" aria-hidden="true">${inhalt}</span>`;
+}
+// Pille plus Name, ohne "CDU CDU": steht der Kurzname schon sichtbar in der Pille, bleibt der Name nur fuer
+// Screenreader (die Pille selbst ist aria-hidden). Mit Logo-Bild oder abweichendem Namen bleibt er sichtbar.
+const gleich = (a, b) => String(a ?? '').toLocaleLowerCase('de') === String(b ?? '').toLocaleLowerCase('de');
+export function marke(p, klasse = 'klein', tag = 'span') {
+  const sichtbar = p?.logo || !gleich(p?.name, p?.kuerzel);
+  return `${logo(p, klasse)}<${tag}${sichtbar ? '' : ' class="sr-only"'}>${esc(p?.name ?? '')}</${tag}>`;
 }
 // Seitenzahl als Link in den Programm-Leser.
 export const seitenLink = (parteiId, n, text) => `<a class="seite-link" href="#programm/${esc(parteiId)}/${esc(n)}">${text ?? seite(n)} <span aria-hidden="true">→</span></a>`;
@@ -58,6 +66,14 @@ export const demoHinweis = () => (ZEIGE_KI_HINWEIS && C.ungeprueft ? `<details c
   ${C.maschinell ? `<p class="meta">${tr('A script has compared every quote with the original PDF and found it word for word on the stated page. Whether the quote fits the question still needs a person.')}</p>` : ''}</details>` : '');
 // PDF-Seite, nicht die gedruckte Seitenzahl: der Link oeffnet das PDF genau dort.
 export const pdfSeite = n => tr('PDF page {n}', { n });
+// Kleine, ruhige Quellenzeile unter einer Aussage: "Quelle: Wahlprogramm 2025, PDF-Seite 12 ->".
+// Die Seite oeffnet den Programm-Leser, eine Web-Quelle oeffnet sich extern (nur https).
+export function quelleZeile(parteiId, pos) {
+  const text = esc(pos?.quelle ?? '');
+  const inhalt = pos?.seite ? seitenLink(parteiId, pos.seite, `${text ? `${text}, ` : ''}${pdfSeite(pos.seite)}`)
+    : pos?.url ? extLink(pos.url, `${text} <span aria-hidden="true">↗</span>`) : text;
+  return inhalt ? `<p class="src">${tr('Source: {s}', { s: inhalt })}</p>` : '';
+}
 
 // Auf jeder Inhaltsseite: Stand, ob KI beteiligt war, und der Weg, einen Fehler zu melden.
 export function herkunft(bezug) {

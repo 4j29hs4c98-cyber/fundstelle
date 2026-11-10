@@ -2,11 +2,11 @@
 // Gespeicherte eigene Themen sind Records des Nutzers (kind 'eigenes'), kein
 // redaktioneller Inhalt. Neutral wie ueberall: Parteien alphabetisch, jede Aussage mit Zitat. Ja-Nein-Fragen zeigen je
 // Partei Ja oder Nein, offene Fragen nur die Position. Record: { frage, typ ('ja_nein' | 'offen', aeltere ohne), ergebnisse, stand }.
-import { tr } from '../i18n.js';
+import { tr, plural } from '../i18n.js';
 import { esc, list, get } from '../core.js';
 import { partei } from '../content.js';
 import { R, MIN_LAENGE, MAX_LAENGE } from '../recherche.js';
-import { kopf, pfeil, logo, extLink, pdfSeite, datum } from './teile.js';
+import { kopf, pfeil, marke, extLink, pdfSeite, datum } from './teile.js';
 
 const nachName = (a, b) => (partei(a.partei)?.name ?? '').localeCompare(partei(b.partei)?.name ?? '', 'de');
 const pdfLink = (url, seite) => (url ? `${url.split('#')[0]}#page=${seite}` : null);
@@ -19,7 +19,7 @@ function karte(e) {
   const p = partei(e.partei);
   const b = Object.hasOwn(BUBBLE, e.haltung) ? BUBBLE[e.haltung] : null;
   const bubble = b ? `<span class="bubble ${b[0]}"><span aria-hidden="true">${b[1]}</span> ${tr(b[2])}</span>` : '';
-  return `<article class="pos eigen"><div class="pos-head eigen-head">${bubble}<span class="who">${logo(p, 'klein')}${esc(p?.name ?? '')}</span></div>
+  return `<article class="pos eigen"><div class="pos-head eigen-head">${bubble}<span class="who">${marke(p)}</span></div>
     <p class="warum"><span class="eyebrow">${tr(b ? b[3] : 'Position')}</span>${esc(e.zusammenfassung)}</p>
     <blockquote class="auszug">„${esc(e.auszug)}“</blockquote>
     <p class="meta">${extLink(pdfLink(e.quelle_url, e.seite), esc(tr('Election programme 2025')) + ', ' + pdfSeite(e.seite))}</p></article>`;
@@ -29,7 +29,7 @@ const ergebnisListe = liste => (liste.length
   ? `<div class="cards">${[...liste].sort(nachName).map(karte).join('')}</div>`
   : '');
 
-const HINWEIS = () => `<p class="note small">${tr('Researched from the 2025 programmes. Every quote was checked word for word against the programme page. Parties without a matching passage are not shown.')}</p>`;
+const HINWEIS = () => `<p class="note small">${tr('Researched from the 2025 programmes. Every quote was checked automatically, word for word, against the programme page. Parties without a matching passage are not shown.')}</p>`;
 
 // Wird beim Tippen und bei jedem eintreffenden Ergebnis neu gezeichnet, ohne das Eingabefeld anzufassen.
 export function ergebnisHtml() {
@@ -37,15 +37,15 @@ export function ergebnisHtml() {
     leer: R.frage.length && R.frage.length < MIN_LAENGE ? tr('Keep typing. The agent starts from {n} characters.', { n: MIN_LAENGE }) : '',
     laeuft: R.gesamt ? tr('Agent is researching: {a} of {b} programmes read', { a: R.fertig, b: R.gesamt }) : tr('Agent is starting …'),
     fertig: !R.ergebnisse.length ? tr('Done: no programme answers this question clearly.')
-      : R.typ === 'offen' ? tr('Done: {n} programmes address this question.', { n: R.ergebnisse.length })
-      : tr('Done: {n} programmes take a clear position.', { n: R.ergebnisse.length }),
+      : R.typ === 'offen' ? plural(R.ergebnisse.length, tr('Done: 1 programme addresses this question.'), tr('Done: {n} programmes address this question.', { n: R.ergebnisse.length }))
+      : plural(R.ergebnisse.length, tr('Done: 1 programme takes a clear position.'), tr('Done: {n} programmes take a clear position.', { n: R.ergebnisse.length })),
     anmelden: tr('Sign in to let the agent research. Research is limited per account.'),
     aus: tr('The research agent is not switched on yet.'),
     fehler: /^Zu viele/.test(R.fehler ?? '') ? tr('Too many research requests. Please try again later.') : tr('Research failed. Change the question slightly to try again.'),
   }[R.status] ?? '';
   // Konnte ein Programm nicht gelesen werden, ist das Ergebnis unvollstaendig: deutlich sagen und nicht speichern lassen.
   const luecke = R.status === 'fertig' && R.fehlgeschlagen
-    ? `<p class="note">${tr('{n} programmes could not be read. The result is incomplete; parties may be missing.', { n: R.fehlgeschlagen })}</p>` : '';
+    ? `<p class="note">${plural(R.fehlgeschlagen, tr('1 programme could not be read. The result is incomplete; parties may be missing.'), tr('{n} programmes could not be read. The result is incomplete; parties may be missing.', { n: R.fehlgeschlagen }))}</p>` : '';
   const speichern = R.status === 'fertig' && R.ergebnisse.length && !R.fehlgeschlagen
     ? `<p><button class="btn" data-action="eigen-speichern">${tr('Save topic')}</button></p>` : '';
   const anmelden = R.status === 'anmelden' ? `<p><a class="go" href="#settings">${tr('Sign in')} ${pfeil}</a></p>` : '';
@@ -68,7 +68,7 @@ export function gespeicherteThemen() {
   if (!meine.length) return '';
   return `<h2 class="eyebrow section-label">${tr('Your saved topics')}</h2>
   <div class="cards">${meine.map(r => `<a class="card link" href="#eigene/${esc(r.id)}"><div class="card-row"><h3>${esc(r.data.frage)}</h3>${pfeil}</div>
-    <span class="meta">${tr('{n} programmes take a position', { n: (r.data.ergebnisse ?? []).length })}</span></a>`).join('')}</div>`;
+    <span class="meta">${plural((r.data.ergebnisse ?? []).length, tr('1 programme takes a position'), tr('{n} programmes take a position', { n: (r.data.ergebnisse ?? []).length }))}</span></a>`).join('')}</div>`;
 }
 
 export function viewEigene(id) {

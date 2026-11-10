@@ -180,7 +180,7 @@ const DE = {
   'General arguments for and against': 'Allgemeine Argumente dafür und dagegen',
   'Arguments from research and public bodies. They belong to no party.': 'Argumente aus Forschung und Behörden. Sie gehören zu keiner Partei.',
   'Arguments in favour': 'Argumente dafür', 'Arguments against': 'Argumente dagegen',
-  'Researched from the 2025 programmes. Every quote was checked word for word against the programme page. Parties without a matching passage are not shown.': 'Aus den Wahlprogrammen 2025 recherchiert. Jedes Zitat wurde Wort für Wort mit der Programmseite abgeglichen. Parteien ohne passende Stelle werden nicht gezeigt.',
+  'Researched from the 2025 programmes. Every quote was checked automatically, word for word, against the programme page. Parties without a matching passage are not shown.': 'Aus den Wahlprogrammen 2025 recherchiert. Jedes Zitat wurde automatisch Wort für Wort mit der Programmseite abgeglichen. Parteien ohne passende Stelle werden nicht gezeigt.',
   'In short: what does {name} stand for?': 'Kurz gesagt: Wofür steht {name}?',
   'Sources ({n})': 'Quellen ({n})',
   'Source {n}': 'Quelle {n}',
@@ -223,7 +223,6 @@ const DE = {
   'Not recorded yet': 'Noch nicht erfasst',
   'Choose at least two parties.': 'Wählen Sie mindestens zwei Parteien.',
   'Your topic': 'Ihr Thema',
-  'Choose up to four. Same questions, side by side, in the order you picked.': 'Bis zu vier wählen. Dieselben Fragen nebeneinander, in Ihrer Reihenfolge.',
   'days': 'Tage',
   'All elections': 'Alle Wahlen',
   'Upcoming elections': 'Kommende Wahlen',
@@ -254,6 +253,19 @@ const DE = {
   'More': 'Mehr',
   '{n} explainer cards and {m} terms, for example who may vote and how a law is made.': '{n} Erklärkarten und {m} Begriffe, zum Beispiel wer wählen darf und wie ein Gesetz entsteht.',
   'Basics': 'Grundlagen',
+  '1 question': '1 Frage', '1 programme takes a position': '1 Programm bezieht Stellung', '1 party': '1 Partei',
+  '1 day to go': 'noch 1 Tag', 'Tomorrow: {name}': 'Morgen: {name}', '1 card': '1 Karte', 'Imported 1 item': '1 Eintrag importiert',
+  'Done: 1 programme addresses this question.': 'Fertig: 1 Programm äußert sich zu dieser Frage.',
+  'Done: 1 programme takes a clear position.': 'Fertig: 1 Programm bezieht klar Stellung.',
+  '1 programme could not be read. The result is incomplete; parties may be missing.': '1 Programm konnte nicht gelesen werden. Das Ergebnis ist unvollständig, es können Parteien fehlen.',
+  'day': 'Tag',
+  'Source: {s}': 'Quelle: {s}',
+  'Choose up to four. Same questions, side by side, in alphabetical order.': 'Bis zu vier wählen. Dieselben Fragen nebeneinander, in alphabetischer Reihenfolge.',
+  'In the 21st Bundestag': 'Im 21. Bundestag', 'Not in the Bundestag': 'Nicht im Bundestag',
+  '{n} seats': '{n} Sitze', '1 seat': '1 Sitz', 'Seats': 'Sitze', 'Tap a block of seats or a party in the list.': 'Auf einen Sitzblock oder eine Partei in der Liste tippen.',
+  'Seat distribution in the 21st Bundestag, {n} seats: {list}': 'Sitzverteilung im 21. Bundestag, {n} Sitze: {list}',
+  'The blocks are in alphabetical order. This is not a political placement. The official seating plan of the chamber is not used here yet.': 'Die Blöcke sind alphabetisch geordnet. Das ist keine politische Einordnung. Die amtliche Sitzordnung im Plenarsaal ist hier noch nicht übernommen.',
+  'Seats: {src}': 'Sitze: {src}', 'The Federal Returning Officer, final result 2025': 'Die Bundeswahlleiterin, endgültiges Ergebnis 2025',
   'Who may vote, from what age?': 'Wer darf ab wann wählen?',
   'Choose a topic': 'Thema wählen',
   'Choose parties, then compare.': 'Parteien wählen, dann vergleichen.',
@@ -272,4 +284,7 @@ export function tr(text, vars) {
   if (vars) out = out.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
   return out;
 }
+// Einzahl oder Mehrzahl. Beide Texte gehen schon uebersetzt hinein, damit die Release-Pruefung sie als tr('…') findet:
+// plural(n, tr('1 question'), tr('{n} questions', { n }))
+export const plural = (n, eins, viele) => (Number(n) === 1 ? eins : viele);
 export const missingGerman = keys => keys.filter(k => !DE[k]);

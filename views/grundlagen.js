@@ -1,7 +1,7 @@
 // views/grundlagen.js — Erklaerschicht "Wie Politik funktioniert": Bereiche mit Erklaerkarten und das Glossar.
 // Daten: grundlagen.js, erzeugt aus den Notizen im Projektordner. Alle Karten sind "Vorschlag, ungeprueft",
 // das bleibt sichtbar, bis ein Mensch sie freigibt. #grundlagen/<bereich>/<karte> oeffnet eine Karte direkt.
-import { tr } from '../i18n.js';
+import { tr, plural } from '../i18n.js';
 import { esc } from '../core.js';
 import { GRUNDLAGEN } from '../grundlagen.js';
 import { kopf, pfeil, safeUrl } from './teile.js';
@@ -34,7 +34,7 @@ function uebersicht() {
   <section class="notice"><b>${tr('Draft, not checked yet')}</b><p>${tr('Every card is a suggestion until someone in the team has checked it. Open points are marked.')}</p></section>
   <h2 class="eyebrow section-label">${tr('Areas')}</h2>
   <div class="cards">${G.bereiche.map(b => `<a class="card link" href="#grundlagen/${esc(b.id)}"><h3>${esc(b.titel)}</h3>
-    <span class="meta">${tr('{n} cards', { n: b.karten.length })}</span></a>`).join('')}</div>
+    <span class="meta">${plural(b.karten.length, tr('1 card'), tr('{n} cards', { n: b.karten.length }))}</span></a>`).join('')}</div>
   <h2 class="eyebrow section-label">${tr('Glossary')}</h2>
   ${buchstaben.map(l => `<h3 class="buchstabe">${esc(l)}</h3><dl class="glossar">${G.glossar.filter(g => g.begriff[0].toUpperCase() === l).map(g => `<dt id="begriff-${esc(g.id)}">${esc(g.begriff)}</dt>
     <dd>${text(g.text)}${g.verweis.map(bereichNr).filter(Boolean).map(b => ` <a href="#grundlagen/${esc(b.id)}">${esc(b.titel)}</a>`).join(' ·')}</dd>`).join('')}</dl>`).join('')}

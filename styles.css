@@ -81,9 +81,12 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -.025em; }
 .swatch { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line-strong); flex: none; }
 .stance { flex: none; background: var(--sunken); color: var(--muted); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 .pos p { margin: 10px 0 0; color: var(--muted); font-size: 14px; }
-.pos .src { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; color: var(--faint);
-  margin-top: 14px; padding: 10px 12px 10px 10px; background: var(--paper-warm); border-radius: 12px; }
-.pos .src::before { content: ""; width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--paper-warm-line); flex: none; }
+.src { margin: 10px 0 0; font-size: 12px; line-height: 1.4; color: var(--faint); overflow-wrap: anywhere; }
+.pos .src { margin-top: 10px; font-size: 12px; color: var(--faint); }
+/* Kleine Zeile, aber gut 44 px Tippflaeche: Innenabstand an einem Inline-Link vergroessert nur die Trefferflaeche, nicht die Zeile. */
+.src a, .src .seite-link { display: inline; min-height: 0; padding: 13px 0; font-size: 12px; font-weight: 500; color: var(--muted);
+  text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.src a:hover { color: var(--ink); }
 
 .howto summary { font-family: var(--font-display); font-weight: 700; font-size: 14px; cursor: pointer; min-height: 44px; display: flex; align-items: center; }
 .howto ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 8px; }
@@ -189,16 +192,15 @@ textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--line); borde
 .search input { flex: 1; min-width: 0; }
 
 
-/* Parteizeichen: Pille in Parteifarbe, Zweitfarbe als Streifen unten. Farben kommen aus katalog.js (nur #RRGGBB). */
+/* Parteizeichen: flache Pille in Parteifarbe, fuer alle Parteien gleich. Farben kommen aus katalog.js (nur #RRGGBB). */
 .logo { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 30px; padding: 0 9px; border-radius: 999px;
-  background: var(--c); color: var(--t); box-shadow: inset 0 -3px 0 var(--c2); font-family: var(--font-display); font-size: 12px; font-weight: 800;
+  background: var(--c); color: var(--t); font-family: var(--font-display); font-size: 12px; font-weight: 800;
   letter-spacing: -.01em; white-space: nowrap; flex: none; vertical-align: middle; }
 .logo.klein { min-width: 24px; height: 24px; padding: 0 7px; font-size: 11px; }
 .logo img { height: 70%; width: auto; }
 .page-head h1 .logo { height: 34px; font-size: 14px; margin-right: 6px; vertical-align: 4px; }
 a.ballot { text-decoration: none; } .ballot .arrow { font-size: 24px; }
 .seite-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--ink); font-weight: 600; font-size: 13px; }
-.pos .src .seite-link { min-height: 0; font-family: var(--font-mono); font-size: 11px; }
 
 /* Vergleich */
 .pchips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 18px; }
@@ -396,3 +398,34 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 .vz-partei { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; }
 .args-mehr { margin-top: 12px; }
 .args-mehr .args { margin-top: 8px; }
+
+/* Vergleich: Halbkreis des Bundestags als Kopf. Farben nur zum Erkennen, die Reihenfolge ist keine Einordnung. */
+.halbkreis { margin: 0 0 6px; }
+.halbkreis svg { display: block; width: 100%; max-width: 620px; height: auto; margin: 0 auto; overflow: visible; }
+.halbkreis figcaption { max-width: 620px; margin: 8px auto 0; text-align: center; }
+.halbkreis figcaption a { color: var(--ink); }
+.hk-zahl { font-family: var(--font-display); font-size: .15px; font-weight: 800; fill: var(--ink); }
+.hk-text { font-family: var(--font); font-size: .06px; fill: var(--muted); }
+.hk-hinweis { text-align: center; margin: 4px 0 14px; }
+/* Unsichtbarer Rand vergroessert die Tippflaeche jedes Sitzes, ohne die Grafik zu veraendern. */
+.halbkreis .block { cursor: pointer; transition: opacity .3s ease; }
+.halbkreis .seat { stroke: transparent; stroke-width: .022; transform-box: fill-box; transform-origin: center; transition: transform .3s ease; }
+.halbkreis svg.auswahl .block:not(.an) { opacity: .16; }
+.halbkreis svg.auswahl .block.an .seat { transform: scale(1.12); }
+.halbkreis.einblenden .seat { animation: sitz-ein .45s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d, 0ms); }
+@keyframes sitz-ein { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: none; } }
+.hk-marke { pointer-events: none; }
+.hk-marke circle { fill: var(--primary); stroke: var(--bg); stroke-width: .012; }
+.hk-marke text { fill: var(--primary-ink); font-family: var(--font); font-size: .07px; font-weight: 700; }
+
+/* Spaltenbuchstabe A bis D an Knopf und Spalte, damit Halbkreis, Knoepfe und Spalten zusammenpassen. */
+.slot { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; flex: none;
+  background: var(--primary); color: var(--primary-ink); font-size: 11px; font-weight: 700; }
+.pchip .meta { font-weight: 400; font-size: 12px; }
+.vz { min-width: 0; } .vz p { overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) {
+  .halbkreis.einblenden .seat { animation: none; }
+  .halbkreis .block, .halbkreis .seat { transition: none; }
+  .halbkreis svg.auswahl .block.an .seat { transform: none; }
+}

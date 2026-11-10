@@ -164,3 +164,33 @@ test('eigenes Thema: Ja/Nein-Bubble vorn, darunter das Warum; offene Fragen ohne
   await expect(page.locator('#b .bubble')).toHaveCount(0);
   await expect(page.locator('#b .warum')).toContainText('Position');
 });
+
+test('Vergleich: Spalten alphabetisch, egal in welcher Reihenfolge gewaehlt', async ({ page }) => {
+  await page.goto('/#vergleich/');
+  await page.locator('.pchip', { hasText: 'SPD' }).click();
+  await page.locator('.pchip', { hasText: 'AfD' }).click();
+  await page.locator('.pchip', { hasText: 'BSW' }).click();
+  const namen = await page.locator('.vfrage').first().locator('.vz-partei b').allTextContents();
+  expect(namen).toEqual(['AfD', 'BSW', 'SPD']);
+  await expect(page.locator('#main')).not.toContainText(/order you picked|Ihrer Reihenfolge/);
+});
+
+test('Vergleich: Halbkreis mit 630 Sitzen, Sitze und Knoepfe bleiben gleich gewaehlt', async ({ page }) => {
+  await page.goto('/#vergleich/');
+  await expect(page.locator('.halbkreis .seat')).toHaveCount(630);
+  await expect(page.locator('.halbkreis figcaption')).toContainText(/not a political placement|keine politische Einordnung/);
+  // Auswahl ueber den Knopf: Sitzblock wird hervorgehoben und traegt den Buchstaben A.
+  await page.locator('.pchip', { hasText: 'SPD' }).click();
+  await expect(page.locator(`.halbkreis .block.an[data-id="${SPD}"]`)).toHaveCount(1);
+  await expect(page.locator('.halbkreis svg')).toHaveClass(/auswahl/);
+  // Auswahl ueber die Sitze: der passende Knopf wird gedrueckt.
+  const afd = '9823eced-6ef4-485f-a509-dd754f98f4ba';
+  await page.locator(`.halbkreis .block[data-id="${afd}"] .seat`).first().dispatchEvent('click');
+  await expect(page.locator(`.pchip[data-id="${afd}"]`)).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator(`.pchip[data-id="${afd}"] .slot`)).toHaveText('A');
+  await expect(page.locator(`.pchip[data-id="${SPD}"] .slot`)).toHaveText('B');
+  await expect(page.locator('.halbkreis .block.an')).toHaveCount(2);
+  // Abwaehlen ueber die Sitze nimmt auch den Knopf zurueck.
+  await page.locator(`.halbkreis .block[data-id="${SPD}"] .seat`).first().dispatchEvent('click');
+  await expect(page.locator(`.pchip[data-id="${SPD}"]`)).toHaveAttribute('aria-pressed', 'false');
+});
