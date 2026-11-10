@@ -170,8 +170,8 @@ test('Vergleich: Spalten alphabetisch, egal in welcher Reihenfolge gewaehlt', as
   await page.locator('.pchip', { hasText: 'SPD' }).click();
   await page.locator('.pchip', { hasText: 'AfD' }).click();
   await page.locator('.pchip', { hasText: 'BSW' }).click();
-  const namen = await page.locator('.vfrage').first().locator('.vz-partei b').allTextContents();
-  expect(namen).toEqual(['AfD', 'BSW', 'SPD']);
+  // Wartende Pruefung: Seit Auswahl-Wechsel ohne Seitenanimation zeichnet, darf der Test nicht vor dem letzten Neuzeichnen lesen.
+  await expect(page.locator('.vfrage').first().locator('.vz-partei b')).toHaveText(['AfD', 'BSW', 'SPD']);
   await expect(page.locator('#main')).not.toContainText(/order you picked|Ihrer Reihenfolge/);
 });
 

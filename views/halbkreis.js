@@ -34,19 +34,19 @@ function sitzplaetze(n) {
   }));
   return plaetze.sort((p, q) => q.w - p.w || p.r - q.r);
 }
-// Die Geometrie aendert sich nie: einmal berechnen, je Partei die Sitze samt Index (fuer die Einblend-Verzoegerung).
+// Die Geometrie aendert sich nie: einmal berechnen, je Partei ihre Sitze und deren Mitte (fuer den Buchstaben).
 const BLOECKE = (() => {
   const plaetze = sitzplaetze(GESAMT);
   let i = 0;
   return IM_BT.map(p => {
-    const sitze = plaetze.slice(i, i + sitzeVon(p)).map((s, j) => ({ ...s, i: i + j }));
+    const sitze = plaetze.slice(i, i + sitzeVon(p));
     i += sitzeVon(p);
     const mitte = { x: sitze.reduce((s, x) => s + x.x, 0) / sitze.length, y: sitze.reduce((s, x) => s + x.y, 0) / sitze.length };
     return { p, sitze, mitte };
   });
 })();
 
-// Die Sitze blenden nur beim ersten Zeichnen nacheinander ein, nicht bei jeder Auswahl erneut.
+// Die Bloecke blenden nur beim ersten Zeichnen nacheinander ein, nicht bei jeder Auswahl erneut.
 let eingeblendet = false;
 
 // buchstabe(id) liefert "A", "B", ... fuer gewaehlte Parteien (Spaltenreihenfolge), sonst ''.
@@ -54,21 +54,48 @@ export function halbkreis(buchstabe) {
   const einblenden = !eingeblendet;
   eingeblendet = true;
   const gewaehlt = BLOECKE.some(b => buchstabe(b.p.id));
-  const bloecke = BLOECKE.map(({ p, sitze, mitte }) => {
-    const b = buchstabe(p.id);
-    const punkte = sitze.map(s => `<circle class="seat" cx="${s.x.toFixed(4)}" cy="${s.y.toFixed(4)}" r="${PUNKT}" style="--d:${Math.round(s.i / GESAMT * EINBLENDEN_MS)}ms"></circle>`).join('');
-    const marke = b ? `<g class="hk-marke" aria-hidden="true"><circle cx="${mitte.x.toFixed(4)}" cy="${mitte.y.toFixed(4)}" r="0.065"></circle>
-      <text x="${mitte.x.toFixed(4)}" y="${(mitte.y + 0.024).toFixed(4)}" text-anchor="middle">${esc(b)}</text></g>` : '';
-    return `<g class="block${b ? ' an' : ''}" data-action="vergleich" data-id="${esc(p.id)}" fill="${parteiFarbe(p)}">${punkte}${marke}</g>`;
+  // Eingeblendet wird blockweise (7 Gruppen) statt Sitz fuer Sitz: 630 einzeln animierte SVG-Kreise zwingen den Browser,
+  // die ganze Grafik in jedem Bild neu zu zeichnen, und ruckeln vor allem auf Handys.
+  const bloecke = BLOECKE.map(({ p, sitze }, k) => {
+    const punkte = sitze.map(s => `<circle class="seat" cx="${s.x.toFixed(4)}" cy="${s.y.toFixed(4)}" r="${PUNKT}"></circle>`).join('');
+    return `<g class="block${buchstabe(p.id) ? ' an' : ''}" data-action="vergleich" data-id="${esc(p.id)}" fill="${parteiFarbe(p)}" style="--d:${Math.round(k / BLOECKE.length * EINBLENDEN_MS)}ms">${punkte}</g>`;
   }).join('');
   const liste = IM_BT.map(p => `${p.name}: ${tr('{n} seats', { n: sitzeVon(p) })}`).join(', ');
-  return `<figure class="halbkreis${einblenden ? ' einblenden' : ''}">
+  return `<figure class="halbkreis${einblenden ? ' einblenden' : ''}" data-halbkreis>
     <svg viewBox="-1.04 -1.04 2.08 1.1" class="${gewaehlt ? 'auswahl' : ''}" role="img" aria-label="${esc(tr('Seat distribution in the 21st Bundestag, {n} seats: {list}', { n: GESAMT, list: liste }))}">
       ${bloecke}
+      <g class="hk-marken" aria-hidden="true">${marken(buchstabe)}</g>
       <text class="hk-zahl" x="0" y="-0.12" text-anchor="middle">${GESAMT}</text>
       <text class="hk-text" x="0" y="-0.03" text-anchor="middle">${esc(tr('Seats'))}</text>
     </svg>
     <figcaption class="meta">${tr('The blocks are in alphabetical order. This is not a political placement. The official seating plan of the chamber is not used here yet.')}
       ${tr('Seats: {src}', { src: extLink(SITZE_QUELLE, esc(tr('The Federal Returning Officer, final result 2025'))) })}</figcaption>
   </figure>`;
+}
+
+// Buchstaben A bis D in eigener Ebene ueber allen Bloecken, damit sie sich austauschen lassen, ohne Sitze neu zu bauen.
+function marken(buchstabe) {
+  return BLOECKE.map(({ p, mitte }) => {
+    const b = buchstabe(p.id);
+    return b ? `<g class="hk-marke"><circle cx="${mitte.x.toFixed(4)}" cy="${mitte.y.toFixed(4)}" r="0.065"></circle>
+      <text x="${mitte.x.toFixed(4)}" y="${(mitte.y + 0.024).toFixed(4)}" text-anchor="middle">${esc(b)}</text></g>` : '';
+  }).join('');
+}
+
+// Beim Neuzeichnen derselben Seite bleibt die alte Grafik im Dokument und uebernimmt nur Klassen, Buchstaben und Texte
+// der neuen. Nur so laufen die CSS-Uebergaenge (Abblenden, Vergroessern) wirklich ab, statt hart umzuspringen.
+// Die Geometrie ist fest, deshalb passen die Bloecke in alter und neuer Grafik der Reihe nach zusammen.
+export function halbkreisUebernehmen(alt, neu) {
+  const [svgA, svgN] = [alt.querySelector('svg'), neu.querySelector('svg')];
+  if (!svgA || !svgN) return false;
+  const [blA, blN] = [svgA.querySelectorAll('.block'), svgN.querySelectorAll('.block')];
+  if (blA.length !== blN.length) return false;
+  alt.setAttribute('class', neu.getAttribute('class')); // entfernt "einblenden", damit das Einblenden nicht erneut startet
+  blA.forEach((b, i) => b.setAttribute('class', blN[i].getAttribute('class')));
+  svgA.setAttribute('class', svgN.getAttribute('class'));
+  svgA.setAttribute('aria-label', svgN.getAttribute('aria-label'));
+  svgA.querySelector('.hk-marken').innerHTML = svgN.querySelector('.hk-marken').innerHTML;
+  svgA.querySelector('.hk-text').textContent = svgN.querySelector('.hk-text').textContent;
+  alt.querySelector('figcaption').innerHTML = neu.querySelector('figcaption').innerHTML;
+  return true;
 }

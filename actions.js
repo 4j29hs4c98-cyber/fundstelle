@@ -10,6 +10,14 @@ import { R } from './recherche.js';
 import { PROFIL_ID } from './profil.js';
 import { vergleichAus, vergleichLink, MAX_VERGLEICH } from './views/vergleich.js';
 
+// Aktuelle Vergleichsauswahl direkt aus der Adresse, nicht aus S.param: Das hashchange-Ereignis kommt verzoegert, und
+// wer schnell hintereinander tippt, wuerde sonst auf einer veralteten Auswahl aufbauen und eine Partei verlieren.
+function vergleichJetzt() {
+  const [seite, ...rest] = location.hash.slice(1).split('/');
+  if (seite !== 'vergleich') return vergleichAus('');
+  try { return vergleichAus(decodeURIComponent(rest.join('/'))); } catch { return vergleichAus(''); }
+}
+
 export const actions = {
   // Eine gemerkte Frage ist ein Record des Nutzers, kein redaktioneller Inhalt. Format: { frage: <id>, created }.
   async merken({ frage }) {
@@ -35,11 +43,11 @@ export const actions = {
   },
   // Partei im Vergleich an- oder abwaehlen. Die Auswahl lebt in der Adresse, deshalb nur den Hash setzen.
   vergleich({ id }) {
-    const v = vergleichAus(S.view === 'vergleich' ? S.param : '');
+    const v = vergleichJetzt();
     if (!v.ids.includes(id) && v.ids.length >= MAX_VERGLEICH) { toast('At most four parties at once.'); return; }
     location.hash = vergleichLink(v.ids.includes(id) ? v.ids.filter(x => x !== id) : [...v.ids, id], v.thema);
   },
-  'vergleich-thema'({ id }) { location.hash = vergleichLink(vergleichAus(S.view === 'vergleich' ? S.param : '').ids, id); },
+  'vergleich-thema'({ id }) { location.hash = vergleichLink(vergleichJetzt().ids, id); },
   'alle-wahlen'() { S.alleWahlen = !S.alleWahlen; render(); },
   theme({ v }) { try { localStorage.setItem('theme', v); } catch {} applyTheme(); render(); },
   lang({ v }) { applyLang(v); render(); },

@@ -412,8 +412,9 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 .halbkreis .seat { stroke: transparent; stroke-width: .022; transform-box: fill-box; transform-origin: center; transition: transform .3s ease; }
 .halbkreis svg.auswahl .block:not(.an) { opacity: .16; }
 .halbkreis svg.auswahl .block.an .seat { transform: scale(1.12); }
-.halbkreis.einblenden .seat { animation: sitz-ein .45s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d, 0ms); }
-@keyframes sitz-ein { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: none; } }
+/* "backwards", nicht "both": der Endwert darf nicht haengen bleiben, sonst wirkt das Abblenden bei der Auswahl nicht. */
+.halbkreis.einblenden .block { animation: block-ein .5s ease backwards; animation-delay: var(--d, 0ms); }
+@keyframes block-ein { from { opacity: 0; } to { opacity: 1; } }
 .hk-marke { pointer-events: none; }
 .hk-marke circle { fill: var(--primary); stroke: var(--bg); stroke-width: .012; }
 .hk-marke text { fill: var(--primary-ink); font-family: var(--font); font-size: .07px; font-weight: 700; }
@@ -425,7 +426,7 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 .vz { min-width: 0; } .vz p { overflow-wrap: anywhere; }
 
 @media (prefers-reduced-motion: reduce) {
-  .halbkreis.einblenden .seat { animation: none; }
+  .halbkreis.einblenden .block { animation: none; }
   .halbkreis .block, .halbkreis .seat { transition: none; }
   .halbkreis svg.auswahl .block.an .seat { transform: none; }
 }
