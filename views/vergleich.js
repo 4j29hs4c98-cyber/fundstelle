@@ -5,7 +5,7 @@ import { tr } from '../i18n.js';
 import { esc } from '../core.js';
 import { partei, parteienSortiert, ohneInhalt, thema, themenSortiert, fragenZuThema, positionVon, argumenteZuFrage } from '../content.js';
 import { profil } from '../profil.js';
-import { kopf, logo, haltung, seitenLink, demoHinweis, herkunft } from './teile.js';
+import { kopf, logo, haltungZeile, seitenLink, demoHinweis, herkunft } from './teile.js';
 
 export const MAX_VERGLEICH = 4;
 export function vergleichAus(param) {
@@ -21,17 +21,20 @@ const themaChip = (id, text, v) => `<button class="qchip" data-action="vergleich
 
 function zelle(p, f) {
   const pos = positionVon(p.id, f.id);
-  if (!pos) return `<div class="vz leer">${logo(p, 'klein')}<p class="meta">${tr('Not recorded yet')}</p></div>`;
-  return `<div class="vz">${logo(p, 'klein')}<span class="stance">${haltung(pos.haltung)}</span>
+  const kopfZeile = `<p class="vz-partei">${logo(p, 'klein')}<b>${esc(p.name)}</b></p>`;
+  if (!pos) return `<div class="vz leer">${kopfZeile}<p class="meta">${tr('Not recorded yet')}</p></div>`;
+  return `<div class="vz">${kopfZeile}${haltungZeile(pos.haltung)}
     <p>${esc(pos.text)}</p>${pos.seite ? seitenLink(p.id, pos.seite) : `<p class="meta">${esc(pos.quelle)}</p>`}</div>`;
 }
 
 function frageBlock(f, ids) {
   const args = argumenteZuFrage(f.id), liste = r => args.filter(a => a.richtung === r).map(a => `<li>${esc(a.text)}</li>`).join('') || `<li class="meta">${tr('None yet.')}</li>`;
-  return `<article class="vfrage"><h3><a href="#frage/${esc(f.id)}">${esc(f.frage)}</a></h3>
+  return `<article class="vfrage"><p class="eyebrow">${tr('Question')}</p><h3><a href="#frage/${esc(f.id)}">${esc(f.frage)}</a></h3>
     <div class="vgrid">${ids.map(id => zelle(partei(id), f)).join('')}</div>
-    <div class="args"><section class="panel"><h4>${tr('For')}</h4><ul>${liste('dafuer')}</ul></section>
-      <section class="panel"><h4>${tr('Against')}</h4><ul>${liste('dagegen')}</ul></section></div></article>`;
+    <details class="mehr args-mehr"><summary>${tr('General arguments for and against')}</summary>
+    <p class="note small">${tr('Arguments from research and public bodies. They belong to no party.')}</p>
+    <div class="args"><section class="panel"><h3>${tr('Arguments in favour')}</h3><ul>${liste('dafuer')}</ul></section>
+      <section class="panel"><h3>${tr('Arguments against')}</h3><ul>${liste('dagegen')}</ul></section></div></details></article>`;
 }
 
 export function viewVergleich(param) {

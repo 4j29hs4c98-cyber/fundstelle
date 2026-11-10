@@ -3,7 +3,7 @@
 import { tr } from '../i18n.js';
 import { esc } from '../core.js';
 import { frage, thema, partei, positionenZuFrage, argumenteZuFrage, abstimmungenZuFrage, aussagenZuFrage } from '../content.js';
-import { kopf, merkKnopf, haltung, stimme, rolle, datum, pdfSeite, herkunft, demoHinweis, extLink, logo, seitenLink, pfeil } from './teile.js';
+import { kopf, merkKnopf, haltungZeile, stimme, rolle, datum, pdfSeite, herkunft, demoHinweis, extLink, logo, seitenLink, pfeil } from './teile.js';
 import { aussagenBlock } from './parteien.js';
 import { begriffeBlock } from './grundlagen.js';
 
@@ -19,9 +19,22 @@ function positionKarte(p) {
       <p class="meta">${extLink(p.url, tr('Open source'))}</p></details>`
     : `<p class="src">${esc(p.quelle)}</p>`;
   return `<article class="pos">
-    <div class="pos-head"><a class="who" href="#partei/${esc(p.partei)}">${logo(pt, 'klein')}${esc(pt?.name ?? '')}</a>
-      <span class="stance">${haltung(p.haltung)}</span></div>
+    <div class="pos-head"><a class="who" href="#partei/${esc(p.partei)}">${logo(pt, 'klein')}${esc(pt?.name ?? '')}</a></div>
+    ${haltungZeile(p.haltung)}
     <p>${esc(p.text)}</p>${stelle}</article>`;
+}
+
+// Ueberblick ganz oben: wer ist dafuer, wer dagegen. Innerhalb der Gruppe alphabetisch, keine Rangfolge.
+function ueberblick(pos) {
+  const spalte = (h, titel) => {
+    const liste = pos.filter(p => p.haltung === h);
+    return `<div class="ub-spalte"><h3>${titel} <span class="meta">${tr('{n} parties', { n: liste.length })}</span></h3>
+      <ul class="ub-liste">${liste.map(p => { const pt = partei(p.partei);
+        return `<li><a href="#partei/${esc(p.partei)}">${logo(pt, 'klein')}${esc(pt?.name ?? '')}</a></li>`; }).join('') || `<li class="meta">${tr('None')}</li>`}</ul></div>`;
+  };
+  return `<section class="ueberblick" aria-label="${tr('Who is in favour, who is against?')}">
+    <h2 class="eyebrow section-label">${tr('Who is in favour, who is against?')}</h2>
+    <div class="ub-grid">${spalte('dafuer', tr('In favour'))}${spalte('dagegen', tr('Against'))}</div></section>`;
 }
 
 function abstimmungBlock(a) {
@@ -43,6 +56,8 @@ export function viewFrage(id) {
   return `${kopf(esc(t?.titel ?? tr('Question')), esc(f.frage), '', { href: t ? `#thema/${t.id}` : '#themen', text: t?.titel ?? tr('All topics') })}
   <div class="row merk-row">${merkKnopf(f.id)}<span class="meta">${tr('All parties in alphabetical order. No ranking, no recommendation.')}</span></div>
 
+  ${ueberblick(pos)}
+  <h2 class="eyebrow section-label">${tr('What each party says')}</h2>
   <div class="cards">${pos.map(positionKarte).join('')}</div>
   <p><a class="btn" href="#vergleich//${esc(f.thema)}">${tr('Compare parties')} ${pfeil}</a></p>
 
@@ -53,8 +68,10 @@ export function viewFrage(id) {
     : `<p class="note">${tr('No programme names a concrete change.')}</p>`}
 
   <h2 class="eyebrow section-label">${tr('Arguments')}</h2>
-  <div class="args"><section class="panel"><h3>${tr('For')}</h3><ul>${liste('dafuer')}</ul></section>
-    <section class="panel"><h3>${tr('Against')}</h3><ul>${liste('dagegen')}</ul></section></div>
+  <details class="mehr args-mehr"><summary>${tr('General arguments for and against')}</summary>
+    <p class="note small">${tr('Arguments from research and public bodies. They belong to no party.')}</p>
+    <div class="args"><section class="panel"><h3>${tr('Arguments in favour')}</h3><ul>${liste('dafuer')}</ul></section>
+      <section class="panel"><h3>${tr('Arguments against')}</h3><ul>${liste('dagegen')}</ul></section></div></details>
 
   <h2 class="eyebrow section-label">${tr('Votes on this')}</h2>
   ${votes.length ? `<details class="mehr"><summary>${tr('Why the role is shown')}</summary>

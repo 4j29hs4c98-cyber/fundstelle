@@ -3,8 +3,8 @@
 import { tr } from '../i18n.js';
 import { esc } from '../core.js';
 import { parteienSortiert, ohneInhalt, hatInhalt, partei, programmVon, themenSortiert, fragenZuThema, positionVon, abstimmungenZuFrage, aussagenVon, frage } from '../content.js';
-import { kopf, pfeil, haltung, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink } from './teile.js';
-import { profilVon, PROFIL_STAND } from '../parteiprofile.js';
+import { kopf, pfeil, haltungZeile, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink } from './teile.js';
+import { profilVon } from '../parteiprofile.js';
 
 // "Kurz gesagt" vor den Themen: vier Saetze, jeder mit Quellennummer; die Quellen samt Zitat aufklappbar.
 // Die Nummern sind bewusst keine Links: ein #-Sprung wuerde vom Hash-Router als Seitenwechsel gelesen.
@@ -18,7 +18,6 @@ function profilBlock(p) {
     <p class="eyebrow" id="profil-titel">${tr('In short: what does {name} stand for?', { name: esc(p.name) })}</p>
     <p class="profil-text">${text}</p>
     <details class="mehr"><summary>${tr('Sources ({n})', { n: saetze.length })}</summary><ol class="profil-quellen">${quellen}</ol></details>
-    <p class="note small">${tr('Summarised in our own words from the 2025 programme and neutral sources such as the bpb. Researched by an AI agent on {d}, not yet checked by people.', { d: datum(PROFIL_STAND) })}</p>
   </section>`;
 }
 
@@ -77,8 +76,8 @@ export function viewPartei(id) {
       const pos = positionVon(p.id, f.id);
       if (!pos) return '';
       const abg = gesagtUndAbgestimmt(p.id, f.id);
-      return `<article class="pos"><div class="pos-head"><a class="who" href="#frage/${esc(f.id)}">${esc(f.kurz)}</a>
-          <span class="stance">${haltung(pos.haltung)}</span></div>
+      return `<article class="pos"><h3 class="pos-frage"><a href="#frage/${esc(f.id)}">${esc(f.frage)}</a></h3>
+        ${haltungZeile(pos.haltung)}
         <p>${esc(pos.text)}</p>
         ${pos.seite ? `<p class="src">${esc(pos.quelle)}, ${seitenLink(p.id, pos.seite)}</p>` : pos.url ? `<p class="src">${extLink(pos.url, esc(pos.quelle))}</p>` : ''}
         ${abg ? `<div class="said-voted"><p class="eyebrow">${tr('Said and voted')}</p>${abg}</div>` : ''}</article>`;

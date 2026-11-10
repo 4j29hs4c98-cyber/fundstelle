@@ -373,3 +373,26 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
   :root:not([data-theme="light"]) .bubble.nein { background: #4A1E18; color: #F5B5AA; } }
 :root[data-theme="dark"] .bubble.ja { background: #173D24; color: #A8E6BA; }
 :root[data-theme="dark"] .bubble.nein { background: #4A1E18; color: #F5B5AA; }
+
+/* Haltung immer beschriftet, nie allein im Raum. Keine Gut/Schlecht-Farbe: neutrale Pille wie bisher. */
+.haltung-zeile { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 6px; }
+.hz-label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.haltung-zeile .stance { font-size: 13px; color: var(--ink); border: 1px solid var(--line-strong); background: var(--surface); }
+.pos-frage { margin: 0; font-size: 16px; line-height: 1.4; }
+.pos-frage a { color: inherit; text-decoration: none; }
+.pos-frage a:hover { text-decoration: underline; }
+
+/* Frage: Ueberblick wer dafuer, wer dagegen. Zwei gleichwertige Spalten, auf dem Telefon untereinander. */
+.ueberblick { margin-top: 8px; }
+.ub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ub-spalte { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.ub-spalte h3 { margin: 0 0 8px; font-size: 15px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ub-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.ub-liste a { display: flex; align-items: center; gap: 8px; min-height: 44px; color: inherit; text-decoration: none; border-radius: 10px; padding: 0 6px; }
+.ub-liste a:hover { background: var(--sunken); }
+@media (max-width: 520px) { .ub-grid { grid-template-columns: 1fr; } }
+
+/* Vergleich: Parteiname in jeder Zelle, allgemeine Argumente eingeklappt. */
+.vz-partei { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; }
+.args-mehr { margin-top: 12px; }
+.args-mehr .args { margin-top: 8px; }

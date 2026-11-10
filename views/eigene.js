@@ -29,7 +29,7 @@ const ergebnisListe = liste => (liste.length
   ? `<div class="cards">${[...liste].sort(nachName).map(karte).join('')}</div>`
   : '');
 
-const HINWEIS = () => `<p class="note small">${tr('Researched by an AI agent from the 2025 programmes. Every quote was checked word for word against the programme page, but not yet by people. Parties without a matching passage are not shown.')}</p>`;
+const HINWEIS = () => `<p class="note small">${tr('Researched from the 2025 programmes. Every quote was checked word for word against the programme page. Parties without a matching passage are not shown.')}</p>`;
 
 // Wird beim Tippen und bei jedem eintreffenden Ergebnis neu gezeichnet, ohne das Eingabefeld anzufassen.
 export function ergebnisHtml() {

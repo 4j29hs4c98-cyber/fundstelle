@@ -10,6 +10,9 @@ const HALTUNG = { dafuer: 'In favour', dagegen: 'Against', teilweise: 'In part',
 const STIMME = { ja: 'Yes', nein: 'No', enthaltung: 'Abstained' };
 const ROLLE = { koalition: 'in government', opposition: 'in opposition' };
 export const haltung = h => (HALTUNG[h] ? tr(HALTUNG[h]) : esc(h));
+// Haltung nie allein im Raum: immer mit Beschriftung, wessen Haltung zu welcher Frage gemeint ist.
+export const haltungZeile = (h, wer) => `<p class="haltung-zeile"><span class="hz-label">${wer ? tr('Stance of {p}', { p: esc(wer) }) : tr('Stance')}</span>
+  <span class="stance">${haltung(h)}</span></p>`;
 export const stimme = s => (STIMME[s] ? tr(STIMME[s]) : esc(s));
 
 // Links aus der Datenbank nur als https. esc() allein liesse "javascript:..." durch.
@@ -47,7 +50,10 @@ export function merkKnopf(frageId) {
 
 // Hinweis, solange Inhalte nicht vom Team geprueft sind (KI-Zusammenstellung).
 // Aufklappbar, damit der lange Text nicht jede Seite fuellt. Die Ueberschrift bleibt immer sichtbar.
-export const demoHinweis = () => (C.ungeprueft ? `<details class="notice demo"><summary><b>${tr('Compiled by AI, not yet checked')}</b></summary>
+// Hinweise "mit KI zusammengestellt, noch nicht geprueft": auf Wunsch von Lennox (10.11.2026) vorerst ausgeblendet.
+// Vor einer Veroeffentlichung wieder einschalten (true), die Texte bleiben dafuer erhalten.
+export const ZEIGE_KI_HINWEIS = false;
+export const demoHinweis = () => (ZEIGE_KI_HINWEIS && C.ungeprueft ? `<details class="notice demo"><summary><b>${tr('Compiled by AI, not yet checked')}</b></summary>
   <p>${tr('The quotes come word for word from the parties’ programmes for the federal election 2025, with the page. An AI agent selected them and the team has not checked them yet. Open the original before you rely on a passage.')}</p>
   ${C.maschinell ? `<p class="meta">${tr('A script has compared every quote with the original PDF and found it word for word on the stated page. Whether the quote fits the question still needs a person.')}</p>` : ''}</details>` : '');
 // PDF-Seite, nicht die gedruckte Seitenzahl: der Link oeffnet das PDF genau dort.
@@ -58,7 +64,7 @@ export function herkunft(bezug) {
   const ki = C.ungeprueft ? tr('Compiled with AI, not yet checked by people.') : C.ki ? tr('Partly compiled with AI, checked by people.') : tr('Compiled by people.');
   const offen = S.melden === bezug;
   return `<footer class="herkunft">
-    <p class="meta">${ki} ${tr('As of {d}', { d: datum(C.stand) })} · <a href="#auswahl">${tr('How we select')}</a></p>
+    <p class="meta">${ZEIGE_KI_HINWEIS ? `${ki} ${tr('As of {d}', { d: datum(C.stand) })} · ` : ''}<a href="#auswahl">${tr('How we select')}</a></p>
     ${offen ? `<form class="stack melden" data-form="melden">
         <input type="hidden" name="bezug" value="${esc(bezug)}">
         <label>${tr('What is wrong here?')}<textarea id="melden-text" name="text" rows="3" minlength="3" maxlength="1000" required></textarea></label>

@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 // fileURLToPath statt .pathname: sonst bleiben Leerzeichen im Pfad als %20 stehen und nichts wird gefunden.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const rel = f => path.relative(root, f).split(path.sep).join('/');
-const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.name.startsWith('.') || ['node_modules', 'tests', 'scripts', 'supabase', 'test-results'].includes(e.name) ? [] : e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
+const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.name.startsWith('.') || ['node_modules', 'tests', 'scripts', 'supabase', 'test-results', 'mockups'].includes(e.name) ? [] : e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
 const files = walk(root).map(rel), js = files.filter(f => f.endsWith('.js') && f !== 'sw.js' && !f.endsWith('.config.js') && f !== 'config.example.js');
 const problems = [], ok = m => console.log('  ok  ' + m);
 
