@@ -9,6 +9,7 @@ import { R, MIN_LAENGE, MAX_LAENGE } from '../recherche.js';
 import { kopf, pfeil, marke, extLink, pdfSeite, datum } from './teile.js';
 import { belegListe, personStatus, ohneMandat, PERSON_HINWEIS } from './person.js';
 import { tatenHtml } from './taten.js';
+import { personNachrichten } from './nachrichten.js';
 
 const nachName = (a, b) => (partei(a.partei)?.name ?? '').localeCompare(partei(b.partei)?.name ?? '', 'de');
 const pdfLink = (url, seite) => (url ? `${url.split('#')[0]}#page=${seite}` : null);
@@ -48,7 +49,7 @@ function personHtml() {
   const speichern = R.status === 'fertig' && R.belege.length && !R.fehlgeschlagen
     ? `<p><button class="btn" data-action="eigen-speichern">${tr('Save topic')}</button></p>` : '';
   return `${status ? `<p class="meta" role="status"${R.status === 'laeuft' ? ' aria-busy="true"' : ''}>${esc(status)}</p>` : ''}
-    ${luecke}${R.status === 'fertig' ? ohneMandat(R.person) : ''}${belegListe(R.belege)}${speichern}${R.belege.length || R.status === 'fertig' ? PERSON_HINWEIS() : ''}`;
+    ${luecke}${R.status === 'fertig' ? ohneMandat(R.person) : ''}${belegListe(R.belege)}${R.status === 'fertig' && R.person ? personNachrichten(R.person.name) : ''}${speichern}${R.belege.length || R.status === 'fertig' ? PERSON_HINWEIS() : ''}`;
 }
 
 // Statuszeile, Hinweis auf unvollstaendige Ergebnisse und Anmeldelink. Auch der Vergleich nutzt das (views/vergleich-eigene.js).

@@ -8,6 +8,7 @@ import { kopf, pfeil, datum, termin, marke, haltung, seitenLink, demoHinweis, sa
 import { vergleichLink } from './vergleich.js';
 import { R, MAX_LAENGE } from '../recherche.js';
 import { ergebnisHtml } from './eigene.js';
+import { aktuellHtml } from './nachrichten.js';
 
 const HINWEIS_TAGE = 90;
 
@@ -97,6 +98,7 @@ export function viewStart() {
     ${weg('#eigene', 'eigene', tr('Ask your own question'), tr('An agent researches all programmes while you type.'))}
     ${weg('#grundlagen', 'grundlagen', tr('How politics works'), tr('Short, neutral explanations of the terms that come up in programmes and votes.'))}
   </nav>
+  ${aktuellHtml()}
 
   ${hinweis(w, pr)}
   ${w ? `<a class="ballot" href="#wahlen"><div><b>${esc(w.name)}</b><span>${termin(w)}</span></div>

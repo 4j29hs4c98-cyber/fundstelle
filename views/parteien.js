@@ -5,6 +5,7 @@ import { esc } from '../core.js';
 import { parteienSortiert, ohneInhalt, hatInhalt, partei, programmVon, themenSortiert, fragenZuThema, positionVon, abstimmungenZuFrage, aussagenVon, frage } from '../content.js';
 import { kopf, pfeil, haltungZeile, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink, quelleZeile } from './teile.js';
 import { profilVon } from '../parteiprofile.js';
+import { parteiNachrichten } from './nachrichten.js';
 
 // "Kurz gesagt" vor den Themen: vier Saetze, jeder mit Quellennummer; die Quellen samt Zitat aufklappbar.
 // Die Nummern sind bewusst keine Links: ein #-Sprung wuerde vom Hash-Router als Seitenwechsel gelesen.
@@ -63,7 +64,8 @@ function echtePartei(p) {
   <div class="row">${safeUrl(p.programm) ? `<a class="go" href="#programm/${esc(p.id)}">${tr('Read programme')} ${pfeil}</a>` : ''}
     ${extLink(p.web, tr('Party website'))}</div>
   <section class="notice"><b>${tr('No positions recorded yet.')}</b>
-    <p>${tr('Positions follow once the programme has been read. Invented statements are never attached to a real party.')}</p></section>`;
+    <p>${tr('Positions follow once the programme has been read. Invented statements are never attached to a real party.')}</p></section>
+  ${parteiNachrichten(p.id)}`;
 }
 
 export function viewPartei(id) {
@@ -92,6 +94,7 @@ export function viewPartei(id) {
     <a class="btn" href="#vergleich/${esc(p.id)}">${tr('Compare with …')}</a></div>
   ${bloecke || `<p class="note">${tr('No positions recorded yet.')}</p>`}
   <p class="note small">${tr('A vote next to a programme point is not a verdict. Parties in government often vote with their coalition, parties in opposition cannot pass their own programme.')}</p>
+  ${parteiNachrichten(p.id)}
   ${aussagenBlock(aussagenVon(p.id))}
   ${demoHinweis()}
   ${herkunft(`partei:${p.id}`)}`;

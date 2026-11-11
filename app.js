@@ -4,6 +4,7 @@ import * as sync from './sync.js';
 import { $, S, VIEWS, TABS, TAB_OF, ALTE_ADRESSEN, toast } from './core.js';
 import { tr, plural } from './i18n.js';
 import { loadContent } from './content.js';
+import { nachrichtenLaden } from './nachrichten.js';
 import { render, applyLang, applyTheme } from './render.js';
 import { actions, forms } from './actions.js';
 import { syncLine } from './views/settings.js';
@@ -95,5 +96,8 @@ const syncHooks = { // how sync talks to the app
   await sync.init(syncHooks);
   // Redaktionelle Inhalte frisch laden; bis dahin (und offline) gilt der zuletzt geladene oder eingebaute Stand.
   if (await loadContent(sync.getClient()) && !typing()) render();
+  if (await nachrichtenLaden(sync.getClient()) && !typing()) render();
+  // Zurueck in der App: Schlagzeilen auffrischen (hoechstens alle 10 Minuten, siehe nachrichten.js).
+  document.addEventListener('visibilitychange', async () => { if (!document.hidden && await nachrichtenLaden(sync.getClient()) && !typing()) render(); });
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
 })();

@@ -296,3 +296,23 @@ test('Vergleich: eigene Frage zeigt je gewaehlter Partei eine Spalte mit Verspro
   await expect(page.locator('#v .vz').nth(1)).toContainText(/No matching passage|Keine passende Stelle/);
   await expect(page.locator('#v .vz').nth(1)).toContainText(/No group|Keine Fraktion/);
 });
+
+test('Nachrichten: Startseite zeigt alle Schlagzeilen, Partei und Person nur ihre, fremdes HTML wird nicht ausgefuehrt', async ({ page }) => {
+  await page.goto('/#start');
+  const html = await page.evaluate(async spd => {
+    const { N } = await import('/nachrichten.js');
+    const v = await import('/views/nachrichten.js');
+    N.liste = [
+      { url: 'https://example.org/1', quelle: 'tagesschau.de', titel: 'SPD legt Entwurf vor <img src=x onerror=alert(1)>', datum: '2026-11-11T10:00:00Z', parteien: [spd], personen: ['Friedrich Merz'] },
+      { url: 'https://example.org/2', quelle: 'welt.de', titel: 'Meldung ohne Partei', datum: '2026-11-11T09:00:00Z', parteien: [], personen: [] },
+    ];
+    return { start: v.aktuellHtml(), partei: v.parteiNachrichten(spd), andere: v.parteiNachrichten('keine'), person: v.personNachrichten('Merz') };
+  }, SPD);
+  await page.setContent(`<div id="s">${html.start}</div><div id="p">${html.partei}</div><div id="m">${html.person}</div>`);
+  await expect(page.locator('#s .news li')).toHaveCount(2);
+  await expect(page.locator('#s img')).toHaveCount(0);
+  await expect(page.locator('#s a').first()).toHaveAttribute('rel', /noopener/);
+  await expect(page.locator('#p .news li')).toHaveCount(1);
+  await expect(page.locator('#m .news li')).toHaveCount(1);
+  expect(html.andere).toBe('');
+});
