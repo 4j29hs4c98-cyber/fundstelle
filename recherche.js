@@ -34,7 +34,8 @@ export function belegPruefen(b) {
   return { ...beleg, zusammenfassung, auszug, fundstelle: text(b.fundstelle, 120) || null, seite_name: text(b.seite_name, 120) || null };
 }
 
-export function tippen(text, zeichnen) {
+// sofort: ohne Tipp-Pause starten (Frage von der Startseite abgeschickt).
+export function tippen(text, zeichnen, sofort = false) {
   clearTimeout(timer);
   const frage = String(text).replace(/\s+/g, ' ').trim().slice(0, MAX_LAENGE);
   if (frage === R.frage && R.status !== 'leer') return;
@@ -42,7 +43,7 @@ export function tippen(text, zeichnen) {
   R.frage = frage;
   zuruecksetzen('leer');
   zeichnen();
-  if (frage.length >= MIN_LAENGE) timer = setTimeout(() => starten(frage, zeichnen), frage.endsWith('?') ? 300 : PAUSE_MS);
+  if (frage.length >= MIN_LAENGE) timer = setTimeout(() => starten(frage, zeichnen), sofort ? 0 : frage.endsWith('?') ? 300 : PAUSE_MS);
 }
 
 async function sitzung() {

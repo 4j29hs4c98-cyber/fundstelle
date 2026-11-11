@@ -5,8 +5,9 @@ import { tr } from './i18n.js';
 import { S, get, list, save, remove, toast, undoable, uid } from './core.js';
 import { render, applyLang, applyTheme } from './render.js';
 import { WAHLARTEN, BUNDESLAENDER } from './katalog.js';
-import { C } from './content.js';
-import { R } from './recherche.js';
+import { C, frageSuche } from './content.js';
+import { R, tippen } from './recherche.js';
+import { ergebnisHtml } from './views/eigene.js';
 import { PROFIL_ID } from './profil.js';
 import { vergleichAus, vergleichLink, MAX_VERGLEICH } from './views/vergleich.js';
 
@@ -68,7 +69,15 @@ export const actions = {
 
 export const forms = {
   suche(fd) { S.suche = String(fd.get('q') || '').trim().slice(0, 200); },
-  startfrage(fd) { S.frage = String(fd.get('q') || '').trim().slice(0, 200); },
+  // Gibt es in der App schon passende Fragen, erscheinen sie auf der Startseite. Sonst oeffnet sich eine eigene Seite,
+  // und der Agent recherchiert sofort.
+  startfrage(fd) {
+    S.frage = String(fd.get('q') || '').trim().slice(0, 200);
+    const r = S.frage ? frageSuche(S.frage) : null;
+    if (!S.frage || r?.fragen.length) return;
+    tippen(S.frage, () => { const el = document.getElementById('recherche'); if (el) el.innerHTML = ergebnisHtml(); }, true);
+    location.hash = '#recherche';
+  },
   // Nur bekannte Werte speichern: was aus dem Formular kommt, wird gegen die Listen geprueft.
   async profil(fd) {
     const arten = WAHLARTEN.map(w => w.id), laender = BUNDESLAENDER.map(l => l.id), themen = C.themen.map(t => t.id);

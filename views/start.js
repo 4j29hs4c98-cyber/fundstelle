@@ -42,9 +42,8 @@ function antwortKarte(f) {
 
 function antwort(text) {
   const r = frageSuche(text);
-  if (!r || !r.fragen.length) return `<section class="notice"><b>${tr('Nothing in the programmes on this yet.')}</b>
-    <p>${tr('The app covers only three questions so far. Under Check you can search for exact words.')}</p>
-    <p><a class="go" href="#eigene">${tr('Let the agent research it')} ${pfeil}</a></p></section>`;
+  // Ohne passende Frage in der App fuehrt das Abschicken auf die Seite #recherche (actions.js), hier bleibt es leer.
+  if (!r || !r.fragen.length) return '';
   return `${r.wertend ? `<p class="note small">${tr('Who does something “best” is your call. The app shows what each programme says, with the page.')}</p>` : ''}
     <div class="cards">${r.fragen.slice(0, 3).map(antwortKarte).join('')}</div>`;
 }

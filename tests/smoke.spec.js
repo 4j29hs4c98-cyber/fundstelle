@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('jede Seite oeffnet ohne Fehler und ohne seitliches Scrollen', async ({ page }) => {
-  for (const v of ['start', 'themen', 'thema/3a18c189-c9a4-49dc-8ad9-7e49ac440fe4', `frage/${MIETE}`, 'parteien', `partei/${SPD}`, `programm/${SPD}/20`, `vergleich/${SPD}`, 'pruefen', 'auswahl', 'settings']) {
+  for (const v of ['start', 'themen', 'thema/3a18c189-c9a4-49dc-8ad9-7e49ac440fe4', `frage/${MIETE}`, 'parteien', `partei/${SPD}`, `programm/${SPD}/20`, `vergleich/${SPD}`, 'pruefen', 'auswahl', 'settings', 'recherche']) {
     await page.goto(`/#${v}`);
     await expect(page.locator('#main h1')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
@@ -221,4 +221,15 @@ test('Vergleich: Halbkreis mit 630 Sitzen, Sitze und Knoepfe bleiben gleich gewa
   // Abwaehlen ueber die Sitze nimmt auch den Knopf zurueck.
   await page.locator(`.halbkreis .block[data-id="${SPD}"] .seat`).first().dispatchEvent('click');
   await expect(page.locator(`.pchip[data-id="${SPD}"]`)).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('Startfrage ohne Treffer oeffnet die Recherche-Seite statt eines Hinweises unter Themen', async ({ page }) => {
+  await page.goto('/#start');
+  await page.fill('#start-q', 'Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
+  await page.press('#start-q', 'Enter');
+  await expect(page).toHaveURL(/#recherche$/);
+  await expect(page.locator('#main h1')).toHaveText('Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
+  await expect(page.locator('#recherche')).toBeVisible();
+  await expect(page.locator('.tabbar a[data-nav=start]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.notice')).toHaveCount(0);
 });

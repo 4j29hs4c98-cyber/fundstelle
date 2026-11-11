@@ -86,6 +86,14 @@ export function gespeicherteThemen() {
       : plural((r.data.ergebnisse ?? []).length, tr('1 programme takes a position'), tr('{n} programmes take a position', { n: (r.data.ergebnisse ?? []).length }))}</span></a>`).join('')}</div>`;
 }
 
+// Eigene Seite fuer eine Frage von der Startseite, zu der es in der App noch nichts gibt: der Agent recherchiert sofort,
+// die Ergebnisse erscheinen hier. Gehoert zum Bereich Start, nicht zu Themen.
+export function viewRecherche() {
+  return `${kopf(tr('Research'), R.frage ? esc(R.frage) : tr('Ask your own question'), '', { href: '#start', text: tr('Start') })}
+  ${R.frage ? '' : `<p class="note">${tr('Ask a question on the start page first.')}</p>`}
+  <div id="recherche" aria-live="polite">${ergebnisHtml()}</div>`;
+}
+
 export function viewEigene(id) {
   if (id) return gespeichertes(id);
   return `${kopf(tr('Own topic'), tr('Ask your own question'), tr('As you type, an agent searches every programme and summarises where each party stands.'), { href: '#themen', text: tr('All topics') })}
