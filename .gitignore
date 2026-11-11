@@ -4,3 +4,4 @@ playwright-report/
 .DS_Store
 *.local.js
 supabase/seed/
+mockups/
