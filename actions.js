@@ -7,7 +7,7 @@ import { render, applyLang, applyTheme } from './render.js';
 import { WAHLARTEN, BUNDESLAENDER } from './katalog.js';
 import { C, frageSuche } from './content.js';
 import { R, tippen } from './recherche.js';
-import { ergebnisHtml } from './views/eigene.js';
+import { rechercheZeichnen } from './views/vergleich-eigene.js';
 import { PROFIL_ID } from './profil.js';
 import { vergleichAus, vergleichLink, MAX_VERGLEICH } from './views/vergleich.js';
 
@@ -76,7 +76,7 @@ export const forms = {
     S.frage = String(fd.get('q') || '').trim().slice(0, 200);
     const r = S.frage ? frageSuche(S.frage) : null;
     if (!S.frage || r?.fragen.length) return;
-    tippen(S.frage, () => { const el = document.getElementById('recherche'); if (el) el.innerHTML = ergebnisHtml(); }, true);
+    tippen(S.frage, rechercheZeichnen, true);
     location.hash = '#recherche';
   },
   // Nur bekannte Werte speichern: was aus dem Formular kommt, wird gegen die Listen geprueft.

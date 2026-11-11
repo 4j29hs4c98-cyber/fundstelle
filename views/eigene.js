@@ -51,9 +51,8 @@ function personHtml() {
     ${luecke}${R.status === 'fertig' ? ohneMandat(R.person) : ''}${belegListe(R.belege)}${speichern}${R.belege.length || R.status === 'fertig' ? PERSON_HINWEIS() : ''}`;
 }
 
-// Wird beim Tippen und bei jedem eintreffenden Ergebnis neu gezeichnet, ohne das Eingabefeld anzufassen.
-export function ergebnisHtml() {
-  if (R.typ === 'person') return personHtml();
+// Statuszeile, Hinweis auf unvollstaendige Ergebnisse und Anmeldelink. Auch der Vergleich nutzt das (views/vergleich-eigene.js).
+export function rechercheKopf() {
   const status = {
     leer: R.frage.length && R.frage.length < MIN_LAENGE ? tr('Keep typing. The agent starts from {n} characters.', { n: MIN_LAENGE }) : '',
     laeuft: R.gesamt ? tr('Agent is researching: {a} of {b} sources checked', { a: R.fertig, b: R.gesamt }) : tr('Agent is starting …'),
@@ -66,12 +65,18 @@ export function ergebnisHtml() {
   // Konnte eine Quelle nicht gelesen werden, ist das Ergebnis unvollstaendig: deutlich sagen und nicht speichern lassen.
   const luecke = R.status === 'fertig' && R.fehlgeschlagen
     ? `<p class="note">${plural(R.fehlgeschlagen, tr('1 source could not be read. The result is incomplete.'), tr('{n} sources could not be read. The result is incomplete.', { n: R.fehlgeschlagen }))}</p>` : '';
+  const anmelden = R.status === 'anmelden' ? `<p><a class="go" href="#settings">${tr('Sign in')} ${pfeil}</a></p>` : '';
+  return `${status ? `<p class="meta" role="status"${R.status === 'laeuft' ? ' aria-busy="true"' : ''}>${esc(status)}</p>` : ''}${luecke}${anmelden}`;
+}
+
+// Wird beim Tippen und bei jedem eintreffenden Ergebnis neu gezeichnet, ohne das Eingabefeld anzufassen.
+export function ergebnisHtml() {
+  if (R.typ === 'person') return personHtml();
   const speichern = R.status === 'fertig' && (R.ergebnisse.length || R.taten.length) && !R.fehlgeschlagen
     ? `<p><button class="btn" data-action="eigen-speichern">${tr('Save topic')}</button></p>` : '';
-  const anmelden = R.status === 'anmelden' ? `<p><a class="go" href="#settings">${tr('Sign in')} ${pfeil}</a></p>` : '';
   const zeigen = ['laeuft', 'fertig'].includes(R.status);
-  return `${status ? `<p class="meta" role="status"${R.status === 'laeuft' ? ' aria-busy="true"' : ''}>${esc(status)}</p>` : ''}
-    ${luecke}${zeigen ? versprochen(R.ergebnisse, R.status === 'fertig') + tatenHtml(R.taten, R.ohneFraktion, R.status === 'fertig') : ''}${speichern}${anmelden}`;
+  return `${rechercheKopf()}
+    ${zeigen ? versprochen(R.ergebnisse, R.status === 'fertig') + tatenHtml(R.taten, R.ohneFraktion, R.status === 'fertig') : ''}${speichern}`;
 }
 
 function gespeichertes(id) {

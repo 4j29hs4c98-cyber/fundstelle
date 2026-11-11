@@ -268,3 +268,27 @@ test('eigenes Thema: Parteifrage zeigt Versprochen und Getan, verwirft unsichere
   await expect(page.locator('#p')).toContainText(/no parliamentary group|keine Fraktion/);
   await expect(page.locator('#p')).toContainText(/No programme answers|Kein Programm beantwortet/);
 });
+
+test('Vergleich: eigene Frage zeigt je gewaehlter Partei eine Spalte mit Versprochen und Getan, ohne fremde Taten', async ({ page }) => {
+  const A = '32ad76bd-db22-420d-89c2-0ba593d4f289', B = '9823eced-6ef4-485f-a509-dd754f98f4ba';
+  await page.goto(`/#vergleich/${A},${B}`);
+  await expect(page.locator('#eigen-frage')).toBeVisible();
+  const html = await page.evaluate(async ([a, b]) => {
+    const { R } = await import('/recherche.js');
+    const { vergleichErgebnisHtml } = await import('/views/vergleich-eigene.js');
+    const alt = { ...R };
+    Object.assign(R, { status: 'fertig', typ: 'ja_nein', fertig: 14, gesamt: 14, fehlgeschlagen: 0, belege: [],
+      ergebnisse: [{ partei: a, haltung: 'dafuer', zusammenfassung: 'Warum A dafuer ist.', auszug: 'Ein woertliches Zitat aus dem Programm von A.', seite: 4, quelle_url: 'https://example.org/a.pdf' }],
+      taten: [{ quelle: 'fraktion_abstimmung', titel: 'Abstimmung nur A', url: 'https://www.abgeordnetenwatch.de/x', datum: '2026-10-16', angenommen: true,
+        fraktionen: [{ fraktion: 'X', parteien: [a], mehrheit: 'ja', ja: 10, nein: 0, enthalten: 0 }] }],
+      ohneFraktion: [b] });
+    const out = vergleichErgebnisHtml([a, b]); Object.assign(R, alt); return out;
+  }, [A, B]);
+  await page.setContent(`<div id="v">${html}</div>`);
+  await expect(page.locator('#v .vz')).toHaveCount(2);
+  await expect(page.locator('#v .vz').nth(0)).toContainText('Abstimmung nur A');
+  await expect(page.locator('#v .vz').nth(0).locator('.bubble.ja')).toHaveCount(1);
+  await expect(page.locator('#v .vz').nth(1)).not.toContainText('Abstimmung nur A');
+  await expect(page.locator('#v .vz').nth(1)).toContainText(/No matching passage|Keine passende Stelle/);
+  await expect(page.locator('#v .vz').nth(1)).toContainText(/No group|Keine Fraktion/);
+});
