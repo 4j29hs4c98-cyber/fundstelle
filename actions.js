@@ -5,8 +5,8 @@ import { tr } from './i18n.js';
 import { S, get, list, save, remove, toast, undoable, uid } from './core.js';
 import { render, applyLang, applyTheme } from './render.js';
 import { WAHLARTEN, BUNDESLAENDER } from './katalog.js';
-import { C, frageSuche } from './content.js';
-import { R, tippen } from './recherche.js';
+import { C } from './content.js';
+import { R, tippen, abbrechen } from './recherche.js';
 import { rechercheZeichnen } from './views/vergleich-eigene.js';
 import { PROFIL_ID } from './profil.js';
 import { vergleichAus, vergleichLink, MAX_VERGLEICH } from './views/vergleich.js';
@@ -70,14 +70,12 @@ export const actions = {
 
 export const forms = {
   suche(fd) { S.suche = String(fd.get('q') || '').trim().slice(0, 200); },
-  // Gibt es in der App schon passende Fragen, erscheinen sie auf der Startseite. Sonst oeffnet sich eine eigene Seite,
-  // und der Agent recherchiert sofort.
+  // Jede Frage startet den Agenten sofort, die Ergebnisse erscheinen direkt unter dem Fragenfeld der Startseite.
+  // Passende Fragen aus der App zeigt die Startseite zusaetzlich (views/start.js).
   startfrage(fd) {
     S.frage = String(fd.get('q') || '').trim().slice(0, 200);
-    const r = S.frage ? frageSuche(S.frage) : null;
-    if (!S.frage || r?.fragen.length) return;
-    tippen(S.frage, rechercheZeichnen, true);
-    location.hash = '#recherche';
+    // Leeres Feld: eine laufende Recherche abbrechen, damit sie nicht unsichtbar weiterlaeuft und Kosten verursacht.
+    if (S.frage) tippen(S.frage, rechercheZeichnen, true); else abbrechen();
   },
   // Nur bekannte Werte speichern: was aus dem Formular kommt, wird gegen die Listen geprueft.
   async profil(fd) {

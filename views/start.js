@@ -6,6 +6,8 @@ import { tageBis, neueAbstimmungen, frage, thema, fragenZuThema, partei, positio
 import { profil, hatProfil, naechsteEigeneWahl } from '../profil.js';
 import { kopf, pfeil, datum, termin, marke, haltung, seitenLink, demoHinweis, safeUrl } from './teile.js';
 import { vergleichLink } from './vergleich.js';
+import { R, MAX_LAENGE } from '../recherche.js';
+import { ergebnisHtml } from './eigene.js';
 
 const HINWEIS_TAGE = 90;
 
@@ -40,12 +42,20 @@ function antwortKarte(f) {
       <a class="btn" href="${esc(vergleichLink([], f.thema))}">${tr('Compare parties')}</a></div></article>`;
 }
 
+// Jede Frage aus dem Fragenfeld wird direkt hier recherchiert (actions.js startet den Agenten), die Ergebnisse
+// erscheinen unter dem Feld. Passende, schon aufbereitete Fragen aus der App stehen zusaetzlich darunter.
+// Der Ergebnisbereich zeigt nur die Recherche zu genau dieser Frage, nicht eine, die anderswo gestellt wurde.
 function antwort(text) {
   const r = frageSuche(text);
-  // Ohne passende Frage in der App fuehrt das Abschicken auf die Seite #recherche (actions.js), hier bleibt es leer.
-  if (!r || !r.fragen.length) return '';
-  return `${r.wertend ? `<p class="note small">${tr('Who does something “best” is your call. The app shows what each programme says, with the page.')}</p>` : ''}
-    <div class="cards">${r.fragen.slice(0, 3).map(antwortKarte).join('')}</div>`;
+  const gleich = R.frage === text.replace(/\s+/g, ' ').trim().slice(0, MAX_LAENGE);
+  // Der Bereich steht immer da, damit eintreffende Ergebnisse ihn finden. Im Zustand "leer" bleibt er leer:
+  // kein "Weitertippen"-Hinweis unter einem schon abgeschickten Feld.
+  const recherche = gleich ? `<div id="recherche" data-ansicht="start" aria-live="polite">${R.status === 'leer' ? '' : ergebnisHtml()}</div>` : '';
+  const vorhanden = r?.fragen.length
+    ? `<h2 class="eyebrow section-label">${tr('Already in the app')}</h2>
+    ${r.wertend ? `<p class="note small">${tr('Who does something “best” is your call. The app shows what each programme says, with the page.')}</p>` : ''}
+    <div class="cards">${r.fragen.slice(0, 3).map(antwortKarte).join('')}</div>` : '';
+  return `${recherche}${vorhanden}`;
 }
 
 function hinweis(w, pr) {

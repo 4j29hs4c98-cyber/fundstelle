@@ -223,15 +223,19 @@ test('Vergleich: Halbkreis mit 630 Sitzen, Sitze und Knoepfe bleiben gleich gewa
   await expect(page.locator(`.pchip[data-id="${SPD}"]`)).toHaveAttribute('aria-pressed', 'false');
 });
 
-test('Startfrage ohne Treffer oeffnet die Recherche-Seite statt eines Hinweises unter Themen', async ({ page }) => {
+test('Startfrage recherchiert direkt auf der Startseite, auch wenn es passende Fragen in der App gibt', async ({ page }) => {
   await page.goto('/#start');
   await page.fill('#start-q', 'Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
   await page.press('#start-q', 'Enter');
-  await expect(page).toHaveURL(/#recherche$/);
-  await expect(page.locator('#eigen-frage')).toHaveValue('Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
-  await expect(page.locator('#recherche')).toBeVisible();
-  await expect(page.locator('.tabbar a[data-nav=start]')).toHaveAttribute('aria-current', 'page');
+  await expect(page).toHaveURL(/#start$/);
+  await expect(page.locator('#start-q')).toHaveValue('Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
+  await expect(page.locator('#recherche [role=status]')).toContainText(/Sign in|anmelden|not switched on|nicht eingeschaltet|starting|startet/, { timeout: 8000 });
   await expect(page.locator('.notice')).toHaveCount(0);
+  // Mit Treffer in der App: Recherche oben, die vorhandenen Fragen darunter.
+  await page.fill('#start-q', 'Soll die Mietpreisbremse verlaengert werden?');
+  await page.press('#start-q', 'Enter');
+  await expect(page.locator('#recherche')).toBeVisible();
+  await expect(page.locator('#recherche ~ .cards .card').first()).toBeVisible();
 });
 
 test('eigenes Thema: Parteifrage zeigt Versprochen und Getan, verwirft unsichere Taten und nennt Parteien ohne Fraktion', async ({ page }) => {

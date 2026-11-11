@@ -100,8 +100,8 @@ export function gespeicherteThemen() {
         + ((r.data.taten ?? []).length ? `, ${plural(r.data.taten.length, tr('1 action'), tr('{n} actions', { n: r.data.taten.length }))}` : '')}</span></a>`).join('')}</div>`;
 }
 
-// Eigene Seite fuer eine Frage von der Startseite, zu der es in der App noch nichts gibt: der Agent recherchiert sofort,
-// die Ergebnisse erscheinen hier. Gehoert zum Bereich Start, nicht zu Themen.
+// Eigene Recherche-Seite mit Eingabefeld. Die Startseite recherchiert inzwischen direkt unter ihrem Fragenfeld;
+// diese Seite bleibt fuer Verweise, etwa aus dem Vergleich bei Personenfragen. Gehoert zum Bereich Start.
 export function viewRecherche() {
   // Mit eigenem Eingabefeld (dieselbe id wie unter #eigene, app.js startet darueber die Recherche beim Tippen): so laesst
   // sich die Frage hier aendern, nach der Anmeldung erneut starten oder verlaengern, ohne zurueck zur Startseite.

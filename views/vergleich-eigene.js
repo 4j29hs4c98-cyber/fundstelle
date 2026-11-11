@@ -69,5 +69,7 @@ export function vergleichEigene(ids) {
 export function rechercheZeichnen() {
   const el = document.getElementById('recherche');
   if (!el) return;
-  el.innerHTML = el.dataset.ansicht === 'vergleich' ? vergleichErgebnisHtml((el.dataset.ids || '').split(',').filter(Boolean)) : ergebnisHtml();
+  const ansicht = el.dataset.ansicht;
+  if (ansicht === 'vergleich') el.innerHTML = vergleichErgebnisHtml((el.dataset.ids || '').split(',').filter(Boolean));
+  else el.innerHTML = ansicht === 'start' && R.status === 'leer' ? '' : ergebnisHtml();
 }

@@ -198,6 +198,7 @@ const DE = {
   'No votes or motions for {names}: these parties have no parliamentary group in the current Bundestag. This says nothing about their position.': 'Keine Abstimmungen oder Anträge für {names}: Diese Parteien haben keine Fraktion im aktuellen Bundestag. Über ihre Haltung sagt das nichts aus.',
   'No recorded votes, motions or news on this question were found.': 'Zu dieser Frage wurden keine namentlichen Abstimmungen, Anträge oder Meldungen gefunden.',
   'Done. Programmes with a matching passage: {a}. Actions found: {b}.': 'Fertig. Programme mit passender Stelle: {a}. Gefundene Taten: {b}.',
+  'Already in the app': 'Schon in der App',
   'Open Research': 'Zur Recherche',
   'Your own question': 'Ihre eigene Frage', 'Ask a question to compare these parties': 'Eine Frage stellen, um diese Parteien zu vergleichen',
   'Promised': 'Versprochen', 'Done': 'Getan', 'Nothing found.': 'Nichts gefunden.',
