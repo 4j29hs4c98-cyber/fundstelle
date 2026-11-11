@@ -233,3 +233,38 @@ test('Startfrage ohne Treffer oeffnet die Recherche-Seite statt eines Hinweises 
   await expect(page.locator('.tabbar a[data-nav=start]')).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('.notice')).toHaveCount(0);
 });
+
+test('eigenes Thema: Parteifrage zeigt Versprochen und Getan, verwirft unsichere Taten und nennt Parteien ohne Fraktion', async ({ page }) => {
+  await page.goto('/#eigene');
+  const r = await page.evaluate(async () => {
+    const { R, tatPruefen } = await import('/recherche.js');
+    const { ergebnisHtml } = await import('/views/eigene.js');
+    const fr = (fraktion, mehrheit, ja, nein) => ({ fraktion, parteien: [], mehrheit, ja, nein, enthalten: 0 });
+    const gut = [
+      { quelle: 'fraktion_abstimmung', titel: 'Abstimmung A', url: 'https://www.abgeordnetenwatch.de/a', datum: '2026-10-16', angenommen: true,
+        fraktionen: [fr('AfD', 'nein', 0, 133), fr('CDU/CSU', 'ja', 195, 0)] },
+      { quelle: 'antrag', titel: 'Antrag B', art: 'Antrag', nummer: '21/5325', url: 'https://dserver.bundestag.de/btd/21/053/2105325.pdf', datum: '2026-04-14',
+        fraktionen: [{ fraktion: 'BÜNDNIS 90/DIE GRÜNEN', parteien: [] }] },
+      { quelle: 'web', partei: '32ad76bd-db22-420d-89c2-0ba593d4f289', titel: 'Artikel C', zusammenfassung: 'Zusammenfassung C.', auszug: 'Zitat C von der Seite.',
+        url: 'https://www.zdf.de/c', seite_name: 'zdf.de' },
+    ];
+    const schlecht = [
+      { quelle: 'antrag', titel: 'X', url: 'javascript:alert(1)', fraktionen: [{ fraktion: 'SPD' }] },
+      { quelle: 'fraktion_abstimmung', titel: 'Y', url: 'https://x.org/', fraktionen: [] },
+      { quelle: 'erfunden', titel: 'Z', url: 'https://x.org/' },
+    ];
+    Object.assign(R, { status: 'fertig', typ: 'offen', fertig: 14, gesamt: 14, fehlgeschlagen: 0, ergebnisse: [], belege: [],
+      taten: [...gut, ...schlecht], ohneFraktion: ['9823eced-6ef4-485f-a509-dd754f98f4ba'] });
+    return { html: ergebnisHtml(), geprueft: [...gut, ...schlecht].map(tatPruefen).filter(Boolean).length };
+  });
+  expect(r.geprueft).toBe(3);
+  await page.setContent(`<div id="p">${r.html}</div>`);
+  await expect(page.locator('#p h2')).toHaveText([/programmes promise|Programme versprechen/, /parties do|Parteien tun/]);
+  await expect(page.locator('#p h3')).toHaveText([/Recorded votes|Namentliche/, /Motions|Anträge/, /news|Nachrichten/]);
+  await expect(page.locator('#p .fraktionen li')).toHaveCount(2);
+  await expect(page.locator('#p .fraktionen li').first()).toContainText('AfD');
+  await expect(page.locator('#p .pos.beleg')).toHaveCount(3);
+  await expect(page.locator('#p a[href^="javascript"]')).toHaveCount(0);
+  await expect(page.locator('#p')).toContainText(/no parliamentary group|keine Fraktion/);
+  await expect(page.locator('#p')).toContainText(/No programme answers|Kein Programm beantwortet/);
+});

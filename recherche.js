@@ -12,10 +12,12 @@ const PAUSE_MS = 2000;
 // typ kommt vom Server: 'ja_nein' (Ja oder Nein je Partei) oder 'offen' (nur Zusammenfassung, keine Richtung).
 // typ 'person': die Frage nennt eine Politikerin oder einen Politiker. Dann kommen statt Parteiprogrammen Belege aus drei
 // Quellen (belege): Abstimmungen (abgeordnetenwatch.de), Reden im Bundestag (DIP) und Webquellen. gesamt/fertig zaehlen Quellen.
-export const R = { frage: '', status: 'leer', typ: null, ergebnisse: [], person: null, belege: [], fertig: 0, gesamt: 0, fehler: null, fehlgeschlagen: 0 };
+// Bei Parteifragen kommen zusaetzlich taten: was die Parteien tun (Fraktionsabstimmungen, Antraege, Meldungen).
+// ohneFraktion: Parteien ohne Fraktion im Bundestag; sie koennen keine Abstimmungen und Antraege haben.
+export const R = { frage: '', status: 'leer', typ: null, ergebnisse: [], person: null, belege: [], taten: [], ohneFraktion: [], fertig: 0, gesamt: 0, fehler: null, fehlgeschlagen: 0 };
 let lauf = null, timer = null, laufNr = 0;
 
-const zuruecksetzen = (status, fehler = null) => Object.assign(R, { status, typ: null, ergebnisse: [], person: null, belege: [], fertig: 0, gesamt: 0, fehler, fehlgeschlagen: 0 });
+const zuruecksetzen = (status, fehler = null) => Object.assign(R, { status, typ: null, ergebnisse: [], person: null, belege: [], taten: [], ohneFraktion: [], fertig: 0, gesamt: 0, fehler, fehlgeschlagen: 0 });
 
 // Nur https-Links, nur bekannte Quellen, nur Text: Server-Daten werden hier wie Nutzereingaben behandelt.
 const QUELLEN = new Set(['abstimmung', 'rede', 'web']);
@@ -26,12 +28,44 @@ export function belegPruefen(b) {
   if (!b || !QUELLEN.has(b.quelle)) return null;
   const url = httpsUrl(b.url), titel = text(b.titel, 300);
   if (!url || !titel) return null;
-  const datum = /^\d{4}-\d{2}-\d{2}$/.test(b.datum ?? '') ? b.datum : null;
+  const datum = echtesDatum(b.datum);
   const beleg = { quelle: b.quelle, titel, url, datum };
   if (b.quelle === 'abstimmung') return STIMMEN.has(b.stimme) ? { ...beleg, stimme: b.stimme } : null;
   const zusammenfassung = text(b.zusammenfassung, 600), auszug = text(b.auszug, 500);
   if (!zusammenfassung || !auszug) return null;
   return { ...beleg, zusammenfassung, auszug, fundstelle: text(b.fundstelle, 120) || null, seite_name: text(b.seite_name, 120) || null };
+}
+
+const MEHRHEIT = new Set(['ja', 'nein', 'enthalten']);
+// Nur Daten, die es gibt: "2026-13-45" wuerde sonst als "Invalid Date" erscheinen.
+const echtesDatum = v => (/^\d{4}-\d{2}-\d{2}$/.test(v ?? '') && !Number.isNaN(Date.parse(v)) ? v : null);
+const zahl = v => (Number.isInteger(v) && v >= 0 && v < 1000 ? v : 0);
+const idListe = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string').slice(0, 5) : []);
+const fraktionPruefen = f => (f && text(f.fraktion, 60) ? { fraktion: text(f.fraktion, 60), parteien: idListe(f.parteien) } : null);
+
+// Eine Tat der Parteien, ebenso streng geprueft wie ein Beleg. Auch gespeicherte Taten laufen hier durch.
+export function tatPruefen(t) {
+  if (!t) return null;
+  const url = httpsUrl(t.url), titel = text(t.titel, 300);
+  if (!url || !titel) return null;
+  const datum = echtesDatum(t.datum);
+  const basis = { quelle: t.quelle, titel, url, datum };
+  if (t.quelle === 'fraktion_abstimmung') {
+    const fraktionen = (Array.isArray(t.fraktionen) ? t.fraktionen : []).map(f => {
+      const g = fraktionPruefen(f);
+      return g && { ...g, mehrheit: MEHRHEIT.has(f.mehrheit) ? f.mehrheit : null, ja: zahl(f.ja), nein: zahl(f.nein), enthalten: zahl(f.enthalten) };
+    }).filter(Boolean);
+    return fraktionen.length ? { ...basis, angenommen: typeof t.angenommen === 'boolean' ? t.angenommen : null, fraktionen } : null;
+  }
+  if (t.quelle === 'antrag') {
+    const fraktionen = (Array.isArray(t.fraktionen) ? t.fraktionen : []).map(fraktionPruefen).filter(Boolean);
+    return fraktionen.length ? { ...basis, art: text(t.art, 40) || null, nummer: text(t.nummer, 20) || null, fraktionen } : null;
+  }
+  if (t.quelle === 'web') {
+    const zusammenfassung = text(t.zusammenfassung, 600), auszug = text(t.auszug, 500), partei = text(t.partei, 60);
+    return zusammenfassung && auszug && partei ? { ...basis, partei, zusammenfassung, auszug, seite_name: text(t.seite_name, 120) || null } : null;
+  }
+  return null;
 }
 
 // sofort: ohne Tipp-Pause starten (Frage von der Startseite abgeschickt).
@@ -104,11 +138,21 @@ function verarbeiten(zeile) {
     R.person = { name: text(e.person?.name, 100), partei: text(e.person?.partei, 60) || null, gefunden: e.person?.gefunden !== false };
     return;
   }
-  if (e.start) { R.gesamt = Number(e.parteien) || 0; R.typ = e.typ === 'offen' ? 'offen' : 'ja_nein'; return; }
+  if (e.start) {
+    R.gesamt = (Number(e.parteien) || 0) + (Number(e.quellen) || 0); R.typ = e.typ === 'offen' ? 'offen' : 'ja_nein';
+    R.ohneFraktion = Array.isArray(e.ohne_fraktion) ? e.ohne_fraktion.filter(x => typeof x === 'string').slice(0, 30) : [];
+    return;
+  }
   if (e.fertig) { R.status = 'fertig'; return 'fertig'; }
   if (e.beleg) {
     const b = belegPruefen(e.beleg);
     if (b && !R.belege.some(x => x.url === b.url && x.titel === b.titel)) R.belege = [...R.belege, b];
+    return;
+  }
+  if (e.tat) {
+    const t = tatPruefen(e.tat);
+    // Ein Artikel kann zwei Parteien betreffen: bei Meldungen gehoert die Partei zum Schluessel.
+    if (t && !R.taten.some(x => x.quelle === t.quelle && x.url === t.url && x.partei === t.partei)) R.taten = [...R.taten, t];
     return;
   }
   if (e.quelle_fertig) { R.fertig += 1; if (e.fehler) R.fehlgeschlagen += 1; return; }

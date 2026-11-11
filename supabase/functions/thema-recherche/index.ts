@@ -7,13 +7,15 @@
 //    bei einer Ja-Nein-Frage braucht jede Partei eine klare Haltung (dafuer/dagegen), bei einer offenen Frage ist die
 //    Haltung immer null. Danach prueft der Server selbst, ob das Zitat wirklich auf der Seite steht. Was nicht passt,
 //    wird verworfen.
-// Antwort als NDJSON-Strom. Parteien: { start, parteien, typ }, je Partei eine Zeile, zuletzt { fertig: true }.
+// Antwort als NDJSON-Strom. Parteien: { start, parteien, quellen, typ, ohne_fraktion }, je Partei eine Zeile, je Tat { tat },
+// je Tat-Quelle { quelle_fertig }, zuletzt { fertig: true }. Was die Parteien tun, steht in taten.ts.
 // Person: { start, typ: 'person', quellen, person }, je Beleg { beleg }, je Quelle { quelle_fertig }, zuletzt { fertig: true }.
 // Geheimnisse (nur in Supabase): ANTHROPIC_API_KEY. SUPABASE_URL und SUPABASE_SERVICE_ROLE_KEY setzt Supabase selbst.
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 import { frageClaude, jsonAus } from './ki.ts';
 import { norm, kuerzen, zitatOk } from './text.ts';
-import { personErkennen, mandatFinden, abstimmungen, reden, webquellen, type Person, type Beleg, type Mandat } from './personen.ts';
+import { fraktionsAbstimmungen, antraege, meldungen, ohneFraktion } from './taten.ts';
+import { frageVerstehen, mandatFinden, abstimmungen, reden, webquellen, type Person, type Beleg, type Mandat } from './personen.ts';
 
 export { norm };
 
@@ -25,6 +27,7 @@ const MAX_PRO_TAG_GESAMT = 1_000_000;
 const KI_TIMEOUT_MS = 25_000;
 const MIN_LAENGE = 12, MAX_LAENGE = 200;
 const PARALLEL = 4;
+const SEITEN_JE_PARTEI = 4;
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
@@ -74,39 +77,60 @@ async function frageKi(frage: string, typ: Fragetyp, partei: string, seiten: Sei
   }, KI_TIMEOUT_MS, signal));
 }
 
-async function recherchiere(frage: string, typ: Fragetyp, p: { id: string; name: string; quelle_url: string | null }, signal: AbortSignal): Promise<Ergebnis | null> {
-  const { data: seiten, error } = await admin.rpc('programm_suche', { p_partei: p.id, p_frage: frage, p_n: 3 });
+// Jede verworfene Partei bekommt einen Grund im Log, damit "keine Antwort" nachvollziehbar bleibt (keine Frage, kein Inhalt).
+const verworfen = (partei: string, grund: string): null => { console.log(`verworfen ${partei}: ${grund}`); return null; };
+
+async function recherchiere(frage: string, suche: string, typ: Fragetyp, p: { id: string; name: string; quelle_url: string | null }, signal: AbortSignal): Promise<Ergebnis | null> {
+  const { data: seiten, error } = await admin.rpc('programm_suche', { p_partei: p.id, p_frage: suche, p_n: SEITEN_JE_PARTEI });
   if (error) throw error;
-  if (!seiten?.length) return null;
+  if (!seiten?.length) return verworfen(p.name, 'keine Seite gefunden');
   const ki = await frageKi(frage, typ, p.name, seiten, signal);
-  if (!ki || ki.keine_stelle || typeof ki.auszug !== 'string' || typeof ki.zusammenfassung !== 'string') return null;
+  if (!ki) return verworfen(p.name, 'KI-Antwort nicht lesbar');
+  if (ki.keine_stelle) return verworfen(p.name, 'keine passende Stelle');
+  if (typeof ki.auszug !== 'string' || typeof ki.zusammenfassung !== 'string') return verworfen(p.name, 'Felder fehlen');
   const zusammenfassung = kuerzen(ki.zusammenfassung.trim(), 500);
-  if (!zusammenfassung) return null;
+  if (!zusammenfassung) return verworfen(p.name, 'leere Zusammenfassung');
   // Ja-Nein-Frage: nur mit klarer Richtung. Offene Frage: nie eine Richtung, auch wenn die KI eine liefert.
   const haltung = typ === 'offen' ? null : ki.haltung === 'dafuer' || ki.haltung === 'dagegen' ? ki.haltung : undefined;
-  if (haltung === undefined) return null;
+  if (haltung === undefined) return verworfen(p.name, 'keine klare Haltung');
   // Selbst pruefen: steht das Zitat wirklich woertlich auf der genannten Seite? Sonst verwerfen.
   const seite = seiten.find((s: Seite) => s.seite === ki.seite) ?? seiten.find((s: Seite) => norm(s.text).includes(norm(ki.auszug!)));
-  if (!seite || !zitatOk(ki.auszug, seite.text)) return null;
+  if (!seite || !zitatOk(ki.auszug, seite.text)) return verworfen(p.name, 'Zitat nicht woertlich auf der Seite');
   return { partei: p.id, haltung, zusammenfassung, auszug: ki.auszug, seite: seite.seite, quelle_url: p.quelle_url };
 }
 
 type Zeile = (o: unknown) => void;
 
-// Parteiprogramme: wie bisher je Partei, hoechstens PARALLEL gleichzeitig.
-async function parteienStrom(frage: string, zeile: Zeile, signal: AbortSignal) {
+// Eine Quelle meldet ihre Funde und zuletzt quelle_fertig; ein Fehler betrifft nur diese Quelle.
+async function quelleLaufen(name: string, art: 'beleg' | 'tat', lauf: () => Promise<unknown[]>, zeile: Zeile, signal: AbortSignal) {
+  try { for (const x of await lauf()) zeile({ [art]: x }); zeile({ quelle_fertig: name }); }
+  catch (err) { if (!signal.aborted) console.error(name, err); zeile({ quelle_fertig: name, fehler: true }); }
+}
+
+// Parteien: was sie versprechen (Wahlprogramme, je Partei, hoechstens PARALLEL gleichzeitig) und gleichzeitig, was sie
+// tun (taten.ts: Fraktionsabstimmungen, Antraege, Meldungen). gesamt in der App = Parteien plus diese drei Quellen.
+async function parteienStrom(frage: string, thema: string, stichworte: string[], zeile: Zeile, signal: AbortSignal) {
   const { data: parteien, error } = await admin.from('parteien').select('id, anzeigename, programme(quelle_url)').eq('status', 'veroeffentlicht').eq('ist_demo', false);
   if (error) throw error;
   const liste = (parteien ?? []).map(p => ({ id: p.id, name: p.anzeigename, quelle_url: (p.programme as { quelle_url: string }[])?.[0]?.quelle_url ?? null }));
   const typ = fragetyp(frage);
-  zeile({ start: true, parteien: liste.length, typ });
+  // Gesucht wird mit den Stichworten der KI; ohne sie (KI ausgefallen) wie frueher mit der Frage selbst.
+  const suche = stichworte.length ? stichworte.join(' ') : frage;
+  const thema_ = thema || frage;
+  zeile({ start: true, parteien: liste.length, quellen: 3, typ, ohne_fraktion: ohneFraktion(liste) });
   const warteschlange = [...liste];
-  await Promise.all(Array.from({ length: PARALLEL }, async () => {
+  const programme = Promise.all(Array.from({ length: PARALLEL }, async () => {
     for (let p = warteschlange.shift(); p && !signal.aborted; p = warteschlange.shift()) {
-      try { const e = await recherchiere(frage, typ, p, signal); zeile(e ? { ok: true, ...e } : { ok: false, partei: p.id }); }
+      try { const e = await recherchiere(frage, suche, typ, p, signal); zeile(e ? { ok: true, ...e } : { ok: false, partei: p.id }); }
       catch (err) { if (!signal.aborted) console.error(p.name, err); zeile({ ok: false, partei: p.id, fehler: true }); }
     }
   }));
+  await Promise.all([
+    programme,
+    quelleLaufen('fraktion_abstimmung', 'tat', () => fraktionsAbstimmungen(frage, thema_, liste, signal), zeile, signal),
+    quelleLaufen('antrag', 'tat', () => antraege(frage, thema_, stichworte, liste, signal), zeile, signal),
+    quelleLaufen('web', 'tat', () => meldungen(frage, thema_, liste, signal), zeile, signal),
+  ]);
 }
 
 // Person: drei Quellen parallel. Jede meldet ihre Belege und zuletzt quelle_fertig; ein Fehler betrifft nur ihre Quelle.
@@ -116,10 +140,7 @@ async function personStrom(frage: string, person: Person, zeile: Zeile, signal: 
   let mandat: Mandat | null = null, mandatFehler: unknown = null;
   try { mandat = await mandatFinden(person.name, signal); } catch (err) { mandatFehler = err; }
   zeile({ start: true, typ: 'person', quellen: 3, person: { name: person.name, partei: mandat?.partei ?? null, gefunden: mandatFehler ? null : !!mandat } });
-  const quelle = async (name: string, lauf: () => Promise<Beleg[]>) => {
-    try { for (const b of await lauf()) zeile({ beleg: b }); zeile({ quelle_fertig: name }); }
-    catch (err) { if (!signal.aborted) console.error(name, err); zeile({ quelle_fertig: name, fehler: true }); }
-  };
+  const quelle = (name: string, lauf: () => Promise<Beleg[]>) => quelleLaufen(name, 'beleg', lauf, zeile, signal);
   await Promise.all([
     quelle('abstimmung', () => {
       if (mandatFehler) return Promise.reject(mandatFehler);
@@ -159,10 +180,11 @@ Deno.serve(async req => {
       const zeile: Zeile = o => { if (!signal.aborted) ctrl.enqueue(enc.encode(JSON.stringify(o) + '\n')); };
       try {
         // Faellt die Personenerkennung aus, laeuft die Frage wie bisher ueber die Parteiprogramme.
-        const person = await personErkennen(frage, signal).catch(err => { if (!signal.aborted) console.error('Personenerkennung', err); return null; });
+        const { person, thema, stichworte } = await frageVerstehen(frage, signal)
+          .catch(err => { if (!signal.aborted) console.error('Frage verstehen', err); return { person: null, thema: '', stichworte: [] as string[] }; });
         if (signal.aborted) return;
         if (person) await personStrom(frage, person, zeile, signal);
-        else await parteienStrom(frage, zeile, signal);
+        else await parteienStrom(frage, thema, stichworte, zeile, signal);
         zeile({ fertig: true });
       } catch (err) {
         // Ohne Schlusszeile zeigt die App "abgebrochen" statt eines scheinbar vollstaendigen Ergebnisses.

@@ -379,6 +379,8 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
    gestrichelter Kante, damit man die weniger streng gepruefte Quelle schon am Rand erkennt. */
 .bubble.enth, .bubble.fehlt { background: var(--sunken); color: var(--muted); }
 .pos.beleg.web { border-style: dashed; border-color: var(--line-strong); }
+.fraktionen { list-style: none; margin: 12px 0; padding: 0; display: grid; gap: 8px; }
+.fraktionen li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
 
 /* Haltung immer beschriftet, nie allein im Raum. Keine Gut/Schlecht-Farbe: neutrale Pille wie bisher. */
 .haltung-zeile { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 6px; }
