@@ -10,10 +10,29 @@ const PAUSE_MS = 2000;
 
 // Zustand der aktuellen Recherche. status: leer | laeuft | fertig | anmelden | aus | fehler
 // typ kommt vom Server: 'ja_nein' (Ja oder Nein je Partei) oder 'offen' (nur Zusammenfassung, keine Richtung).
-export const R = { frage: '', status: 'leer', typ: null, ergebnisse: [], fertig: 0, gesamt: 0, fehler: null, fehlgeschlagen: 0 };
+// typ 'person': die Frage nennt eine Politikerin oder einen Politiker. Dann kommen statt Parteiprogrammen Belege aus drei
+// Quellen (belege): Abstimmungen (abgeordnetenwatch.de), Reden im Bundestag (DIP) und Webquellen. gesamt/fertig zaehlen Quellen.
+export const R = { frage: '', status: 'leer', typ: null, ergebnisse: [], person: null, belege: [], fertig: 0, gesamt: 0, fehler: null, fehlgeschlagen: 0 };
 let lauf = null, timer = null, laufNr = 0;
 
-const zuruecksetzen = (status, fehler = null) => Object.assign(R, { status, typ: null, ergebnisse: [], fertig: 0, gesamt: 0, fehler, fehlgeschlagen: 0 });
+const zuruecksetzen = (status, fehler = null) => Object.assign(R, { status, typ: null, ergebnisse: [], person: null, belege: [], fertig: 0, gesamt: 0, fehler, fehlgeschlagen: 0 });
+
+// Nur https-Links, nur bekannte Quellen, nur Text: Server-Daten werden hier wie Nutzereingaben behandelt.
+const QUELLEN = new Set(['abstimmung', 'rede', 'web']);
+const STIMMEN = new Set(['ja', 'nein', 'enthalten', 'nicht_abgestimmt']);
+const text = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+const httpsUrl = v => { try { const u = new URL(v); return u.protocol === 'https:' ? u.href : null; } catch { return null; } };
+export function belegPruefen(b) {
+  if (!b || !QUELLEN.has(b.quelle)) return null;
+  const url = httpsUrl(b.url), titel = text(b.titel, 300);
+  if (!url || !titel) return null;
+  const datum = /^\d{4}-\d{2}-\d{2}$/.test(b.datum ?? '') ? b.datum : null;
+  const beleg = { quelle: b.quelle, titel, url, datum };
+  if (b.quelle === 'abstimmung') return STIMMEN.has(b.stimme) ? { ...beleg, stimme: b.stimme } : null;
+  const zusammenfassung = text(b.zusammenfassung, 600), auszug = text(b.auszug, 500);
+  if (!zusammenfassung || !auszug) return null;
+  return { ...beleg, zusammenfassung, auszug, fundstelle: text(b.fundstelle, 120) || null, seite_name: text(b.seite_name, 120) || null };
+}
 
 export function tippen(text, zeichnen) {
   clearTimeout(timer);
@@ -79,8 +98,19 @@ async function lesen(body, ctrl, zeichnen, nr) {
 
 function verarbeiten(zeile) {
   let e; try { e = JSON.parse(zeile); } catch { return; }
+  if (e.start && e.typ === 'person') {
+    R.typ = 'person'; R.gesamt = Number(e.quellen) || 0;
+    R.person = { name: text(e.person?.name, 100), partei: text(e.person?.partei, 60) || null, gefunden: e.person?.gefunden !== false };
+    return;
+  }
   if (e.start) { R.gesamt = Number(e.parteien) || 0; R.typ = e.typ === 'offen' ? 'offen' : 'ja_nein'; return; }
   if (e.fertig) { R.status = 'fertig'; return 'fertig'; }
+  if (e.beleg) {
+    const b = belegPruefen(e.beleg);
+    if (b && !R.belege.some(x => x.url === b.url && x.titel === b.titel)) R.belege = [...R.belege, b];
+    return;
+  }
+  if (e.quelle_fertig) { R.fertig += 1; if (e.fehler) R.fehlgeschlagen += 1; return; }
   R.fertig += 1;
   if (e.fehler) R.fehlgeschlagen += 1;
   const richtungOk = R.typ === 'offen' ? e.haltung == null : e.haltung === 'dafuer' || e.haltung === 'dagegen';

@@ -375,6 +375,10 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
   :root:not([data-theme="light"]) .bubble.nein { background: #4A1E18; color: #F5B5AA; } }
 :root[data-theme="dark"] .bubble.ja { background: #173D24; color: #A8E6BA; }
 :root[data-theme="dark"] .bubble.nein { background: #4A1E18; color: #F5B5AA; }
+/* Personenfragen: Enthaltung und fehlende Stimme neutral (Token-Farben, folgen dem Hell-/Dunkelmodus). Webquellen mit
+   gestrichelter Kante, damit man die weniger streng gepruefte Quelle schon am Rand erkennt. */
+.bubble.enth, .bubble.fehlt { background: var(--sunken); color: var(--muted); }
+.pos.beleg.web { border-style: dashed; border-color: var(--line-strong); }
 
 /* Haltung immer beschriftet, nie allein im Raum. Keine Gut/Schlecht-Farbe: neutrale Pille wie bisher. */
 .haltung-zeile { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 6px; }

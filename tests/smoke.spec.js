@@ -165,6 +165,34 @@ test('eigenes Thema: Ja/Nein-Bubble vorn, darunter das Warum; offene Fragen ohne
   await expect(page.locator('#b .warum')).toContainText('Position');
 });
 
+test('eigenes Thema: Personenfrage zeigt drei beschriftete Quellen und verwirft unsichere Belege', async ({ page }) => {
+  await page.goto('/#eigene');
+  const r = await page.evaluate(async () => {
+    const { R, belegPruefen } = await import('/recherche.js');
+    const { ergebnisHtml } = await import('/views/eigene.js');
+    const gut = [
+      { quelle: 'abstimmung', titel: 'Abstimmung A', stimme: 'nein', url: 'https://www.abgeordnetenwatch.de/a', datum: '2026-03-01' },
+      { quelle: 'rede', titel: 'Rede B', zusammenfassung: 'Zusammenfassung B.', auszug: 'Zitat B aus dem Protokoll.', url: 'https://dserver.bundestag.de/b.pdf', fundstelle: 'Plenarprotokoll 21/1, ab S. 1' },
+      { quelle: 'web', titel: 'Artikel C', zusammenfassung: 'Zusammenfassung C.', auszug: 'Zitat C von der Seite.', url: 'https://www.tagesschau.de/c', seite_name: 'tagesschau.de' },
+    ];
+    const schlecht = [
+      { quelle: 'web', titel: 'X', zusammenfassung: 'x', auszug: 'y', url: 'javascript:alert(1)' },
+      { quelle: 'abstimmung', titel: 'Y', stimme: 'vielleicht', url: 'https://x.org/' },
+      { quelle: 'erfunden', titel: 'Z', url: 'https://x.org/' },
+    ];
+    Object.assign(R, { status: 'fertig', typ: 'person', fertig: 3, gesamt: 3, fehlgeschlagen: 0, ergebnisse: [],
+      person: { name: 'Erika Beispiel', partei: null, gefunden: false }, belege: [...gut, ...schlecht] });
+    return { html: ergebnisHtml(), geprueft: [...gut, ...schlecht].map(belegPruefen).filter(Boolean).length };
+  });
+  expect(r.geprueft).toBe(3);
+  await page.setContent(`<div id="p">${r.html}</div>`);
+  await expect(page.locator('#p h3')).toHaveText([/Votes|Abstimmungen/, /Speeches|Reden/, /Web sources|Webquellen/]);
+  await expect(page.locator('#p .pos.beleg')).toHaveCount(3);
+  await expect(page.locator('#p .pos.beleg.web')).toHaveCount(1);
+  await expect(page.locator('#p a[href^="javascript"]')).toHaveCount(0);
+  await expect(page.locator('#p')).toContainText(/current Bundestag|aktuellen Bundestags/);
+});
+
 test('Vergleich: Spalten alphabetisch, egal in welcher Reihenfolge gewaehlt', async ({ page }) => {
   await page.goto('/#vergleich/');
   await page.locator('.pchip', { hasText: 'SPD' }).click();

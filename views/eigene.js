@@ -7,6 +7,7 @@ import { esc, list, get } from '../core.js';
 import { partei } from '../content.js';
 import { R, MIN_LAENGE, MAX_LAENGE } from '../recherche.js';
 import { kopf, pfeil, marke, extLink, pdfSeite, datum } from './teile.js';
+import { belegListe, personStatus, ohneMandat, PERSON_HINWEIS } from './person.js';
 
 const nachName = (a, b) => (partei(a.partei)?.name ?? '').localeCompare(partei(b.partei)?.name ?? '', 'de');
 const pdfLink = (url, seite) => (url ? `${url.split('#')[0]}#page=${seite}` : null);
@@ -31,8 +32,20 @@ const ergebnisListe = liste => (liste.length
 
 const HINWEIS = () => `<p class="note small">${tr('Researched from the 2025 programmes. Every quote was checked automatically, word for word, against the programme page. Parties without a matching passage are not shown.')}</p>`;
 
+// Personenfrage: Belege aus drei Quellen statt Parteiprogrammen (views/person.js).
+function personHtml() {
+  const status = ['laeuft', 'fertig'].includes(R.status) ? personStatus(R.status, R.person, R.belege, R.fertig, R.gesamt) : '';
+  const luecke = R.status === 'fertig' && R.fehlgeschlagen
+    ? `<p class="note">${plural(R.fehlgeschlagen, tr('1 source could not be read. The result is incomplete.'), tr('{n} sources could not be read. The result is incomplete.', { n: R.fehlgeschlagen }))}</p>` : '';
+  const speichern = R.status === 'fertig' && R.belege.length && !R.fehlgeschlagen
+    ? `<p><button class="btn" data-action="eigen-speichern">${tr('Save topic')}</button></p>` : '';
+  return `${status ? `<p class="meta" role="status"${R.status === 'laeuft' ? ' aria-busy="true"' : ''}>${esc(status)}</p>` : ''}
+    ${luecke}${R.status === 'fertig' ? ohneMandat(R.person) : ''}${belegListe(R.belege)}${speichern}${R.belege.length || R.status === 'fertig' ? PERSON_HINWEIS() : ''}`;
+}
+
 // Wird beim Tippen und bei jedem eintreffenden Ergebnis neu gezeichnet, ohne das Eingabefeld anzufassen.
 export function ergebnisHtml() {
+  if (R.typ === 'person') return personHtml();
   const status = {
     leer: R.frage.length && R.frage.length < MIN_LAENGE ? tr('Keep typing. The agent starts from {n} characters.', { n: MIN_LAENGE }) : '',
     laeuft: R.gesamt ? tr('Agent is researching: {a} of {b} programmes read', { a: R.fertig, b: R.gesamt }) : tr('Agent is starting …'),
@@ -57,9 +70,9 @@ function gespeichertes(id) {
   const r = get(id);
   if (!r || r.kind !== 'eigenes') return `${kopf(tr('Own topic'), tr('This topic no longer exists.'), '', { href: '#eigene', text: tr('Own topics') })}`;
   return `${kopf(tr('Own topic'), esc(r.data.frage), tr('Researched on {d}', { d: datum(String(r.data.stand ?? '').slice(0, 10)) }), { href: '#eigene', text: tr('Own topics') })}
-  ${ergebnisListe(r.data.ergebnisse ?? []) || `<p class="note">${tr('No programme answers this question clearly.')}</p>`}
+  ${r.data.typ === 'person' ? belegListe(r.data.belege ?? []) : ergebnisListe(r.data.ergebnisse ?? []) || `<p class="note">${tr('No programme answers this question clearly.')}</p>`}
   <p><button class="btn" data-action="eigen-loeschen" data-id="${esc(r.id)}">${tr('Delete topic')}</button></p>
-  ${HINWEIS()}`;
+  ${r.data.typ === 'person' ? PERSON_HINWEIS() : HINWEIS()}`;
 }
 
 // Liste der gespeicherten eigenen Themen, neueste zuerst. Erscheint unter "Eigene Frage" und unter "Themen".
@@ -68,7 +81,9 @@ export function gespeicherteThemen() {
   if (!meine.length) return '';
   return `<h2 class="eyebrow section-label">${tr('Your saved topics')}</h2>
   <div class="cards">${meine.map(r => `<a class="card link" href="#eigene/${esc(r.id)}"><div class="card-row"><h3>${esc(r.data.frage)}</h3>${pfeil}</div>
-    <span class="meta">${plural((r.data.ergebnisse ?? []).length, tr('1 programme takes a position'), tr('{n} programmes take a position', { n: (r.data.ergebnisse ?? []).length }))}</span></a>`).join('')}</div>`;
+    <span class="meta">${r.data.typ === 'person'
+      ? plural((r.data.belege ?? []).length, tr('1 source'), tr('{n} sources', { n: (r.data.belege ?? []).length }))
+      : plural((r.data.ergebnisse ?? []).length, tr('1 programme takes a position'), tr('{n} programmes take a position', { n: (r.data.ergebnisse ?? []).length }))}</span></a>`).join('')}</div>`;
 }
 
 export function viewEigene(id) {
