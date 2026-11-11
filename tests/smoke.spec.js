@@ -228,7 +228,7 @@ test('Startfrage ohne Treffer oeffnet die Recherche-Seite statt eines Hinweises 
   await page.fill('#start-q', 'Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
   await page.press('#start-q', 'Enter');
   await expect(page).toHaveURL(/#recherche$/);
-  await expect(page.locator('#main h1')).toHaveText('Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
+  await expect(page.locator('#eigen-frage')).toHaveValue('Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
   await expect(page.locator('#recherche')).toBeVisible();
   await expect(page.locator('.tabbar a[data-nav=start]')).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('.notice')).toHaveCount(0);

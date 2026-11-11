@@ -89,8 +89,11 @@ export function gespeicherteThemen() {
 // Eigene Seite fuer eine Frage von der Startseite, zu der es in der App noch nichts gibt: der Agent recherchiert sofort,
 // die Ergebnisse erscheinen hier. Gehoert zum Bereich Start, nicht zu Themen.
 export function viewRecherche() {
-  return `${kopf(tr('Research'), R.frage ? esc(R.frage) : tr('Ask your own question'), '', { href: '#start', text: tr('Start') })}
-  ${R.frage ? '' : `<p class="note">${tr('Ask a question on the start page first.')}</p>`}
+  // Mit eigenem Eingabefeld (dieselbe id wie unter #eigene, app.js startet darueber die Recherche beim Tippen): so laesst
+  // sich die Frage hier aendern, nach der Anmeldung erneut starten oder verlaengern, ohne zurueck zur Startseite.
+  return `${kopf(tr('Research'), tr('Ask your own question'), '', { href: '#start', text: tr('Start') })}
+  <label class="field"><span>${tr('Your question')}</span>
+    <textarea id="eigen-frage" rows="2" maxlength="${MAX_LAENGE}">${esc(R.frage)}</textarea></label>
   <div id="recherche" aria-live="polite">${ergebnisHtml()}</div>`;
 }
 

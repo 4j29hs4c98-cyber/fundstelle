@@ -38,7 +38,7 @@ export function belegPruefen(b) {
 export function tippen(text, zeichnen, sofort = false) {
   clearTimeout(timer);
   const frage = String(text).replace(/\s+/g, ' ').trim().slice(0, MAX_LAENGE);
-  if (frage === R.frage && R.status !== 'leer') return;
+  if (frage === R.frage && (R.status === 'laeuft' || R.status === 'fertig')) return;
   lauf?.abort(); lauf = null; laufNr += 1;
   R.frage = frage;
   zuruecksetzen('leer');

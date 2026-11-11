@@ -237,7 +237,6 @@ const DE = {
   'In {n} days: {name}': 'In {n} Tagen: {name}',
   'See what the parties say on your topics.': 'Sehen Sie, was die Parteien zu Ihren Themen sagen.',
   'Research': 'Recherche',
-  'Ask a question on the start page first.': 'Stellen Sie zuerst auf der Startseite eine Frage.',
   'Ask your own question': 'Eigene Frage stellen',
   'e.g. Which party wants more for homeless people?': 'z. B. Welche Partei will mehr für Obdachlose tun?',
   'Ask': 'Fragen',
