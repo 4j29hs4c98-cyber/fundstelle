@@ -287,7 +287,7 @@ const DE = {
   'Summarised in our own words from the 2025 programme and neutral sources such as the bpb. Researched by an AI agent on {d}, not yet checked by people.': 'In eigenen Worten zusammengefasst aus dem Wahlprogramm 2025 und neutralen Quellen wie der bpb. Recherchiert von einem KI-Agenten am {d}, noch nicht von Menschen geprüft.',
   'Summarised in our own words, with the source. Mockup: people and quotes here are invented.': 'In eigenen Worten zusammengefasst, mit Quelle. Mockup: Personen und Aussagen hier sind erfunden.',
   'Party website': 'Website der Partei',
-  'Compare with …': 'Vergleichen mit …',
+  'Compare this party': 'Vergleichen',
   'Open the original on page {n}': 'Original auf Seite {n} öffnen',
   'Programme': 'Programm',
   'Programme for the federal election 2025': 'Programm zur Bundestagswahl 2025',

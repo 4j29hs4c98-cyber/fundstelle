@@ -91,7 +91,7 @@ export function viewPartei(id) {
     { href: '#parteien', text: tr('All parties') })}
   ${profilBlock(p)}
   <div class="row"><a class="go" href="#programm/${esc(p.id)}">${tr('Read programme')} ${pfeil}</a>
-    <a class="btn" href="#vergleich/${esc(p.id)}">${tr('Compare with …')}</a></div>
+    <a class="go" href="#vergleich/${esc(p.id)}">${tr('Compare this party')} ${pfeil}</a></div>
   ${bloecke || `<p class="note">${tr('No positions recorded yet.')}</p>`}
   <p class="note small">${tr('A vote next to a programme point is not a verdict. Parties in government often vote with their coalition, parties in opposition cannot pass their own programme.')}</p>
   ${parteiNachrichten(p.id)}
