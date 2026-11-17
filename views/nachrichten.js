@@ -6,14 +6,15 @@ import { tr, LOC } from '../i18n.js';
 import { esc } from '../core.js';
 import { frage, partei } from '../content.js';
 import { R, MAX_LAENGE } from '../recherche.js';
-import { N, themaNachId, themenZuPartei, zuPartei, zuPerson } from '../nachrichten.js';
+import { N, BEREICHE, startThemen, themenNachBereich, themaNachId, themenZuPartei, zuPartei, zuPerson } from '../nachrichten.js';
 import { ergebnisHtml } from './eigene.js';
-import { extLink, kopf } from './teile.js';
+import { extLink, kopf, pfeil } from './teile.js';
 
-const PARTEI_ANZAHL = 6, PARTEI_THEMEN = 4, PERSON_ANZAHL = 5, START_THEMEN = 8;
+const PARTEI_ANZAHL = 6, PARTEI_THEMEN = 4, PERSON_ANZAHL = 5;
 
 const zeit = iso => new Date(iso).toLocaleString(LOC(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 const zeile = n => `<li>${extLink(n.url, esc(n.titel))}<span class="meta">${esc(n.quelle)} · ${esc(zeit(n.datum))}</span></li>`;
+const zeile2 = m => `<li>${extLink(m.u, esc(m.t))}<span class="meta">${esc(m.q)} · ${esc(zeit(m.d))}</span></li>`;
 const liste = items => `<ul class="news">${items.map(zeile).join('')}</ul>`;
 const ersterSatz = t => (t.split(/(?<=[.!?])\s+/)[0] ?? t);
 const ART = { kommentar: 'Comment', interview: 'Interview', video: 'Video' };
@@ -24,16 +25,36 @@ function themenZahl(t) {
   return t.quellen === 1 ? tr('{n} reports from one source', { n }) : tr('{n} reports from {m} sources', { n, m: t.quellen });
 }
 
-const themenKarte = t => `<a class="card link" href="#nachricht/${esc(t.id)}"><h3>${esc(t.titel)}</h3>
+const themenKarte = (t, rang, von) => `<a class="card link" href="#nachricht/${esc(t.id)}">${rang ? `<span class="meta">${tr('{n} of {m}', { n: rang, m: von })}</span>` : ''}<h3>${esc(t.titel)}</h3>
   ${t.zusammenfassung ? `<p><span class="tag">${tr('KI summary')}</span> ${esc(ersterSatz(t.zusammenfassung))}</p>` : ''}
   <span class="meta">${esc(themenZahl(t))} · ${esc(zeit(t.aktualisiert))}</span></a>`;
 
+// Startseite: die drei wichtigsten Themen (Rang der KI) und der Weg zur Nachrichtenabfrage mit allen Themen nach Bereich.
 export function aktuellHtml() {
-  const themen = N.themen.length
-    ? `<h2 class="eyebrow section-label">${tr('Topics of the day')}</h2>
-  <div class="cards">${N.themen.slice(0, START_THEMEN).map(themenKarte).join('')}</div>
-  <p class="note small">${tr('Topics and summaries are written by a KI from the headlines and teasers of eight news sources and the Bundestag, and checked automatically. A person has not checked them. Read the sources.')}</p>` : '';
-  return themen;
+  if (!N.themen.length) return '';
+  const drei = startThemen();
+  return `<h2 class="eyebrow section-label">${tr('Topics of the day')}</h2>
+  ${drei.length ? `<div class="cards">${drei.map((t, i) => themenKarte(t, i + 1, drei.length)).join('')}</div>` : ''}
+  <p class="note small">${tr('Topics and summaries are written by a KI from the headlines and teasers of eight news sources and the Bundestag, and checked automatically. A person has not checked them. Read the sources.')}</p>
+  <p><a class="go" href="#nachrichten">${tr('News overview')} ${pfeil}</a></p>
+  <p class="note small">${tr('All important news of the last 36 hours, sorted by area.')}</p>`;
+}
+
+// Seite "Nachrichtenabfrage": alle Themen nach Bereich, jeweils mit den verlinkten Meldungen. param: Nummer eines Bereichs oder leer.
+const MELDUNGEN_JE_THEMA = 4;
+export function viewNachrichten(param) {
+  const nr = /^\d+$/.test(String(param ?? '')) && Number(param) < BEREICHE.length ? Number(param) : null;
+  const chip = (href, text, an) => `<a class="qchip" href="${href}" aria-pressed="${an}"${an ? ' aria-current="page"' : ''}>${text}</a>`;
+  const filter = `<div class="qbar" role="group" aria-label="${esc(tr('Area'))}">${chip('#nachrichten', tr('All areas'), nr == null)}${BEREICHE.map((b, i) => chip(`#nachrichten/${i}`, esc(b), nr === i)).join('')}</div>`;
+  const gruppen = themenNachBereich(nr).map(g => `<h2 class="eyebrow section-label">${esc(g.name)}</h2>
+    ${g.themen.map(t => `<article class="card"><h3><a href="#nachricht/${esc(t.id)}">${esc(t.titel)}</a></h3>
+      <ul class="news">${t.meldungen.slice(0, MELDUNGEN_JE_THEMA).map(zeile2).join('')}</ul>
+      <span class="meta">${esc(themenZahl(t))}${t.meldungen.length > MELDUNGEN_JE_THEMA ? ` · <a href="#nachricht/${esc(t.id)}">${tr('All reports')}</a>` : ''}</span></article>`).join('')}`).join('');
+  const leer = N.themen.length ? tr('No topics in this area right now.') : tr(N.stand ? 'No news available right now.' : 'Loading the news …');
+  return `${kopf(tr('News'), tr('News overview'), tr('The most important reports of the last 36 hours, sorted by area. Only headline, source and time, linked to the newsroom.'), { href: '#start', text: tr('Start') })}
+  ${filter}
+  ${gruppen || `<p class="note">${leer}</p>`}
+  <p class="note small">${tr('A KI sorts the topics into areas. The reports themselves stay unchanged. An area is no judgement about a report.')}</p>`;
 }
 
 export function parteiNachrichten(id) {

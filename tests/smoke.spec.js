@@ -361,6 +361,60 @@ test('Themen des Tages: Karten auf der Startseite, Themenseite mit Kurzfassung, 
   await expect(page.locator('main')).toContainText(/nicht mehr aktuell|no longer current/);
 });
 
+test('Startseite zeigt nur die drei wichtigsten Themen mit Kurzfassung und zwei Quellen; Nachrichtenabfrage ordnet alle nach Bereich', async ({ page }) => {
+  await page.goto('/#start');
+  await page.evaluate(async () => {
+    const { N } = await import('/nachrichten.js');
+    const t = (id, titel, bereich, zf, quellen) => ({ id, titel, rang: id, bereich, zusammenfassung: zf, parteien: [], personen: [], frage: null, frageId: null, quellen, aktualisiert: '2026-11-17T12:00:00Z',
+      meldungen: [{ q: 'zdfheute.de', t: `Meldung ${id}`, u: `https://example.org/${id}`, d: '2026-11-17T12:00:00Z', a: 'meldung' }] });
+    N.themen = [t(1, 'Erstes Thema', 'Innenpolitik', 'Erster Satz eins. Zweiter.', 3), t(2, 'Nur eine Quelle', 'Außenpolitik und Sicherheit', 'Satz ohne Mehrfachquelle.', 1),
+      t(3, 'Drittes Thema', 'Innenpolitik', 'Satz drei ist hier.', 2), t(4, 'Viertes Thema', 'Wirtschaft und Finanzen', 'Satz vier ist hier.', 2),
+      t(5, 'Fünftes Thema', 'Wirtschaft und Finanzen', 'Satz fünf ist hier.', 2), t(6, 'Ohne Kurzfassung', 'Weitere Themen', null, 3)];
+    N.stand = Date.now();
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+  });
+  await expect(page.locator('main a.card.link[href^="#nachricht/"]')).toHaveCount(3);
+  await expect(page.locator('main')).not.toContainText('Nur eine Quelle');
+  await expect(page.locator('main')).not.toContainText('Fünftes Thema');
+  await page.locator('main a[href="#nachrichten"]').click();
+  await expect(page).toHaveURL(/#nachrichten$/);
+  await expect(page.locator('main article.card')).toHaveCount(6);                 // alle Themen, auch mit einer Quelle
+  await expect(page.locator('main h2.eyebrow')).toHaveText(['Innenpolitik', 'Außenpolitik und Sicherheit', 'Wirtschaft und Finanzen', 'Weitere Themen']);
+  await page.locator('main a.qchip[href="#nachrichten/2"]').click();
+  await expect(page.locator('main article.card')).toHaveCount(2);
+  await expect(page.locator('main a.qchip[aria-pressed=true]')).toHaveText('Wirtschaft und Finanzen');
+});
+
+test('Vergleich ohne Thema: Gesamtbild der Parteien nebeneinander, mit Thema entfaellt es', async ({ page }) => {
+  await page.goto(`/#vergleich/${SPD},9823eced-6ef4-485f-a509-dd754f98f4ba`);
+  await expect(page.locator('main .vz-partei').first()).toBeVisible();
+  const gesamt = page.locator('h2.eyebrow', { hasText: /Gesamtbild|Overall picture/ });
+  await expect(gesamt).toBeVisible();
+  await expect(page.locator('main .skala')).toHaveCount(2);
+  await page.locator('.qbar .qchip').nth(1).click();
+  await expect(gesamt).toHaveCount(0);
+});
+
+test('Einordnung: drei feste Zeilen je Partei mit Quelle, Skala links-rechts alphabetisch ohne Rangfolge, AfD mit Gerichtsstand', async ({ page }) => {
+  await page.goto(`/#partei/${SPD}`);
+  const box = page.locator('.einordnung');
+  await expect(box.locator('.fakt')).toHaveCount(3);
+  await expect(box).toContainText('3,47');
+  await expect(box).toContainText(/Keine Einstufung durch das Bundesamt/);
+  await expect(box.locator('.punkt')).toHaveCount(1);
+  await expect(box.locator('.quellen a').first()).toHaveAttribute('rel', /noopener/);
+  await page.goto('/#partei/9823eced-6ef4-485f-a509-dd754f98f4ba');
+  await expect(page.locator('.einordnung')).toContainText('Verdachtsfall');
+  await expect(page.locator('.einordnung')).toContainText('vorläufig untersagt');
+  await expect(page.locator('.einordnung .fakt')).toHaveCount(3);
+  await page.goto('/#parteien');
+  const namen = await page.locator('.lr-liste li b').allTextContents();
+  expect(namen).toEqual([...namen].sort((a, b) => a.localeCompare(b, 'de')));    // alphabetisch, nicht nach Wert
+  expect(namen.length).toBeGreaterThanOrEqual(9);
+  await expect(page.locator('.lr-liste li', { hasText: 'SSW' })).toContainText(/nicht erfasst|not included/);
+  await expect(page.locator('.lr-liste .punkt').first()).toBeVisible();
+});
+
 test('Link pruefen: startet nur auf Knopfdruck, zeigt Urteil mit geprueften Belegen und verwirft unsichere Daten', async ({ page }) => {
   await page.goto('/#pruefen');
   await expect(page.locator('[data-form=linkpruefen]')).toBeVisible();

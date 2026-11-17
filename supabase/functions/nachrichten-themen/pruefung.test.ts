@@ -1,6 +1,6 @@
 // Prueft pruefung.ts mit echten Beispielen vom 13.11.2026 und mit Faellen, die scheitern muessen. Start: deno test pruefung.test.ts
 import { assertEquals } from 'jsr:@std/assert@1';
-import { artVon, frageOk, inhaltAnteil, istKeineMeldung, istKopie, kurzfassungOk, pruefeThema, titelOk, zahlenBelegt } from './pruefung.ts';
+import { artVon, bereichOk, BEREICHE, frageOk, inhaltAnteil, istKeineMeldung, istKopie, kurzfassungOk, pruefeThema, titelOk, zahlenBelegt } from './pruefung.ts';
 
 const P = [{ id: 'a', name: 'AfD' }, { id: 'c', name: 'CDU' }, { id: 's', name: 'SPD' }];
 const m = (i: number, quelle: string, titel: string, anreisser: string) => ({ url: `https://x.de/${i}`, quelle, titel, anreisser, datum: `2026-11-13T1${i}:00:00.000Z` });
@@ -97,4 +97,12 @@ Deno.test('Vorbereitete Frage nur aus der Liste', () => {
   const vb = [{ id: 'f1', frage: 'Soll die Miete gedeckelt werden?' }];
   assertEquals(pruefeThema({ titel: 'Mietenthema im Bundestag', meldungen: [{ i: 0 }], vorbereitete_frage: 'f1' }, M, P, vb, new Set())?.frage_id, 'f1');
   assertEquals(pruefeThema({ titel: 'Mietenthema im Bundestag', meldungen: [{ i: 0 }], vorbereitete_frage: 'erfunden' }, M, P, vb, new Set())?.frage_id, null);
+});
+
+Deno.test('Bereich nur aus der festen Liste, sonst Weitere Themen', () => {
+  assertEquals(bereichOk('Innenpolitik'), 'Innenpolitik');
+  assertEquals(bereichOk('  Wirtschaft und Finanzen '), 'Wirtschaft und Finanzen');
+  assertEquals(bereichOk('Erfundener Bereich'), 'Weitere Themen');
+  assertEquals(bereichOk(null), 'Weitere Themen');
+  assertEquals(BEREICHE.at(-1), 'Weitere Themen');
 });

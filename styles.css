@@ -447,6 +447,23 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 
 .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border: 1px solid var(--line, currentColor); border-radius: 999px; color: var(--muted); margin-right: 6px; }
 
+/* Einordnung: drei feste Zeilen je Partei, Skala 0 bis 10. Quellen als kleine Linkliste unter dem Text. */
+.einordnung { margin-top: 24px; }
+.fakten { margin: 12px 0 0; display: grid; gap: 16px; }
+.fakt { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+.fakt dt { font-weight: 600; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+.fakt dd { margin: 0; } .fakt dd p { margin: 0 0 8px; line-height: 1.55; font-size: 15px; }
+.quellen { display: grid; gap: 4px; font-size: 13px; margin: 6px 0 4px; }
+.quellen a { overflow-wrap: anywhere; }
+.skala { position: relative; height: 30px; margin-top: 4px; }
+.skala .spur { position: absolute; left: 0; right: 0; top: 12px; height: 6px; border-radius: 3px; background: var(--line); }
+.skala .punkt { position: absolute; top: 6px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: var(--ink); border: 3px solid var(--surface); box-sizing: border-box; }
+.enden { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin: 2px 0 6px; }
+.lr-liste { list-style: none; margin: 12px 0; padding: 0; display: grid; gap: 4px; }
+.lr-liste a { display: grid; grid-template-columns: minmax(96px, 1fr) 84px minmax(0, 2fr); align-items: center; gap: 8px; min-height: 44px; text-decoration: none; color: inherit; }
+.lr-liste .meta { margin: 0; text-align: right; white-space: nowrap; }
+.lr-liste .skala { margin: 0; }
+
 /* Link pruefen (Reiter Pruefen) */
 .link-check { margin-top: 28px; }
 .link-form { display: grid; gap: 6px; margin: 12px 0; }

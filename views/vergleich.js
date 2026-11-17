@@ -11,6 +11,7 @@ import { profil } from '../profil.js';
 import { kopf, marke, haltungZeile, quelleZeile, demoHinweis, herkunft } from './teile.js';
 import { halbkreis, sitzeVon, imBundestag } from './halbkreis.js';
 import { vergleichEigene } from './vergleich-eigene.js';
+import { gesamtbildHtml } from './einordnung.js';
 
 export const MAX_VERGLEICH = 4;
 const nachName = (a, b) => (partei(a)?.name ?? '').localeCompare(partei(b)?.name ?? '', 'de');
@@ -76,6 +77,7 @@ export function viewVergleich(param) {
   ${v.ids.length >= 2 ? vergleichEigene(v.ids) : ''}
   <p class="eyebrow">${tr('Choose a topic')}</p>
   <div class="qbar">${themaChip('', tr('All topics'), v)}${themenSortiert().map(t => themaChip(t.id, esc(t.titel), v)).join('')}</div>
+  ${v.ids.length >= 2 && !v.thema ? gesamtbildHtml(v.ids) : ''}
   ${inhalt}
   ${demoHinweis()}
   ${herkunft('vergleich')}`;

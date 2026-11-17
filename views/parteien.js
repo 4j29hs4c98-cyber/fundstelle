@@ -6,6 +6,7 @@ import { parteienSortiert, ohneInhalt, hatInhalt, partei, programmVon, themenSor
 import { kopf, pfeil, haltungZeile, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink, quelleZeile } from './teile.js';
 import { profilVon } from '../parteiprofile.js';
 import { parteiNachrichten } from './nachrichten.js';
+import { einordnungBlock, skalaHtml } from './einordnung.js';
 
 // "Kurz gesagt" vor den Themen: vier Saetze, jeder mit Quellennummer; die Quellen samt Zitat aufklappbar.
 // Die Nummern sind bewusst keine Links: ein #-Sprung wuerde vom Hash-Router als Seitenwechsel gelesen.
@@ -35,6 +36,7 @@ export function viewParteien() {
   <h2 class="eyebrow section-label">${tr('More parties, content follows')}</h2>
   <div class="cards">${ohneInhalt().map(p => `<a class="card link" href="#partei/${esc(p.id)}"><div class="prog-head">${logo(p)}<b>${esc(p.voll)}</b></div>
     <span class="meta">${p.programm ? tr('Programme 2025 linked') : tr('No programme PDF found yet')}</span></a>`).join('')}</div>
+  ${skalaHtml()}
   <details class="mehr"><summary>${tr('Why these parties?')}</summary>
     <p class="note small">${tr('Which parties appear needs a fixed rule before launch, ideally all parties admitted to the election in question.')}</p></details>
   ${demoHinweis()}`;
@@ -61,6 +63,7 @@ export function aussagenBlock(liste, mitPartei = false) {
 function echtePartei(p) {
   return `${kopf(tr('Party'), `${logo(p)} ${esc(p.voll)}`, '', { href: '#parteien', text: tr('All parties') })}
   ${profilBlock(p)}
+  ${einordnungBlock(p)}
   <div class="row">${safeUrl(p.programm) ? `<a class="go" href="#programm/${esc(p.id)}">${tr('Read programme')} ${pfeil}</a>` : ''}
     ${extLink(p.web, tr('Party website'))}</div>
   <section class="notice"><b>${tr('No positions recorded yet.')}</b>
@@ -90,6 +93,7 @@ export function viewPartei(id) {
   return `${kopf(tr('Party'), `${logo(p)} ${esc(p.voll ?? p.name)}`, pr ? `${esc(pr.titel)}${pr.seiten ? ` · ${tr('{n} pages', { n: pr.seiten })}` : ''}` : '',
     { href: '#parteien', text: tr('All parties') })}
   ${profilBlock(p)}
+  ${einordnungBlock(p)}
   <div class="row"><a class="go" href="#programm/${esc(p.id)}">${tr('Read programme')} ${pfeil}</a>
     <a class="go" href="#vergleich/${esc(p.id)}">${tr('Compare this party')} ${pfeil}</a></div>
   ${bloecke || `<p class="note">${tr('No positions recorded yet.')}</p>`}

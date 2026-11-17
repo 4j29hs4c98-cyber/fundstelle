@@ -15,10 +15,10 @@ import { viewProgramm } from './views/programm.js';
 import { viewWahlen } from './views/wahlen.js';
 import { viewGrundlagen } from './views/grundlagen.js';
 import { viewEigene, viewRecherche } from './views/eigene.js';
-import { viewNachricht } from './views/nachrichten.js';
+import { viewNachricht, viewNachrichten } from './views/nachrichten.js';
 
 const views = { start: viewStart, themen: viewThemen, thema: viewThema, frage: viewFrage, parteien: viewParteien, partei: viewPartei,
-  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, grundlagen: viewGrundlagen, pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings, eigene: viewEigene, recherche: viewRecherche, nachricht: viewNachricht };
+  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, grundlagen: viewGrundlagen, pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings, eigene: viewEigene, recherche: viewRecherche, nachricht: viewNachricht, nachrichten: viewNachrichten };
 const FOCUS_KEYS = ['action', 'id', 'v', 'frage', 'bezug'];
 
 // Seiten, deren Parameter nur eine Auswahl auf derselben Seite ist (Parteien im Vergleich). Ein Wechsel dort ist kein

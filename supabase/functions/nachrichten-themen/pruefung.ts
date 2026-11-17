@@ -11,7 +11,11 @@ export type Eintrag = { q: string; t: string; u: string; d: string; a: Art };
 export type Thema = {
   titel: string; zusammenfassung: string | null; parteien: string[]; personen: string[];
   frage: string | null; frage_id: string | null; meldungen: Eintrag[]; anzahl_quellen: number; aktualisiert: string;
+  bereich: string; rang: number | null;   // rang wird erst nach der Pruefung aus der Reihenfolge der KI vergeben
 };
+// Feste Liste: die KI darf keine eigenen Bereiche erfinden. Alles andere landet unter "Weitere Themen".
+export const BEREICHE = ['Innenpolitik', 'Außenpolitik und Sicherheit', 'Wirtschaft und Finanzen', 'Klima und Energie', 'Soziales und Gesundheit', 'Bildung und Gesellschaft', 'Weitere Themen'];
+export const bereichOk = (b: unknown): string => (typeof b === 'string' && BEREICHE.includes(b.trim()) ? b.trim() : 'Weitere Themen');
 export type Vorbereitet = { id: string; frage: string };
 
 const TITEL_MIN = 8, TITEL_MAX = 200;
@@ -28,7 +32,7 @@ const HEIKEL = /(Vorw(u|ü)rf|Ermittl|Anklage|Verdacht|Belästig|Missbrauch|Betr
 export const istKeineMeldung = (m: Pick<Meldung, 'titel'>) =>
   /(\bvom \d{1,2}\. [A-Za-zäöü]+ \d{4}\b|\bNewsletter\b|\bPodcast\b|\bGlosse\b|Streiflicht|SZ am Abend|Wochenr(ü|ue)ckblick)/i.test(m.titel);
 
-const norm = (s: string) => s.normalize('NFC').toLowerCase().replace(/[­​]/g, '');
+const norm = (s: string) => s.normalize('NFC').toLowerCase().replace(/[\u00ad\u200b]/g, '');
 const worte = (s: string) => norm(s).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
 
 // Jede Zahl muss als eigenstaendige Zahl in den Quelltexten stehen ("5" steht nicht in "2025" oder "5,3"), ebenso Zahlwoerter
@@ -108,7 +112,7 @@ export function frageOk(f: unknown, parteien: Partei[], personen: string[]): str
   return namen.some(n => kommtVor(n, t)) ? null : t;
 }
 
-type Roh = { titel?: unknown; zusammenfassung?: unknown; meldungen?: unknown; parteien?: unknown; personen?: unknown; frage?: unknown; vorbereitete_frage?: unknown };
+type Roh = { titel?: unknown; zusammenfassung?: unknown; meldungen?: unknown; parteien?: unknown; personen?: unknown; frage?: unknown; vorbereitete_frage?: unknown; bereich?: unknown };
 
 // Baut aus einem KI-Vorschlag ein gepruefes Thema, oder null. benutzt: Indizes, die schon einem Thema gehoeren (wird ergaenzt).
 export function pruefeThema(roh: Roh, meldungen: Meldung[], parteien: Partei[], vorbereitet: Vorbereitet[], benutzt: Set<number>): Thema | null {
@@ -146,6 +150,6 @@ export function pruefeThema(roh: Roh, meldungen: Meldung[], parteien: Partei[], 
     frage: vb ? null : frageOk(roh.frage, parteien, z.personen), frage_id: vb?.id ?? null,
     meldungen: eintraege.map(e => ({ q: e.m.quelle, t: e.m.titel, u: e.m.url, d: e.m.datum, a: e.art })),
     anzahl_quellen: new Set(eintraege.map(e => e.m.quelle)).size,
-    aktualisiert: eintraege[0].m.datum,
+    aktualisiert: eintraege[0].m.datum, bereich: bereichOk(roh.bereich), rang: null,
   };
 }

@@ -16,6 +16,9 @@ const zeile = r => {
 };
 
 const ARTEN = ['meldung', 'kommentar', 'interview', 'video'];
+// Feste Bereiche, in dieser Reihenfolge angezeigt; dieselbe Liste wie in nachrichten-themen/pruefung.ts. Die Adresse traegt die Nummer.
+export const BEREICHE = ['Innenpolitik', 'Außenpolitik und Sicherheit', 'Wirtschaft und Finanzen', 'Klima und Energie', 'Soziales und Gesundheit', 'Bildung und Gesellschaft', 'Weitere Themen'];
+const START_ANZAHL = 3;
 const strings = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string') : []);
 // Ein Thema des Tages (Tabelle nachrichten_themen): nur uebernehmen, was die Anzeige sicher verkraftet.
 const themaZeile = r => {
@@ -26,7 +29,8 @@ const themaZeile = r => {
   }).filter(Boolean);
   if (!Number.isInteger(r?.id) || !titel || !meldungen.length) return null;
   const aktualisiert = text(r.aktualisiert, 40);
-  return { id: r.id, titel, zusammenfassung: text(r.zusammenfassung, 800) || null, parteien: strings(r.parteien), personen: strings(r.personen),
+  const rang = Number.isInteger(r.rang) && r.rang > 0 ? r.rang : null;
+  return { id: r.id, titel, rang, bereich: BEREICHE.includes(r.bereich) ? r.bereich : 'Weitere Themen', zusammenfassung: text(r.zusammenfassung, 800) || null, parteien: strings(r.parteien), personen: strings(r.personen),
     frage: text(r.frage, 200) || null, frageId: text(r.frage_id, 60) || null, meldungen, quellen: Math.max(1, Number(r.anzahl_quellen) || 1),
     aktualisiert: Number.isNaN(Date.parse(aktualisiert)) ? meldungen[0].d : aktualisiert };
 };
@@ -35,7 +39,7 @@ export async function nachrichtenLaden(client) {
   if (!client || Date.now() - N.stand < NEU_LADEN_MS) return false;
   const [a, b] = await Promise.all([
     client.from('nachrichten').select('url,quelle,titel,datum,parteien,personen').order('datum', { ascending: false }).limit(MAX_ZEILEN),
-    client.from('nachrichten_themen').select('id,titel,zusammenfassung,parteien,personen,frage,frage_id,meldungen,anzahl_quellen,aktualisiert').order('aktualisiert', { ascending: false }).limit(MAX_THEMEN),
+    client.from('nachrichten_themen').select('id,titel,zusammenfassung,parteien,personen,frage,frage_id,meldungen,anzahl_quellen,aktualisiert,rang,bereich').order('rang', { ascending: true, nullsFirst: false }).order('aktualisiert', { ascending: false }).limit(MAX_THEMEN),
   ]);
   if (a.error) { console.error('Nachrichten', a.error.message); return false; }
   if (b.error) console.error('Themen', b.error.message);   // ohne Themen bleibt die Schlagzeilenliste
@@ -45,6 +49,11 @@ export async function nachrichtenLaden(client) {
   return true;
 }
 
+// Die drei wichtigsten Themen (Rang der KI) fuer die Startseite: nur mit Kurzfassung und mindestens zwei Quellen, sonst waere die Seite leer.
+export const startThemen = () => N.themen.filter(t => t.zusammenfassung && t.quellen >= 2).slice(0, START_ANZAHL);
+// Alle Themen nach Bereich, in der Reihenfolge von BEREICHE; leere Bereiche entfallen. nr: Index eines Bereichs oder null fuer alle.
+export const themenNachBereich = nr => BEREICHE.map((name, i) => ({ nr: i, name, themen: N.themen.filter(t => t.bereich === name) }))
+  .filter(g => g.themen.length && (nr == null || g.nr === nr));
 export const themaNachId = id => N.themen.find(t => String(t.id) === String(id)) ?? null;
 export const themenZuPartei = id => N.themen.filter(t => t.parteien.includes(id));
 
