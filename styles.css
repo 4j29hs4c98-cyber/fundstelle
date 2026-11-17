@@ -460,3 +460,35 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 .faktencheck .urteil-label { display: block; font-size: 13px; color: var(--muted); }
 .befunde { list-style: none; padding: 0; display: grid; gap: 12px; }
 .befund { border-left: 3px solid var(--line-strong); padding-left: 10px; }
+
+/* ---------- Breites Format (MacBook, grosses Fenster, iPad quer) ----------
+   Wie bei Kraftwerk: ab 900px wird die untere Leiste zur festen Seitenleiste links, mit Symbol und Beschriftung
+   bei jedem Bereich. Der Inhalt bekommt mehr Breite. Telefone bleiben unveraendert. */
+@media (min-width: 900px) {
+  :root { --seite: 240px; }
+  body { padding-left: var(--seite); }
+  .topbar { position: fixed; top: 0; left: 0; z-index: 11; width: var(--seite); max-width: none; margin: 0; box-sizing: border-box;
+    padding: 20px 12px 0 24px; }
+  .brand { font-size: 18px; }
+  .tabbar { top: 0; bottom: 0; left: 0; right: auto; width: var(--seite); transform: none; box-sizing: border-box;
+    display: flex; flex-direction: column; justify-content: flex-start; gap: 4px; padding: 88px 12px 24px;
+    border-radius: 0; background: var(--surface); border-right: 1px solid var(--line); box-shadow: none; }
+  .tabbar a { justify-content: flex-start; gap: 12px; min-height: 48px; padding: 0 14px; border-radius: 12px; font-size: 15px; color: var(--muted); }
+  .tabbar a span:not(.sync-dot) { display: inline; }
+  .tabbar a[aria-current="page"] { background: var(--primary); color: var(--primary-ink); }
+  main { max-width: 1000px; padding: 32px 48px 56px; }
+  .toast { bottom: 24px; left: calc(50% + var(--seite) / 2); }
+  /* Vier Einstiege: zwei mal zwei, auf breiten Bildschirmen alle vier in einer Reihe (statt drei plus eins). */
+  .wege { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1200px) {
+  .wege { grid-template-columns: repeat(4, 1fr); }
+  /* Reine Link-Listen (Parteien, Themen, Meldungen) in zwei Spalten; Listen mit Fliesstext bleiben einspaltig. */
+  .cards:not(:has(> :not(a.card.link))) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 900px) and (hover: hover) {
+  .tabbar a:not([aria-current="page"]):hover { color: var(--ink); background: var(--sunken); }
+}
+
+/* Nachrichtenabfrage: Bereichsfilter sind Links */
+a.qchip { display: inline-flex; align-items: center; text-decoration: none; }
