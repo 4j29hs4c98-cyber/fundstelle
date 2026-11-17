@@ -360,3 +360,30 @@ test('Themen des Tages: Karten auf der Startseite, Themenseite mit Kurzfassung, 
   await page.evaluate(async () => { const { N } = await import('/nachrichten.js'); N.stand = Date.now(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
   await expect(page.locator('main')).toContainText(/nicht mehr aktuell|no longer current/);
 });
+
+test('Link pruefen: startet nur auf Knopfdruck, zeigt Urteil mit geprueften Belegen und verwirft unsichere Daten', async ({ page }) => {
+  await page.goto('/#pruefen');
+  await expect(page.locator('[data-form=linkpruefen]')).toBeVisible();
+  await expect(page.locator('#link-pruefung')).toContainText(/about a minute|etwa eine Minute/);   // ohne Klick keine Kosten
+  await page.fill('#link-text', 'Die Rente mit 70 wurde im Bundestag beschlossen.');
+  await page.click('[data-form=linkpruefen] button');
+  await expect(page.locator('#link-pruefung')).toContainText(/sign in|anmelden|not available|nicht verfügbar/, { timeout: 8000 });
+  const html = await page.evaluate(async () => {
+    const { P, ergebnisPruefen } = await import('/pruefung.js');
+    const { pruefungZeichnen } = await import('/views/pruefen.js');
+    const r = ergebnisPruefen({ behauptung: 'Die Rente mit 70 wurde im Bundestag beschlossen.<img src=x onerror=alert(1)>', urteil: 'stimmt_nicht',
+      link_gelesen: false, grund: 'unbekannt', begruendung: 'Kein solcher Beschluss.', befunde: [
+        { url: 'https://www.bundestag.de/a', richtung: 'widerlegt', aussage: 'Regelaltersgrenze 67.', auszug: 'Die Regelaltersgrenze steigt bis 2031 auf 67 Jahre.', seite: 'bundestag.de', titel: 'Rente' },
+        { url: 'javascript:alert(1)', richtung: 'widerlegt', aussage: 'x', auszug: 'y', seite: 'x' },
+        { url: 'https://zdf.de/b', richtung: 'erfunden', aussage: 'x', auszug: 'y', seite: 'zdf.de' }] });
+    Object.assign(P, { url: 'https://example.org/post', status: 'fertig', ergebnis: r });
+    pruefungZeichnen();
+    return document.getElementById('link-pruefung').innerHTML;
+  });
+  const box = page.locator('#link-pruefung');
+  await expect(box).toContainText(/False|Stimmt nicht/);
+  await expect(box.locator('.befund')).toHaveCount(1);                       // unsicherer Link und unbekannte Richtung verworfen
+  await expect(box).toContainText(/could not be opened|ließ sich nicht öffnen/);
+  await expect(box.locator('a[rel~=noopener]')).toHaveCount(1);
+  expect(html).not.toContain('<img');
+});

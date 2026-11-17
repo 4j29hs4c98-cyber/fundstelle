@@ -446,3 +446,17 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 .news a { font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
 
 .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border: 1px solid var(--line, currentColor); border-radius: 999px; color: var(--muted); margin-right: 6px; }
+
+/* Link pruefen (Reiter Pruefen) */
+.link-check { margin-top: 28px; }
+.link-form { display: grid; gap: 6px; margin: 12px 0; }
+.link-form textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); color: var(--ink); resize: vertical; }
+.link-form .btn { justify-self: start; margin-top: 6px; }
+.laeuft { display: flex; align-items: center; gap: 8px; }
+.spinner { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: dreh 0.8s linear infinite; }
+@keyframes dreh { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+.faktencheck .urteil { font-size: 18px; margin: 12px 0 4px; }
+.faktencheck .urteil-label { display: block; font-size: 13px; color: var(--muted); }
+.befunde { list-style: none; padding: 0; display: grid; gap: 12px; }
+.befund { border-left: 3px solid var(--line-strong); padding-left: 10px; }

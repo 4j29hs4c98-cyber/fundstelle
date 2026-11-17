@@ -7,6 +7,8 @@ import { render, applyLang, applyTheme } from './render.js';
 import { WAHLARTEN, BUNDESLAENDER } from './katalog.js';
 import { C } from './content.js';
 import { R, tippen, abbrechen } from './recherche.js';
+import { pruefen } from './pruefung.js';
+import { pruefungZeichnen } from './views/pruefen.js';
 import { rechercheZeichnen } from './views/vergleich-eigene.js';
 import { PROFIL_ID } from './profil.js';
 import { vergleichAus, vergleichLink, MAX_VERGLEICH } from './views/vergleich.js';
@@ -72,6 +74,8 @@ export const actions = {
 
 export const forms = {
   suche(fd) { S.suche = String(fd.get('q') || '').trim().slice(0, 200); },
+  // Link pruefen: startet erst auf Knopfdruck, weil jede Pruefung Geld kostet. Laeuft im Hintergrund weiter.
+  linkpruefen(fd) { pruefen(String(fd.get('url') || '').trim().slice(0, 2000), String(fd.get('text') || '').trim().slice(0, 3000), pruefungZeichnen); },
   // Jede Frage startet den Agenten sofort, die Ergebnisse erscheinen direkt unter dem Fragenfeld der Startseite.
   // Passende Fragen aus der App zeigt die Startseite zusaetzlich (views/start.js).
   startfrage(fd) {
