@@ -1,6 +1,6 @@
 // Prueft pruefung.ts mit echten Beispielen vom 13.11.2026 und mit Faellen, die scheitern muessen. Start: deno test pruefung.test.ts
 import { assertEquals } from 'jsr:@std/assert@1';
-import { artVon, bereichOk, BEREICHE, frageOk, inhaltAnteil, istKeineMeldung, istKopie, kurzfassungOk, pruefeThema, titelOk, zahlenBelegt } from './pruefung.ts';
+import { SANKTION, artVon, bereichOk, BEREICHE, frageOk, inhaltAnteil, istKeineMeldung, istKopie, kurzfassungOk, pruefeThema, titelOk, zahlenBelegt } from './pruefung.ts';
 
 const P = [{ id: 'a', name: 'AfD' }, { id: 'c', name: 'CDU' }, { id: 's', name: 'SPD' }];
 const m = (i: number, quelle: string, titel: string, anreisser: string) => ({ url: `https://x.de/${i}`, quelle, titel, anreisser, datum: `2026-11-13T1${i}:00:00.000Z` });
@@ -105,4 +105,13 @@ Deno.test('Bereich nur aus der festen Liste, sonst Weitere Themen', () => {
   assertEquals(bereichOk('Erfundener Bereich'), 'Weitere Themen');
   assertEquals(bereichOk(null), 'Weitere Themen');
   assertEquals(BEREICHE.at(-1), 'Weitere Themen');
+});
+
+Deno.test('Ausschluesse und Rauswuerfe bekommen keine Kurzfassung, ein Ausschuss schon', () => {
+  const zf = 'Die Fraktion beantragt, ein Mitglied aus der Fraktion zu entfernen. Es geht um fruehere Aeusserungen.';
+  for (const w of ['Ausschluss von Vanessa Emde aus Fraktion', 'Ausschlussverfahren gegen Mitglied', 'Rauswurf aus der Partei', 'Entlassung des Ministers', 'wurde ausgeschlossen aus der Fraktion']) assertEquals(SANKTION.test(w), true, w);
+  for (const w of ['Der Haushaltsausschuss beschliesst den Etat', 'Der Ausschuss tagt']) assertEquals(SANKTION.test(w), false, w);
+  // Auch wenn die KI das Wort umschreibt: steht es in einer Quelle, entfaellt die Kurzfassung.
+  assertEquals(kurzfassungOk(zf, ['Ausschluss von Vanessa Emde aus Fraktion beantragt'], ['Ausschluss von Vanessa Emde aus Fraktion beantragt'], []), null);
+  assertEquals(kurzfassungOk('Die Fraktion beantragt Ausschluss eines Mitglieds wegen fruehere Aeusserungen.', ['Fraktion beantragt etwas'], ['Fraktion beantragt etwas'], []), null);
 });

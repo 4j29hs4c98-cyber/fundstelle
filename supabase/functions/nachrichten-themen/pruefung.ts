@@ -28,6 +28,11 @@ const MAX_MELDUNGEN_JE_THEMA = 20;
 // Rechtsrisiko; stattdessen stehen nur die verlinkten Meldungen der Redaktionen da.
 const HEIKEL = /(Vorw(u|ü)rf|Ermittl|Anklage|Verdacht|Belästig|Missbrauch|Betrug|Korruption|Straftat|Verurteil|Festnahme|Haftbefehl|Spionage|Untreue|Beleidigung|Volksverhetzung)/i;
 
+// Ausschluesse, Rauswuerfe und Entlassungen von Personen: Auch hier schreibt keine KI eine Kurzfassung (Fall "Ausschluss aus der Fraktion").
+// Geprueft wird die Kurzfassung UND jeder Quelltext des Themas, denn die KI kann das Wort umschreiben, das Thema bleibt trotzdem heikel.
+// "Ausschuss" (Gremium) ist etwas anderes und trifft nicht.
+export const SANKTION = /(Ausschluss|Ausschlie(ß|ss)|ausgeschlossen (aus|von)|Rauswurf|Rausschmiss|rausgeworfen|rausgeschmissen|rauswerfen|Entlassung|entlassen|Suspendier|Amtsenthebung|Abgesetzt|abgesetzt|Parteiaustritt)/;
+
 // Sendungen, Newsletter, Podcasts und Glossen sind keine Meldungen und werden gar nicht erst an die KI geschickt.
 export const istKeineMeldung = (m: Pick<Meldung, 'titel'>) =>
   /(\bvom \d{1,2}\. [A-Za-zäöü]+ \d{4}\b|\bNewsletter\b|\bPodcast\b|\bGlosse\b|Streiflicht|SZ am Abend|Wochenr(ü|ue)ckblick)/i.test(m.titel);
@@ -89,7 +94,7 @@ export function kurzfassungOk(zf: unknown, tragend: string[], alle: string[], pa
   if (t.length < ZF_MIN || t.length > ZF_MAX) return null;
   if (t.split(/(?<=[.!?])\s+/).length > ZF_SAETZE_MAX) return null;
   if (/https?:|www\.|@/i.test(t)) return null;
-  if (HEIKEL.test(t)) return null;
+  if (HEIKEL.test(t) || SANKTION.test(t) || alle.some(q => SANKTION.test(q))) return null;
   if (!zahlenBelegt(t, tragend.join(' '))) return null;
   if (!parteienBelegt(t, tragend, parteien)) return null;
   if (inhaltAnteil(t, tragend) < INHALT_ZF) return null;
