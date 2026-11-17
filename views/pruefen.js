@@ -3,15 +3,15 @@
 import { tr } from '../i18n.js';
 import { esc, S } from '../core.js';
 import { suche, partei, frage } from '../content.js';
-import { kopf, pfeil, seite, pdfSeite, datum, demoHinweis, safeUrl } from './teile.js';
+import { kopf, pfeil, seite, pdfSeite, datum, demoHinweis, safeUrl, auszugBlock } from './teile.js';
 
 function ergebnis(r) {
   if (!r) return `<p class="note">${tr('For example: “SPD Mietpreisbremse” or “CO2-Preis Klimageld”.')}</p>`;
   const wer = r.parteien.map(p => esc(p.name)).join(', ');
   const treffer = r.positionen.map(p => `<a class="card paper link" href="#frage/${esc(p.frage)}">
       <span class="meta">${esc(partei(p.partei)?.name ?? '')} · ${esc(frage(p.frage)?.kurz ?? '')}</span>
-      ${p.auszug ? `<blockquote class="auszug">„${esc(p.auszug)}“</blockquote>` : `<p>${esc(p.text)}</p>`}
-      <span class="meta">${esc(p.quelle)}, ${pdfSeite(p.seite)} ${pfeil}</span></a>`).join('');
+      ${p.auszug ? auszugBlock(p.auszug, p.quelle) : `<p>${esc(p.text)}</p>`}
+      <span class="meta">${esc(p.quelle)}${p.seite ? `, ${pdfSeite(p.seite)}` : ''} ${pfeil}</span></a>`).join('');
   const abst = r.abstimmungen.map(a => {
     const f = frage(a.fragen[0]);
     const href = f ? `#frage/${esc(f.id)}` : safeUrl(a.url) ? esc(safeUrl(a.url)) : null;

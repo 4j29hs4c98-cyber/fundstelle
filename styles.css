@@ -173,6 +173,7 @@ a.card.link h3 + .meta, a.card.link .meta { display: block; margin-top: 6px; }
 .stelle .meta a, .herkunft a, .src-inline a, .vote a { color: var(--ink); }
 .auszug { margin: 12px; font-family: var(--font-display); font-size: 16px; font-weight: 600; line-height: 1.45; color: var(--ink); }
 .card .auszug { margin: 8px 0; }
+.auszug.indirekt .meta { display: block; font-weight: 400; }
 
 .args { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 .args .panel { margin-top: 0; } .args h3 { margin: 0 0 8px; font-size: 15px; }

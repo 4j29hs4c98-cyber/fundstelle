@@ -3,7 +3,7 @@
 import { tr, plural } from '../i18n.js';
 import { esc } from '../core.js';
 import { frage, thema, partei, positionenZuFrage, argumenteZuFrage, abstimmungenZuFrage, aussagenZuFrage } from '../content.js';
-import { kopf, merkKnopf, haltungZeile, stimme, rolle, datum, pdfSeite, herkunft, demoHinweis, extLink, marke, seitenLink, pfeil, quelleZeile } from './teile.js';
+import { kopf, merkKnopf, haltungZeile, stimme, rolle, datum, pdfSeite, herkunft, demoHinweis, extLink, marke, seitenLink, pfeil, quelleZeile, auszugBlock } from './teile.js';
 import { aussagenBlock } from './parteien.js';
 import { begriffeBlock } from './grundlagen.js';
 
@@ -12,10 +12,10 @@ const quelleLink = (url, text) => extLink(url, esc(text));
 function positionKarte(p) {
   const pt = partei(p.partei);
   const stelle = p.seite ? `<details class="stelle"><summary>${esc(p.quelle)}, ${pdfSeite(p.seite)}</summary>
-      ${p.auszug ? `<blockquote class="auszug">„${esc(p.auszug)}“</blockquote>` : ''}
+      ${p.auszug ? auszugBlock(p.auszug, p.quelle) : ''}
       <p class="meta">${seitenLink(p.partei, p.seite, tr('Read on page {n} in the programme', { n: p.seite }))}</p></details>`
     : p.url ? `<details class="stelle"><summary>${esc(p.quelle)}</summary>
-      ${p.auszug ? `<blockquote class="auszug">„${esc(p.auszug)}“</blockquote>` : ''}
+      ${p.auszug ? auszugBlock(p.auszug, p.quelle) : ''}
       <p class="meta">${extLink(p.url, tr('Open source'))}</p></details>`
     : quelleZeile(p.partei, p);
   return `<article class="pos">

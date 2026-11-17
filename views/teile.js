@@ -66,6 +66,11 @@ export const demoHinweis = () => (ZEIGE_KI_HINWEIS && C.ungeprueft ? `<details c
   ${C.maschinell ? `<p class="meta">${tr('A script has compared every quote with the original PDF and found it word for word on the stated page. Whether the quote fits the question still needs a person.')}</p>` : ''}</details>` : '');
 // PDF-Seite, nicht die gedruckte Seitenzahl: der Link oeffnet das PDF genau dort.
 export const pdfSeite = n => tr('PDF page {n}', { n });
+// Ausschussberichte geben Fraktionen nur in indirekter Rede wieder: dann keine Anfuehrungszeichen, sondern ein Hinweis.
+export const istIndirekt = quelle => /indirekte Rede/i.test(quelle ?? '');
+export const auszugBlock = (auszug, quelle) => (istIndirekt(quelle)
+  ? `<blockquote class="auszug indirekt"><span class="meta">${tr('Committee report, paraphrased:')}</span> ${esc(auszug)}</blockquote>`
+  : `<blockquote class="auszug">„${esc(auszug)}“</blockquote>`);
 // Kleine, ruhige Quellenzeile unter einer Aussage: "Quelle: Wahlprogramm 2025, PDF-Seite 12 ->".
 // Die Seite oeffnet den Programm-Leser, eine Web-Quelle oeffnet sich extern (nur https).
 export function quelleZeile(parteiId, pos) {

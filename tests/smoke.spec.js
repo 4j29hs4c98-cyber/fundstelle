@@ -37,6 +37,15 @@ test('die Frage zeigt alle elf Parteien alphabetisch, mit Argumenten und Abstimm
   await expect(page.locator('.vote')).toContainText('in government');
 });
 
+test('Ausschussbericht in indirekter Rede steht ohne Anfuehrungszeichen und mit Hinweis', async ({ page }) => {
+  await page.goto(`/#frage/${MIETE}`);
+  const indirekt = page.locator('.auszug.indirekt');
+  await expect(indirekt).toHaveCount(2); // CDU und CSU, Bericht des Rechtsausschusses
+  await expect(indirekt.first()).toContainText('Committee report, paraphrased:');
+  await expect(indirekt.first()).not.toContainText('„');
+  await expect(page.locator('.auszug:not(.indirekt)').first()).toContainText('„');
+});
+
 test('die Programmstelle klappt mit woertlichem Auszug und Seite auf', async ({ page }) => {
   await page.goto(`/#frage/${MIETE}`);
   const stelle = page.locator('.pos .stelle').first();

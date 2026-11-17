@@ -141,7 +141,7 @@ const DE = {
   'Parties with content': 'Parteien mit Inhalten',
   'PDF page {n}': 'PDF-Seite {n}',
   'Too many research requests. Please try again later.': 'Zu viele Recherchen. Bitte versuchen Sie es später erneut.',
-  '{n} programmes could not be read. The result is incomplete; parties may be missing.': '{n} Programme konnten nicht gelesen werden. Das Ergebnis ist unvollständig, es können Parteien fehlen.', 'Open source': 'Quelle öffnen',
+  '{n} programmes could not be read. The result is incomplete; parties may be missing.': '{n} Programme konnten nicht gelesen werden. Das Ergebnis ist unvollständig, es können Parteien fehlen.', 'Open source': 'Quelle öffnen', 'Committee report, paraphrased:': 'Ausschussbericht, sinngemäß wiedergegeben:',
   'Own topic': 'Eigenes Thema', 'Own topics': 'Eigene Themen', 'Ask your own question': 'Eigene Frage stellen',
   'As you type, an agent searches every programme and summarises where each party stands.': 'Schon während Sie tippen, durchsucht ein Agent jedes Programm und fasst zusammen, wie jede Partei dazu steht.',
   'Your question': 'Ihre Frage', 'e.g. Should there be a speed limit on motorways?': 'z. B. Soll es ein Tempolimit auf Autobahnen geben?',
