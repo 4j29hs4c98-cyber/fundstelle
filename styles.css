@@ -1,31 +1,35 @@
-/* styles.css — Designsystem aus Traveller: weisse, luftige Basis, tiefschwarze Akzente,
-   stark abgerundete Formen, Pillen und kreisfoermige Knoepfe, dunkle Navigationsleiste.
+/* styles.css — Farben aus dem Fundstelle-Logo (Variante D, Lennox, 17.11.2026): Tinte #1F2933, Papier #FAF7F0,
+   Tuerkis #14B8A6 nur als Markierung (aktiver Bereich, Fundstelle im Programm, Belege, Urteil), wie die markierte
+   Zeile im Logo. Knoepfe bleiben dunkel. Formen aus Traveller: stark abgerundet, Pillen, dunkle Leiste.
    Alle Farben nur ueber Variablen. Textkontrast erfuellt WCAG AA (4.5:1) in hell und dunkel. */
 :root { color-scheme: light;
-  --bg: #F5F5F7; --surface: #FFFFFF; --sunken: #F1F1F4;
+  --bg: #FAF7F0; --surface: #FFFFFF; --sunken: #F2EEE4;
   --paper-warm: #F6F1E6; --paper-warm-line: #E6DECB;
-  --ink: #0B0B0C; --muted: #55575C; --faint: #6E7076; --line: #E4E4E8; --line-strong: #C9CAD0;
-  --primary: #0B0B0C; --primary-ink: #FFFFFF; --accent: #0B0B0C; --danger: #8A2B1C;
-  --bar: #111113; --bar-ink: rgba(255,255,255,.72); --bar-active-bg: #FFFFFF; --bar-active-ink: #0B0B0C;
-  --shadow: 0 1px 3px -1px rgba(0,0,0,.05), 0 14px 30px -16px rgba(0,0,0,.18);
+  --ink: #1F2933; --muted: #52606D; --faint: #616E7C; --line: #E6E0D3; --line-strong: #CFC7B6;
+  --primary: #1F2933; --primary-ink: #FAF7F0; --accent: #0F766E; --danger: #8A2B1C;
+  --mark: #14B8A6; --mark-soft: #CCFBF1; --mark-ink: #115E59;
+  --bar: #1F2933; --bar-ink: rgba(250,247,240,.72); --bar-active-bg: #14B8A6; --bar-active-ink: #1F2933;
+  --shadow: 0 1px 3px -1px rgba(31,41,51,.06), 0 14px 30px -16px rgba(31,41,51,.2);
   --radius: 24px;
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
   box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark;
-  --bg: #0A0A0B; --surface: #151517; --sunken: #1D1D20;
-  --paper-warm: #1C1A15; --paper-warm-line: #2E2A20;
-  --ink: #F4F4F6; --muted: #A2A4AA; --faint: #9A9CA2; --line: #26262A; --line-strong: #3A3A40;
-  --primary: #F4F4F6; --primary-ink: #0B0B0C; --accent: #F4F4F6; --danger: #E79181;
-  --bar: #1F1F24; --bar-ink: rgba(255,255,255,.72); --bar-active-bg: #F4F4F6; --bar-active-ink: #0B0B0C;
+  --bg: #11171E; --surface: #19212A; --sunken: #212A34;
+  --paper-warm: #1E1C17; --paper-warm-line: #322E25;
+  --ink: #F3F0E8; --muted: #A9B3BE; --faint: #9AA5B1; --line: #28313C; --line-strong: #3B4652;
+  --primary: #F3F0E8; --primary-ink: #1F2933; --accent: #2DD4BF; --danger: #E79181;
+  --mark: #14B8A6; --mark-soft: #134E4A; --mark-ink: #CCFBF1;
+  --bar: #26313D; --bar-ink: rgba(243,240,232,.72); --bar-active-bg: #14B8A6; --bar-active-ink: #11171E;
   --shadow: 0 14px 34px -18px rgba(0,0,0,.8); } }
 :root[data-theme="dark"] { color-scheme: dark;
-  --bg: #0A0A0B; --surface: #151517; --sunken: #1D1D20;
-  --paper-warm: #1C1A15; --paper-warm-line: #2E2A20;
-  --ink: #F4F4F6; --muted: #A2A4AA; --faint: #9A9CA2; --line: #26262A; --line-strong: #3A3A40;
-  --primary: #F4F4F6; --primary-ink: #0B0B0C; --accent: #F4F4F6; --danger: #E79181;
-  --bar: #1F1F24; --bar-ink: rgba(255,255,255,.72); --bar-active-bg: #F4F4F6; --bar-active-ink: #0B0B0C;
+  --bg: #11171E; --surface: #19212A; --sunken: #212A34;
+  --paper-warm: #1E1C17; --paper-warm-line: #322E25;
+  --ink: #F3F0E8; --muted: #A9B3BE; --faint: #9AA5B1; --line: #28313C; --line-strong: #3B4652;
+  --primary: #F3F0E8; --primary-ink: #1F2933; --accent: #2DD4BF; --danger: #E79181;
+  --mark: #14B8A6; --mark-soft: #134E4A; --mark-ink: #CCFBF1;
+  --bar: #26313D; --bar-ink: rgba(243,240,232,.72); --bar-active-bg: #14B8A6; --bar-active-ink: #11171E;
   --shadow: 0 14px 34px -18px rgba(0,0,0,.8); }
 *, *::before, *::after { box-sizing: inherit; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
@@ -231,7 +235,7 @@ a.ballot { text-decoration: none; } .ballot .arrow { font-size: 24px; }
 .blaettern { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
 .blatt { background: var(--paper-warm); border: 1px solid var(--paper-warm-line); border-radius: 14px; padding: 22px 20px; display: grid; gap: 10px; box-shadow: var(--shadow); }
 .blatt p { margin: 0; } .blatt .meta a { color: var(--ink); }
-.blatt mark { background: var(--surface); color: var(--ink); padding: 2px 4px; border-radius: 4px; font-weight: 600; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.blatt mark { background: var(--mark-soft); color: var(--mark-ink); padding: 2px 4px; border-radius: 4px; font-weight: 600; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .platz { display: block; height: 9px; border-radius: 5px; background: var(--paper-warm-line); }
 
 /* Profil */
@@ -475,8 +479,9 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
 .faktencheck .urteil { font-size: 18px; margin: 12px 0 4px; }
 .faktencheck .urteil-label { display: block; font-size: 13px; color: var(--muted); }
+.faktencheck .urteil b { display: inline-block; margin-top: 2px; padding: 2px 12px; border-radius: 999px; background: var(--mark-soft); color: var(--mark-ink); }
 .befunde { list-style: none; padding: 0; display: grid; gap: 12px; }
-.befund { border-left: 3px solid var(--line-strong); padding-left: 10px; }
+.befund { border-left: 3px solid var(--mark); padding-left: 10px; }
 
 /* ---------- Breites Format (MacBook, grosses Fenster, iPad quer) ----------
    Wie bei Kraftwerk: ab 900px wird die untere Leiste zur festen Seitenleiste links, mit Symbol und Beschriftung
@@ -492,7 +497,7 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
     border-radius: 0; background: var(--surface); border-right: 1px solid var(--line); box-shadow: none; }
   .tabbar a { justify-content: flex-start; gap: 12px; min-height: 48px; padding: 0 14px; border-radius: 12px; font-size: 15px; color: var(--muted); }
   .tabbar a span:not(.sync-dot) { display: inline; }
-  .tabbar a[aria-current="page"] { background: var(--primary); color: var(--primary-ink); }
+  .tabbar a[aria-current="page"] { background: var(--bar-active-bg); color: var(--bar-active-ink); }
   main { max-width: 1000px; padding: 32px 48px 56px; }
   .toast { bottom: 24px; left: calc(50% + var(--seite) / 2); }
   /* Vier Einstiege: zwei mal zwei, auf breiten Bildschirmen alle vier in einer Reihe (statt drei plus eins). */
