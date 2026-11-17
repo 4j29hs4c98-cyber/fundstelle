@@ -306,7 +306,7 @@ test('Vergleich: eigene Frage zeigt je gewaehlter Partei eine Spalte mit Verspro
   await expect(page.locator('#v .vz').nth(1)).toContainText(/No group|Keine Fraktion/);
 });
 
-test('Nachrichten: Startseite zeigt alle Schlagzeilen, Partei und Person nur ihre, fremdes HTML wird nicht ausgefuehrt', async ({ page }) => {
+test('Nachrichten: Parteiseite und Personenfrage zeigen nur ihre Schlagzeilen, die Startseite keine Schlagzeilenliste, fremdes HTML wird nicht ausgefuehrt', async ({ page }) => {
   await page.goto('/#start');
   const html = await page.evaluate(async spd => {
     const { N } = await import('/nachrichten.js');
@@ -317,11 +317,46 @@ test('Nachrichten: Startseite zeigt alle Schlagzeilen, Partei und Person nur ihr
     ];
     return { start: v.aktuellHtml(), partei: v.parteiNachrichten(spd), andere: v.parteiNachrichten('keine'), person: v.personNachrichten('Merz') };
   }, SPD);
-  await page.setContent(`<div id="s">${html.start}</div><div id="p">${html.partei}</div><div id="m">${html.person}</div>`);
-  await expect(page.locator('#s .news li')).toHaveCount(2);
-  await expect(page.locator('#s img')).toHaveCount(0);
-  await expect(page.locator('#s a').first()).toHaveAttribute('rel', /noopener/);
+  expect(html.start).toBe('');   // ohne Themen zeigt die Startseite nichts, auch keine Schlagzeilenliste
+  await page.setContent(`<div id="p">${html.partei}</div><div id="m">${html.person}</div>`);
+  await expect(page.locator('#p img')).toHaveCount(0);
+  await expect(page.locator('#p a').first()).toHaveAttribute('rel', /noopener/);
   await expect(page.locator('#p .news li')).toHaveCount(1);
   await expect(page.locator('#m .news li')).toHaveCount(1);
   expect(html.andere).toBe('');
+});
+
+test('Themen des Tages: Karten auf der Startseite, Themenseite mit Kurzfassung, Hinweisen und Programmfrage; fremdes HTML bleibt Text', async ({ page }) => {
+  await page.goto('/#start');
+  await page.evaluate(async spd => {
+    const { N } = await import('/nachrichten.js');
+    N.liste = [{ url: 'https://example.org/h1', quelle: 'welt.de', titel: 'Einzelne Schlagzeile', datum: '2026-11-17T10:00:00Z', parteien: [], personen: [] }];
+    N.themen = [
+      { id: 1, titel: 'Haushalt 2027 steht <img src=x onerror=alert(1)>', zusammenfassung: 'Der Ausschuss billigte den Etat. Die Stromsteuer bleibt vorerst unverändert.', parteien: [spd], personen: ['Friedrich Merz'],
+        frage: 'Soll die Stromsteuer für private Haushalte gesenkt werden?', frageId: null, quellen: 2, aktualisiert: '2026-11-17T12:00:00Z',
+        meldungen: [{ q: 'zdfheute.de', t: 'Ausschuss billigt Haushalt', u: 'https://example.org/1', d: '2026-11-17T12:00:00Z', a: 'meldung' },
+                    { q: 'spiegel.de', t: 'Die fetten Jahre sind vorbei', u: 'https://example.org/2', d: '2026-11-17T11:00:00Z', a: 'kommentar' }] },
+      { id: 2, titel: 'Thema ohne Kurzfassung', zusammenfassung: null, parteien: [], personen: [], frage: null, frageId: null, quellen: 1, aktualisiert: '2026-11-17T09:00:00Z',
+        meldungen: [{ q: 'faz.net', t: 'Nur eine Meldung', u: 'https://example.org/3', d: '2026-11-17T09:00:00Z', a: 'meldung' }] },
+    ];
+    location.hash = '#start';
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+  }, SPD);
+  await expect(page.locator('a[href="#nachricht/1"]')).toBeVisible();
+  await expect(page.locator('a[href="#nachricht/1"]')).toContainText('Der Ausschuss billigte den Etat.');
+  await expect(page.locator('a[href="#nachricht/1"]')).not.toContainText('Die Stromsteuer bleibt');   // Karte zeigt nur den ersten Satz
+  await expect(page.locator('main img')).toHaveCount(0);
+  await page.locator('a[href="#nachricht/1"]').click();
+  await expect(page).toHaveURL(/#nachricht\/1$/);
+  await expect(page.locator('main')).toContainText('Die Stromsteuer bleibt vorerst unverändert.');
+  await expect(page.locator('main li .tag')).toHaveCount(1);                    // der Kommentar ist markiert
+  await expect(page.locator('main p .tag')).toHaveCount(1);                     // die Kurzfassung ist als KI gekennzeichnet
+  await expect(page.locator('main')).toContainText(/Kommentare und Interviews zählen nicht|Comments and interviews do not count/);
+  await expect(page.locator('main a[rel~=noopener]')).toHaveCount(2);
+  await expect(page.locator('[data-action=nachricht-frage]')).toBeVisible();
+  await expect(page.locator('#recherche')).toHaveText('');                      // ohne Klick keine Recherche, keine Kosten
+  await page.goto('/#nachricht/99');
+  await expect(page.locator('main')).toContainText(/wird geladen|Loading the topic/);       // noch nicht geladen ist nicht "veraltet"
+  await page.evaluate(async () => { const { N } = await import('/nachrichten.js'); N.stand = Date.now(); window.dispatchEvent(new HashChangeEvent('hashchange')); });
+  await expect(page.locator('main')).toContainText(/nicht mehr aktuell|no longer current/);
 });

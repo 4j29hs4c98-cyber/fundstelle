@@ -17,8 +17,17 @@ const PERSON_OK = /^[\p{L}][\p{L} .'-]{2,60}$/u;
 // Gross- und Kleinschreibung bleibt erhalten: "Linke" (Partei) ist nicht "linke" (Adjektiv), "Klein" nicht "klein".
 const norm = (s: string) => s.normalize('NFC').replace(/[\u00ad\u200b]/g, '').replace(/\s+/g, ' ');
 const regexText = (t: string) => t.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
-const kommtVor = (name: string, text: string) => new RegExp(`(?<![\\p{L}\\p{N}])${regexText(norm(name))}(?![\\p{L}\\p{N}])`, 'u').test(text);
+export const kommtVor = (name: string, text: string) => new RegExp(`(?<![\\p{L}\\p{N}])${regexText(norm(name))}(?![\\p{L}\\p{N}])`, 'u').test(text);
 const nachname = (name: string) => name.trim().split(/\s+/).pop() ?? '';
+
+// Alle Namen einer Partei, wie sie in Schlagzeilen vorkommen.
+export const parteiNamen = (p: Partei) => [p.name, ...(ALIAS[p.name] ?? [])];
+
+// Ids der Parteien, die im Text genannt werden (Gross- und Kleinschreibung zaehlt, "Europaeische Union" nicht).
+export function parteienIn(text: string, alle: Partei[]): string[] {
+  const t = norm(text).replace(/Europäische[nrs]? Union/g, 'EU');
+  return alle.filter(p => parteiNamen(p).some(n => kommtVor(n, t))).map(p => p.id);
+}
 
 export function pruefeZuordnung(m: Meldung, roh: { parteien?: unknown; personen?: unknown } | undefined, alle: Partei[]) {
   // "Europäische Union" ist nicht die Union aus CDU und CSU.

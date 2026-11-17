@@ -1,10 +1,10 @@
 // nachrichten.js — Schlagzeilen aus der Tabelle nachrichten (gesammelt von der Edge Function nachrichten-holen).
 // Lesbar ohne Konto. Nur fluechtig im Speicher: Nachrichten veralten schnell, offline zeigt die App sie nicht an.
 // Zwei Fassungen: alle Schlagzeilen (Startseite) und nur die, deren Partei oder Person im Text gefunden wurde.
-const MAX_ZEILEN = 300;
+const MAX_ZEILEN = 300, MAX_THEMEN = 30;
 const NEU_LADEN_MS = 10 * 60_000;
 
-export const N = { liste: [], stand: 0 };
+export const N = { liste: [], themen: [], stand: 0 };
 
 const text = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
 // Nur gueltige Zeilen uebernehmen: https-Link, Titel, Datum.
@@ -15,14 +15,38 @@ const zeile = r => {
     personen: Array.isArray(r.personen) ? r.personen.filter(x => typeof x === 'string') : [] };
 };
 
+const ARTEN = ['meldung', 'kommentar', 'interview', 'video'];
+const strings = v => (Array.isArray(v) ? v.filter(x => typeof x === 'string') : []);
+// Ein Thema des Tages (Tabelle nachrichten_themen): nur uebernehmen, was die Anzeige sicher verkraftet.
+const themaZeile = r => {
+  const titel = text(r?.titel, 200);
+  const meldungen = (Array.isArray(r?.meldungen) ? r.meldungen : []).map(m => {
+    const u = text(m?.u, 2000), t = text(m?.t, 400), d = text(m?.d, 40);
+    return /^https:\/\//.test(u) && t && !Number.isNaN(Date.parse(d)) ? { q: text(m.q, 60), t, u, d, a: ARTEN.includes(m.a) ? m.a : 'meldung' } : null;
+  }).filter(Boolean);
+  if (!Number.isInteger(r?.id) || !titel || !meldungen.length) return null;
+  const aktualisiert = text(r.aktualisiert, 40);
+  return { id: r.id, titel, zusammenfassung: text(r.zusammenfassung, 800) || null, parteien: strings(r.parteien), personen: strings(r.personen),
+    frage: text(r.frage, 200) || null, frageId: text(r.frage_id, 60) || null, meldungen, quellen: Math.max(1, Number(r.anzahl_quellen) || 1),
+    aktualisiert: Number.isNaN(Date.parse(aktualisiert)) ? meldungen[0].d : aktualisiert };
+};
+
 export async function nachrichtenLaden(client) {
   if (!client || Date.now() - N.stand < NEU_LADEN_MS) return false;
-  const { data, error } = await client.from('nachrichten').select('url,quelle,titel,datum,parteien,personen').order('datum', { ascending: false }).limit(MAX_ZEILEN);
-  if (error) { console.error('Nachrichten', error.message); return false; }
-  N.liste = (data ?? []).map(zeile).filter(Boolean);
+  const [a, b] = await Promise.all([
+    client.from('nachrichten').select('url,quelle,titel,datum,parteien,personen').order('datum', { ascending: false }).limit(MAX_ZEILEN),
+    client.from('nachrichten_themen').select('id,titel,zusammenfassung,parteien,personen,frage,frage_id,meldungen,anzahl_quellen,aktualisiert').order('aktualisiert', { ascending: false }).limit(MAX_THEMEN),
+  ]);
+  if (a.error) { console.error('Nachrichten', a.error.message); return false; }
+  if (b.error) console.error('Themen', b.error.message);   // ohne Themen bleibt die Schlagzeilenliste
+  N.liste = (a.data ?? []).map(zeile).filter(Boolean);
+  N.themen = (b.data ?? []).map(themaZeile).filter(Boolean);
   N.stand = Date.now();
   return true;
 }
+
+export const themaNachId = id => N.themen.find(t => String(t.id) === String(id)) ?? null;
+export const themenZuPartei = id => N.themen.filter(t => t.parteien.includes(id));
 
 export const zuPartei = id => N.liste.filter(n => n.parteien.includes(id));
 // Personen per Nachname vergleichen, damit "Merz" und "Friedrich Merz" zusammenfinden; der Vorname muss passen, wenn beide einen haben.

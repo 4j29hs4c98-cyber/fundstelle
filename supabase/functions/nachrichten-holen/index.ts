@@ -5,36 +5,15 @@
 // Geheimnisse (nur in Supabase): ANTHROPIC_API_KEY, SUPABASE_SERVICE_ROLE_KEY.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { frageClaude, jsonAus } from './ki.ts';
-import { parseRss, type Meldung } from './rss.ts';
+import type { Meldung } from './rss.ts';
+import { QUELLEN, feedLaden } from './quellen.ts';
 import { pruefeZuordnung, type Partei } from './zuordnung.ts';
 
-// Bewusst gemischt: oeffentlich-rechtlich, Parlament und Zeitungen von links-liberal bis konservativ.
-export const QUELLEN: { name: string; url: string }[] = [
-  { name: 'tagesschau.de', url: 'https://www.tagesschau.de/inland/innenpolitik/index~rss2.xml' },
-  { name: 'zdfheute.de', url: 'https://www.zdfheute.de/rss/zdf/nachrichten/politik' },
-  { name: 'deutschlandfunk.de', url: 'https://www.deutschlandfunk.de/politikportal-100.rss' },
-  { name: 'bundestag.de (hib)', url: 'https://www.bundestag.de/static/appdata/includes/rss/hib.rss' },
-  { name: 'spiegel.de', url: 'https://www.spiegel.de/politik/deutschland/index.rss' },
-  { name: 'faz.net', url: 'https://www.faz.net/rss/aktuell/politik/inland/' },
-  { name: 'zeit.de', url: 'https://newsfeed.zeit.de/politik/index' },
-  { name: 'welt.de', url: 'https://www.welt.de/feeds/section/politik.rss' },
-  { name: 'sueddeutsche.de', url: 'https://rss.sueddeutsche.de/rss/Politik' },
-];
-
-const FEED_MAX_BYTES = 3_000_000;
 const MAX_ALTER_TAGE = 3;          // aeltere Eintraege eines Feeds werden nicht aufgenommen
 const AUFBEWAHREN_TAGE = 30;
 const MAX_NEU_JE_LAUF = 120;       // deckelt die KI-Kosten je Lauf
 const KI_PAKET = 30;               // Schlagzeilen je KI-Aufruf
 const URL_PAKET = 40;              // Links je Abgleich-Abfrage
-
-async function feedLaden(q: { name: string; url: string }): Promise<Meldung[]> {
-  const r = await fetch(q.url, { headers: { 'User-Agent': 'Fundstelle-Nachrichten/1.0' }, signal: AbortSignal.timeout(10_000) });
-  if (!r.ok) throw new Error(`${q.name} ${r.status}`);
-  const text = await r.text();
-  if (text.length > FEED_MAX_BYTES) throw new Error(`${q.name} zu gross`);
-  return parseRss(text, q.name);
-}
 
 // Ein KI-Aufruf je Paket. Antwort je Index: Parteinamen aus der festen Liste und Personennamen.
 async function zuordnen(paket: Meldung[], parteien: Partei[]) {

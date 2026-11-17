@@ -20,6 +20,8 @@ function vergleichJetzt() {
 }
 
 export const actions = {
+  // Auf der Seite eines Themas des Tages: die vom System abgeleitete, neutrale Frage von der Recherche beantworten lassen.
+  'nachricht-frage'({ frage }) { if (frage) tippen(frage, rechercheZeichnen, true); },
   // Eine gemerkte Frage ist ein Record des Nutzers, kein redaktioneller Inhalt. Format: { frage: <id>, created }.
   async merken({ frage }) {
     const vorhanden = list('merk').find(r => r.data.frage === frage);
