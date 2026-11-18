@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('jede Seite oeffnet ohne Fehler und ohne seitliches Scrollen', async ({ page }) => {
-  for (const v of ['start', 'themen', 'thema/3a18c189-c9a4-49dc-8ad9-7e49ac440fe4', `frage/${MIETE}`, 'parteien', `partei/${SPD}`, `programm/${SPD}/20`, `vergleich/${SPD}`, 'pruefen', 'auswahl', 'settings', 'recherche']) {
+  for (const v of ['start', 'themen', 'thema/3a18c189-c9a4-49dc-8ad9-7e49ac440fe4', `frage/${MIETE}`, 'parteien', `partei/${SPD}`, `programm/${SPD}/20`, `vergleich/${SPD}`, 'pruefen', 'settings', 'recherche']) {
     await page.goto(`/#${v}`);
     await expect(page.locator('#main h1')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
@@ -73,6 +73,28 @@ test('Nachpruefen findet die Fundstelle oder sagt klar, dass es keine gibt', asy
   await page.fill('#suche-q', 'SSW Mietpreisbremse');
   await page.press('#suche-q', 'Enter');
   await expect(page.locator('.notice').first()).toContainText('No passage found');
+});
+
+test('Pruefen zeigt bei Abstimmungstreffern, wie die gesuchte Partei abgestimmt hat', async ({ page }) => {
+  await page.goto('/#pruefen');
+  await page.fill('#suche-q', 'Grünen Mietpreisbremse');
+  await page.press('#suche-q', 'Enter');
+  const karte = page.locator('.card.link', { hasText: 'Verlängerung der Mietpreisbremse' });
+  await expect(karte.locator('.stimmen dt')).toHaveText(['GRÜNE']);
+  await expect(karte.locator('.stimmen dd')).toContainText(/Yes|Ja/);
+  // Ohne genannte Partei bleibt die Karte wie bisher ohne Stimmenliste.
+  await page.fill('#suche-q', 'Mietpreisbremse');
+  await page.press('#suche-q', 'Enter');
+  await expect(page.locator('.card.link', { hasText: 'Verlängerung der Mietpreisbremse' }).locator('.stimmen')).toHaveCount(0);
+});
+
+test('Alle vier Tabs tragen am Handy ihre Beschriftung, nicht nur der aktive', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'Leiste mit Beschriftung unter dem Symbol nur am Handy');
+  await page.goto('/#start');
+  for (const nav of ['start', 'themen', 'parteien', 'pruefen']) await expect(page.locator(`.tabbar a[data-nav=${nav}] span`)).toBeVisible();
+  const breiten = await page.locator('.tabbar').evaluate(el => [el.scrollWidth, el.clientWidth, document.documentElement.scrollWidth, innerWidth]);
+  expect(breiten[0]).toBeLessThanOrEqual(breiten[1]);
+  expect(breiten[2]).toBeLessThanOrEqual(breiten[3]);
 });
 
 test('eine gemerkte Frage erscheint auf dem Start und ueberlebt das Neuladen', async ({ page }) => {
@@ -215,7 +237,7 @@ test('Vergleich: Spalten alphabetisch, egal in welcher Reihenfolge gewaehlt', as
 test('Vergleich: Halbkreis mit 630 Sitzen, Sitze und Knoepfe bleiben gleich gewaehlt', async ({ page }) => {
   await page.goto('/#vergleich/');
   await expect(page.locator('.halbkreis .seat')).toHaveCount(630);
-  await expect(page.locator('.halbkreis figcaption')).toContainText(/not a political placement|keine politische Einordnung/);
+  await expect(page.locator('.halbkreis figcaption')).toContainText(/sets this order, not this app|legt der Bundestag fest, nicht diese App/);
   // Auswahl ueber den Knopf: Sitzblock wird hervorgehoben und traegt den Buchstaben A.
   await page.locator('.pchip', { hasText: 'SPD' }).click();
   await expect(page.locator(`.halbkreis .block.an[data-id="${SPD}"]`)).toHaveCount(1);

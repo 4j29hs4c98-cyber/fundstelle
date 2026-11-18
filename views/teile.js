@@ -21,15 +21,21 @@ export const extLink = (url, text) => { const u = safeUrl(url); return u ? `<a h
 export const rolle = r => (ROLLE[r] ? tr(ROLLE[r]) : '');
 
 // Parteizeichen: flache Pille in der Parteifarbe mit dem Kurznamen, fuer alle Parteien gleich. Farben nur als #RRGGBB,
-// sonst koennte ein Wert aus der Datenbank eigenes CSS einschleusen. Textfarbe nach Helligkeit, damit lesbar.
+// sonst koennte ein Wert aus der Datenbank eigenes CSS einschleusen. Textfarbe nach WCAG-Kontrast: dunkle oder weisse
+// Schrift, je nachdem, was auf der Parteifarbe staerker absticht. Gleiche Regel fuer alle Parteien.
 // Sobald ein offizielles Logo abgelegt ist (p.logo), erscheint es statt des Kurznamens.
 const HEX = /^#[0-9a-f]{6}$/i;
-const istHell = h => { const n = parseInt(h.slice(1), 16); return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 150; };
+const TEXT_DUNKEL = '#0B0B0C';
+const kanal = v => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const leuchte = h => { const n = parseInt(h.slice(1), 16); return 0.2126 * kanal(n >> 16) + 0.7152 * kanal((n >> 8) & 255) + 0.0722 * kanal(n & 255); };
+const DUNKEL_L = leuchte(TEXT_DUNKEL);
+// Weiss (Leuchtdichte 1) gegen dunkle Schrift: die hoehere Kontrastquote gewinnt.
+const istHell = h => { const l = leuchte(h); return (l + 0.05) / (DUNKEL_L + 0.05) > 1.05 / (l + 0.05); };
 export const parteiFarbe = p => (HEX.test(p?.farbe ?? '') ? p.farbe : '#6E7076');
 export function logo(p, klasse = '') {
   const f = parteiFarbe(p);
   const inhalt = p?.logo ? `<img src="${esc(p.logo)}" alt="">` : esc(p?.kuerzel ?? '?');
-  return `<span class="logo ${klasse}" style="--c:${f};--t:${istHell(f) ? '#0B0B0C' : '#FFFFFF'}" aria-hidden="true">${inhalt}</span>`;
+  return `<span class="logo ${klasse}" style="--c:${f};--t:${istHell(f) ? TEXT_DUNKEL : '#FFFFFF'}" aria-hidden="true">${inhalt}</span>`;
 }
 // Pille plus Name, ohne "CDU CDU": steht der Kurzname schon sichtbar in der Pille, bleibt der Name nur fuer
 // Screenreader (die Pille selbst ist aria-hidden). Mit Logo-Bild oder abweichendem Namen bleibt er sichtbar.
@@ -85,7 +91,7 @@ export function herkunft(bezug) {
   const ki = C.ungeprueft ? tr('Compiled with AI, not yet checked by people.') : C.ki ? tr('Partly compiled with AI, checked by people.') : tr('Compiled by people.');
   const offen = S.melden === bezug;
   return `<footer class="herkunft">
-    <p class="meta">${ZEIGE_KI_HINWEIS ? `${ki} ${tr('As of {d}', { d: datum(C.stand) })} · ` : ''}<a href="#auswahl">${tr('How we select')}</a></p>
+    ${ZEIGE_KI_HINWEIS ? `<p class="meta">${ki} ${tr('As of {d}', { d: datum(C.stand) })}</p>` : ''}
     ${offen ? `<form class="stack melden" data-form="melden">
         <input type="hidden" name="bezug" value="${esc(bezug)}">
         <label>${tr('What is wrong here?')}<textarea id="melden-text" name="text" rows="3" minlength="3" maxlength="1000" required></textarea></label>

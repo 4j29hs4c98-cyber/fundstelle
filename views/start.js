@@ -95,7 +95,7 @@ export function viewStart() {
   <nav class="wege" aria-label="${tr('Where do you want to start?')}">
     ${weg('#themen', 'themen', tr('Topics'), tr('What do the parties say about it?'))}
     ${weg('#parteien', 'parteien', tr('Parties'), tr('What does a party stand for?'))}
-    ${weg('#eigene', 'eigene', tr('Ask your own question'), tr('An agent researches all programmes while you type.'))}
+    ${weg('#eigene', 'eigene', tr('Ask your own question'), tr('A KI searches all programmes while you type.'))}
     ${weg('#grundlagen', 'grundlagen', tr('How politics works'), tr('Short, neutral explanations of the terms that come up in programmes and votes.'))}
   </nav>
   ${aktuellHtml()}

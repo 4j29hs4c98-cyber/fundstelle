@@ -17,7 +17,7 @@ function profilBlock(p) {
   const quellen = saetze.map(s => `<li><span class="meta">${tr(s.art === 'programm' ? 'Election programme 2025' : 'Outside source')}</span>
     ${extLink(s.url, esc(s.quelle))}${s.zitat ? `<blockquote class="auszug">„${esc(s.zitat)}“</blockquote>` : ''}</li>`).join('');
   return `<section class="profil" aria-labelledby="profil-titel">
-    <p class="eyebrow" id="profil-titel">${tr('In short: what does {name} stand for?', { name: esc(p.name) })}</p>
+    <p class="eyebrow" id="profil-titel">${tr('In short: what does the party {name} stand for?', { name: esc(p.name) })}</p>
     <p class="profil-text">${text}</p>
     <details class="mehr"><summary>${tr('Sources ({n})', { n: saetze.length })}</summary><ol class="profil-quellen">${quellen}</ol></details>
   </section>`;

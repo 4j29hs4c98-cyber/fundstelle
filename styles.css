@@ -131,15 +131,13 @@ input:not([type=checkbox]) { width: 100%; min-height: 44px; padding: 8px 14px; b
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; background: var(--bar);
   border-radius: 999px; padding: 6px; z-index: 10; box-shadow: 0 10px 26px -10px rgba(0,0,0,.45); }
 .tabbar { grid-template-columns: repeat(4, auto); justify-content: center; }
-.tabbar a { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px;
-  min-width: 52px; min-height: 48px; padding: 0 14px; border-radius: 999px; color: var(--bar-ink);
-  text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap;
+.tabbar a { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-width: 66px; min-height: 54px; padding: 6px 10px; border-radius: 22px; color: var(--bar-ink);
+  text-decoration: none; font-size: 11.5px; font-weight: 600; white-space: nowrap; line-height: 1.1;
   transition: background-color .2s, color .2s; }
 .tabbar a svg { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-/* Beschriftung nur beim aktiven Bereich, sonst wird die Leiste bei vier Eintraegen auf kleinen Telefonen zu eng. */
-.tabbar a span:not(.sync-dot) { display: none; }
+/* Jeder Bereich zeigt Symbol und Namen untereinander: ein Symbol allein sagt bei Parteien und Pruefen zu wenig. */
 .tabbar a[aria-current="page"] { background: var(--bar-active-bg); color: var(--bar-active-ink); }
-.tabbar a[aria-current="page"] span:not(.sync-dot) { display: inline; }
 .sync-dot { position: absolute; top: 9px; right: 9px; width: 8px; height: 8px; border-radius: 50%; }
 .sync-dot[data-state="idle"] { background: #46C08A; } .sync-dot[data-state="syncing"] { background: #D4A651; } .sync-dot[data-state="error"] { background: var(--danger); }
 
@@ -255,7 +253,7 @@ mark.pruefen { background: var(--paper-warm); color: var(--ink); border-radius: 
 .glossar { margin: 0; display: grid; gap: 4px 0; } .glossar dt { font-weight: 700; margin-top: 10px; } .glossar dd { margin: 0; color: var(--muted); font-size: 14px; }
 .buchstabe { font-size: 18px; margin: 22px 0 0; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
 
-@media (max-width: 400px) { .tabbar a { padding: 0 11px; min-width: 46px; } .page-head h1 { font-size: 28px; } }
+@media (max-width: 400px) { .tabbar a { padding: 6px 6px; min-width: 60px; } .page-head h1 { font-size: 28px; } }
 
 /* Eigenes Thema */
 .field { display: flex; flex-direction: column; gap: 6px; }
@@ -495,8 +493,7 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
   .tabbar { top: 0; bottom: 0; left: 0; right: auto; width: var(--seite); transform: none; box-sizing: border-box;
     display: flex; flex-direction: column; justify-content: flex-start; gap: 4px; padding: 88px 12px 24px;
     border-radius: 0; background: var(--surface); border-right: 1px solid var(--line); box-shadow: none; }
-  .tabbar a { justify-content: flex-start; gap: 12px; min-height: 48px; padding: 0 14px; border-radius: 12px; font-size: 15px; color: var(--muted); }
-  .tabbar a span:not(.sync-dot) { display: inline; }
+  .tabbar a { flex-direction: row; justify-content: flex-start; gap: 12px; min-height: 48px; min-width: 0; padding: 0 14px; border-radius: 12px; font-size: 15px; line-height: normal; color: var(--muted); }
   .tabbar a[aria-current="page"] { background: var(--bar-active-bg); color: var(--bar-active-ink); }
   main { max-width: 1000px; padding: 32px 48px 56px; }
   .toast { bottom: 24px; left: calc(50% + var(--seite) / 2); }
@@ -514,3 +511,15 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
 
 /* Nachrichtenabfrage: Bereichsfilter sind Links */
 a.qchip { display: inline-flex; align-items: center; text-decoration: none; }
+
+/* Bewertung 18.11.2026, Punkt b: Parteizeichen im Ueberblick "Wer ist dafuer, wer dagegen?" stehen nebeneinander und
+   brechen um, statt je eine Zeile zu belegen. Reihenfolge bleibt alphabetisch, Tippflaeche bleibt 44px hoch. */
+.ub-liste { display: flex; flex-wrap: wrap; gap: 2px 4px; }
+.ub-liste a { padding: 0 4px; }
+
+/* Punkt c: ab 1200px stehen die Positionskarten in zwei Spalten, Zeilen werden so etwa 70 Zeichen lang statt ueber 120.
+   Gelesen wird zeilenweise von links nach rechts, also weiter alphabetisch. Fliesstext zusaetzlich auf 68 Zeichen begrenzt. */
+@media (min-width: 1200px) {
+  .cards:has(> article.pos + article.pos) { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+}
+.pos p { max-width: 68ch; }

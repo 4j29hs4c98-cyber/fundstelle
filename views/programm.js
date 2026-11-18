@@ -42,7 +42,7 @@ export function viewProgramm(param) {
     ${n < max ? `<a class="btn" href="#programm/${esc(id)}/${n + 1}">${seite(n + 1)} →</a>` : '<span></span>'}
   </nav>
   ${blatt}
-  <p class="note small">${tr('Mockup: only the highlighted passage is quoted from the programme, the grey lines stand for the rest of the page. Page numbers are those of the PDF.')}</p>
+  <p class="note small">${tr('Only the highlighted passage is quoted word for word from the programme, the grey lines stand for the rest of the page. Page numbers are those of the PDF.')}</p>
   ${original(pr?.url, n)}
   <h2 class="eyebrow section-label">${tr('Passages in this programme')}</h2>
   <div class="cards">${fund.map(s => `<a class="card link" href="#programm/${esc(id)}/${s.seite}"><h3>${seite(s.seite)} · ${esc(frage(s.frage)?.kurz ?? '')}</h3>

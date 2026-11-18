@@ -14,11 +14,21 @@ const SITZE_QUELLE = 'https://www.bundeswahlleiterin.de/bundestagswahlen/2025/er
 export const sitzeVon = p => SITZE[p?.kuerzel] ?? 0;
 export const imBundestag = p => sitzeVon(p) > 0;
 
-// REIHENFOLGE DER SITZE: Die amtliche Sitzordnung liess sich am 10.11.2026 nicht bestaetigen. Deshalb folgen die Bloecke
-// dem Alphabet, wie Chips und Spalten. Das ist KEINE politische Einordnung (nicht links nach rechts) und die
-// Bildunterschrift sagt das. Nie nach links/rechts oder nach Groesse sortieren.
-const IM_BT = PARTEIEN_DE.filter(imBundestag).sort((a, b) => a.name.localeCompare(b.name, 'de'));
+// REIHENFOLGE DER SITZE (Entscheidung Lennox, 18.11.2026): die tatsaechliche Sitzordnung im Plenarsaal, vom Praesidium
+// aus gesehen, statt des Alphabets, weil alphabetische Keile eine Links-Rechts-Lage vortaeuschten, die nicht stimmt.
+// Belege: "Das Parlament" (Linke ganz links, AfD ganz rechts, Bloecke nach dem traditionellen Links-Rechts-Schema) und
+// Drucksache 20/268 (Linke, SPD, Gruene, FDP, CDU/CSU, AfD; die FDP ist 2025 ausgeschieden). Die Reihenfolge legt der
+// Bundestag fest, nicht die App. Innerhalb der Fraktion CDU/CSU ist die Aufteilung vereinfacht (CDU, dann CSU).
+// Der fraktionslose SSW-Abgeordnete hat keinen belegten Platz und steht deshalb gesondert unter dem Halbkreis.
+// Chips und Spalten bleiben alphabetisch; nur dieses Bild folgt dem Plenarsaal.
+const SITZORDNUNG = ['Die Linke', 'SPD', 'GRÜNE', 'CDU', 'CSU', 'AfD'];
+const SITZORDNUNG_QUELLE = 'https://www.das-parlament.de/panorama/ortstermin/sonderschichten-fuer-den-umbau-des-plenarsaals';
+const rangImSaal = p => SITZORDNUNG.indexOf(p.kuerzel);
+const IM_SAAL = PARTEIEN_DE.filter(p => imBundestag(p) && rangImSaal(p) >= 0).sort((a, b) => rangImSaal(a) - rangImSaal(b));
+const GESONDERT = PARTEIEN_DE.filter(p => imBundestag(p) && rangImSaal(p) < 0);
+const IM_BT = [...IM_SAAL, ...GESONDERT];
 const GESAMT = IM_BT.reduce((s, p) => s + sitzeVon(p), 0);
+const IM_SAAL_SITZE = IM_SAAL.reduce((s, p) => s + sitzeVon(p), 0);
 
 // Sitze in Reihen; Platz je Reihe waechst mit dem Radius. Danach nach Winkel sortiert (links beginnend) und blockweise
 // in Listenreihenfolge vergeben. So entstehen Keile je Partei wie in ueblichen Parlamentsgrafiken.
@@ -36,7 +46,10 @@ function sitzplaetze(n) {
 }
 // Die Geometrie aendert sich nie: einmal berechnen, je Partei ihre Sitze und deren Mitte (fuer den Buchstaben).
 const BLOECKE = (() => {
-  const plaetze = sitzplaetze(GESAMT);
+  // Gesonderte Sitze (fraktionslos) unter der Mitte des Halbkreises, nebeneinander, ausserhalb der Fraktionsbloecke.
+  const unten = GESONDERT.flatMap(p => Array.from({ length: sitzeVon(p) }, () => p));
+  const plaetze = [...sitzplaetze(IM_SAAL_SITZE),
+    ...unten.map((_, k) => ({ r: 0, w: 0, x: (k - (unten.length - 1) / 2) * PUNKT * 3, y: 0.045 }))];
   let i = 0;
   return IM_BT.map(p => {
     const sitze = plaetze.slice(i, i + sitzeVon(p));
@@ -62,14 +75,15 @@ export function halbkreis(buchstabe) {
   }).join('');
   const liste = IM_BT.map(p => `${p.name}: ${tr('{n} seats', { n: sitzeVon(p) })}`).join(', ');
   return `<figure class="halbkreis${einblenden ? ' einblenden' : ''}" data-halbkreis>
-    <svg viewBox="-1.04 -1.04 2.08 1.1" class="${gewaehlt ? 'auswahl' : ''}" role="img" aria-label="${esc(tr('Seat distribution in the 21st Bundestag, {n} seats: {list}', { n: GESAMT, list: liste }))}">
+    <svg viewBox="-1.04 -1.04 2.08 1.12" class="${gewaehlt ? 'auswahl' : ''}" role="img" aria-label="${esc(tr('Seat distribution in the 21st Bundestag, {n} seats: {list}', { n: GESAMT, list: liste }))}">
       ${bloecke}
       <g class="hk-marken" aria-hidden="true">${marken(buchstabe)}</g>
       <text class="hk-zahl" x="0" y="-0.12" text-anchor="middle">${GESAMT}</text>
       <text class="hk-text" x="0" y="-0.03" text-anchor="middle">${esc(tr('Seats'))}</text>
     </svg>
-    <figcaption class="meta">${tr('The blocks are in alphabetical order. This is not a political placement. The official seating plan of the chamber is not used here yet.')}
-      ${tr('Seats: {src}', { src: extLink(SITZE_QUELLE, esc(tr('The Federal Returning Officer, final result 2025'))) })}</figcaption>
+    <figcaption class="meta">${tr('Seating order of the parliamentary groups in the plenary hall, as seen from the President’s chair. The Bundestag sets this order, not this app. Within the CDU/CSU group the split is simplified; the non-attached SSW member is shown separately below.')}
+      ${tr('Seats: {src}', { src: extLink(SITZE_QUELLE, esc(tr('The Federal Returning Officer, final result 2025'))) })}
+      ${tr('Seating order: {src}', { src: extLink(SITZORDNUNG_QUELLE, esc(tr('Das Parlament, plenary hall conversion 2025'))) })}</figcaption>
   </figure>`;
 }
 

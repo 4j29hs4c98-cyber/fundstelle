@@ -7,7 +7,6 @@ import { viewThemen, viewThema } from './views/themen.js';
 import { viewFrage } from './views/frage.js';
 import { viewParteien, viewPartei } from './views/parteien.js';
 import { viewPruefen } from './views/pruefen.js';
-import { viewAuswahl } from './views/auswahl.js';
 import { viewSettings } from './views/settings.js';
 import { viewVergleich } from './views/vergleich.js';
 import { halbkreisUebernehmen } from './views/halbkreis.js';
@@ -18,12 +17,24 @@ import { viewEigene, viewRecherche } from './views/eigene.js';
 import { viewNachricht, viewNachrichten } from './views/nachrichten.js';
 
 const views = { start: viewStart, themen: viewThemen, thema: viewThema, frage: viewFrage, parteien: viewParteien, partei: viewPartei,
-  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, grundlagen: viewGrundlagen, pruefen: viewPruefen, auswahl: viewAuswahl, settings: viewSettings, eigene: viewEigene, recherche: viewRecherche, nachricht: viewNachricht, nachrichten: viewNachrichten };
+  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, grundlagen: viewGrundlagen, pruefen: viewPruefen, settings: viewSettings, eigene: viewEigene, recherche: viewRecherche, nachricht: viewNachricht, nachrichten: viewNachrichten };
 const FOCUS_KEYS = ['action', 'id', 'v', 'frage', 'bezug'];
 
 // Seiten, deren Parameter nur eine Auswahl auf derselben Seite ist (Parteien im Vergleich). Ein Wechsel dort ist kein
 // Seitenwechsel: kein erneutes Einblenden, kein Sprung nach oben.
 const AUSWAHL_IM_PARAM = new Set(['vergleich']);
+
+// Tab-Titel aus der sichtbaren Ueberschrift, damit Verlauf und Tabs zeigen, welche Seite offen ist.
+// Parteizeichen (aria-hidden) fallen weg, sonst stuende der Kurzname doppelt im Titel.
+const APP_NAME = 'Fundstelle';
+function seitenTitel(main) {
+  const h1 = S.view === 'start' ? null : main.querySelector('h1');
+  if (!h1) return APP_NAME;
+  const kopie = h1.cloneNode(true);
+  kopie.querySelectorAll('[aria-hidden="true"]').forEach(e => e.remove());
+  const text = kopie.textContent.replace(/\s+/g, ' ').trim();
+  return text ? `${text} · ${APP_NAME}` : APP_NAME;
+}
 
 export function render() {
   const seite = `${S.view}/${S.param ?? ''}`;
@@ -35,6 +46,7 @@ export function render() {
   const html = views[S.view](S.param);
   if (!(keep && halbkreisBehalten(main, html))) main.innerHTML = html;
   main.style.minHeight = '';
+  document.title = seitenTitel(main);
   const tab = TAB_OF[S.view] || S.view;
   if (!keep) einblenden(main, tab);
   document.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', a.dataset.nav === tab ? 'page' : 'false'));

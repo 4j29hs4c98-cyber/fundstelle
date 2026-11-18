@@ -63,7 +63,7 @@ export function parteiNachrichten(id) {
   const items = zuPartei(id).filter(n => !gesehen.has(n.url)).slice(0, PARTEI_ANZAHL);
   if (!themen.length && !items.length) return '';
   return `<h2 class="eyebrow section-label">${tr('In the news')}</h2>
-  ${themen.length ? `<div class="cards">${themen.map(themenKarte).join('')}</div>` : ''}${items.length ? liste(items) : ''}
+  ${themen.length ? `<div class="cards">${themen.map(t => themenKarte(t)).join('')}</div>` : ''}${items.length ? liste(items) : ''}
   <p class="note small">${tr('Topics and headlines that name this party. Being named says nothing about what the party did.')}</p>`;
 }
 
@@ -86,7 +86,7 @@ function programmTeil(t) {
   if (!t.frage) return '';
   const gleich = R.frage === t.frage.slice(0, MAX_LAENGE);
   return `<h2 class="eyebrow section-label">${tr('What the parties say and do')}</h2>
-  <p class="note small">${tr('The agent searches all election programmes and the Bundestag record for the question below. You need to be signed in.')}</p>
+  <p class="note small">${tr('The KI searches all election programmes and the Bundestag record for the question below. You need to be signed in.')}</p>
   <p><b>${esc(t.frage)}</b></p>
   <p><button class="btn primary" data-action="nachricht-frage" data-frage="${esc(t.frage)}">${tr('What do the parties say about this?')}</button></p>
   <div id="recherche" data-ansicht="nachricht" data-frage="${esc(t.frage)}" aria-live="polite">${gleich && R.status !== 'leer' ? ergebnisHtml() : ''}</div>`;

@@ -114,7 +114,7 @@ export function viewRecherche() {
 
 export function viewEigene(id) {
   if (id) return gespeichertes(id);
-  return `${kopf(tr('Own topic'), tr('Ask your own question'), tr('As you type, an agent searches every programme and summarises where each party stands.'), { href: '#themen', text: tr('All topics') })}
+  return `${kopf(tr('Own topic'), tr('Ask your own question'), tr('As you type, a KI searches every programme and summarises where each party stands.'), { href: '#themen', text: tr('All topics') })}
   <label class="field"><span>${tr('Your question')}</span>
     <textarea id="eigen-frage" rows="2" maxlength="${MAX_LAENGE}" placeholder="${esc(tr('e.g. Should there be a speed limit on motorways?'))}">${esc(R.frage)}</textarea></label>
   <p class="note small">${tr('Ask a yes or no question, or an open one starting with How, What or Why. All parties appear in alphabetical order, no ranking.')}</p>

@@ -15,7 +15,7 @@ export function viewThemen() {
   ${gespeicherteThemen()}
   <h2 class="eyebrow section-label">${tr('Not listed?')}</h2>
   <a class="card link" href="#eigene"><div class="card-row"><h3>${tr('Ask your own question')}</h3>${pfeil}</div>
-    <span class="meta">${tr('An agent researches all programmes while you type.')}</span></a>
+    <span class="meta">${tr('A KI searches all programmes while you type.')}</span></a>
   ${demoHinweis()}`;
 }
 

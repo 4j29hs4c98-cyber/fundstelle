@@ -3,8 +3,19 @@
 import { tr } from '../i18n.js';
 import { esc, S } from '../core.js';
 import { suche, partei, frage } from '../content.js';
-import { kopf, pfeil, seite, pdfSeite, datum, demoHinweis, safeUrl, auszugBlock, extLink } from './teile.js';
+import { kopf, pfeil, seite, pdfSeite, datum, demoHinweis, safeUrl, auszugBlock, extLink, stimme, rolle } from './teile.js';
 import { P } from '../pruefung.js';
+
+// Wie die gesuchte Partei abgestimmt hat, nicht nur der Titel der Abstimmung. Nur genannte Parteien, alphabetisch wie ueberall;
+// fehlt die Stimme in den Daten, steht das da, statt die Partei stillschweigend wegzulassen.
+function stimmenZeilen(a, parteien) {
+  if (!parteien.length) return '';
+  const zeilen = parteien.map(p => {
+    const [s, r] = a.stimmen?.[p.id] ?? [];
+    return `<dt>${esc(p.name)}</dt><dd>${s ? `<b>${stimme(s)}</b>${r ? ` <span class="meta">${rolle(r)}</span>` : ''}` : `<span class="meta">${tr('No vote recorded')}</span>`}</dd>`;
+  }).join('');
+  return `<dl class="stimmen">${zeilen}</dl>`;
+}
 
 function ergebnis(r) {
   if (!r) return `<p class="note">${tr('For example: “SPD Mietpreisbremse” or “CO2-Preis Klimageld”.')}</p>`;
@@ -16,7 +27,7 @@ function ergebnis(r) {
   const abst = r.abstimmungen.map(a => {
     const f = frage(a.fragen[0]);
     const href = f ? `#frage/${esc(f.id)}` : safeUrl(a.url) ? esc(safeUrl(a.url)) : null;
-    const inhalt = `<h3>${esc(a.titel)}</h3><span class="meta">${esc(a.parlament)} · ${datum(a.datum)} · ${esc(a.quelle)}</span>`;
+    const inhalt = `<h3>${esc(a.titel)}</h3><span class="meta">${esc(a.parlament)} · ${datum(a.datum)} · ${esc(a.quelle)}</span>${stimmenZeilen(a, r.parteien)}`;
     return href ? `<a class="card link" href="${href}"${f ? '' : ' target="_blank" rel="noopener"'}>${inhalt}</a>` : `<article class="card">${inhalt}</article>`;
   }).join('');
   return `${wer ? `<p class="meta">${tr('Searching only in: {p}', { p: wer })}</p>` : ''}

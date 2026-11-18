@@ -140,6 +140,7 @@ const DE = {
   'No passage found in the programmes.': 'Keine Fundstelle in den Programmen.',
   'That does not prove the opposite. The search only finds words that are actually written there.': 'Das beweist nicht das Gegenteil. Die Suche findet nur Wörter, die dort wirklich stehen.',
   'Found in votes': 'Treffer bei Abstimmungen',
+  'No vote recorded': 'Keine Stimme erfasst',
   'Is what I heard true?': 'Stimmt das, was ich gehört habe?',
   'Search all programmes and votes. You get the passage with its page, or a clear note that there is none.': 'Suche in allen Programmen und Abstimmungen. Sie bekommen die Fundstelle mit Seite oder den klaren Hinweis, dass es keine gibt.',
   'Search': 'Suchen',
@@ -208,7 +209,7 @@ const DE = {
   'Compiled by AI, not yet checked': 'Von KI zusammengestellt, noch nicht geprüft',
   'The quotes come word for word from the parties’ programmes for the federal election 2025, with the page. An AI agent selected them and the team has not checked them yet. Open the original before you rely on a passage.': 'Die Zitate stammen wörtlich aus den Programmen der Parteien zur Bundestagswahl 2025, mit Seitenangabe. Ein KI-Agent hat sie ausgewählt, das Team hat sie noch nicht geprüft. Öffnen Sie das Original, bevor Sie sich auf eine Stelle verlassen.',
   'Positions follow once the programme has been read. Invented statements are never attached to a real party.': 'Positionen folgen, sobald das Programm gelesen ist. Erfundene Aussagen werden nie einer echten Partei zugeordnet.',
-  'Mockup: only the highlighted passage is quoted from the programme, the grey lines stand for the rest of the page. Page numbers are those of the PDF.': 'Mockup: Nur die hervorgehobene Stelle ist aus dem Programm zitiert, die grauen Linien stehen für den Rest der Seite. Seitenzahlen sind die des PDFs.',
+  'Only the highlighted passage is quoted word for word from the programme, the grey lines stand for the rest of the page. Page numbers are those of the PDF.': 'Nur die markierte Stelle ist wörtlich aus dem Programm zitiert, die grauen Linien stehen für den Rest der Seite. Seitenzahlen sind die des PDFs.',
   'Read programme': 'Programm lesen',
   'Programme 2025 linked': 'Programm 2025 verlinkt',
   'No programme PDF found yet': 'Noch kein Programm-PDF gefunden',
@@ -380,7 +381,9 @@ const DE = {
   'In the 21st Bundestag': 'Im 21. Bundestag', 'Not in the Bundestag': 'Nicht im Bundestag',
   '{n} seats': '{n} Sitze', '1 seat': '1 Sitz', 'Seats': 'Sitze', 'Tap a block of seats or a party in the list.': 'Auf einen Sitzblock oder eine Partei in der Liste tippen.',
   'Seat distribution in the 21st Bundestag, {n} seats: {list}': 'Sitzverteilung im 21. Bundestag, {n} Sitze: {list}',
-  'The blocks are in alphabetical order. This is not a political placement. The official seating plan of the chamber is not used here yet.': 'Die Blöcke sind alphabetisch geordnet. Das ist keine politische Einordnung. Die amtliche Sitzordnung im Plenarsaal ist hier noch nicht übernommen.',
+  'Seating order of the parliamentary groups in the plenary hall, as seen from the President’s chair. The Bundestag sets this order, not this app. Within the CDU/CSU group the split is simplified; the non-attached SSW member is shown separately below.': 'Sitzordnung der Fraktionen im Plenarsaal, vom Präsidium aus gesehen. Diese Reihenfolge legt der Bundestag fest, nicht diese App. Innerhalb der Fraktion CDU/CSU ist die Aufteilung vereinfacht, der fraktionslose SSW-Abgeordnete steht gesondert darunter.',
+  'Seating order: {src}': 'Sitzordnung: {src}',
+  'Das Parlament, plenary hall conversion 2025': 'Das Parlament, Umbau des Plenarsaals 2025',
   'Seats: {src}': 'Sitze: {src}', 'The Federal Returning Officer, final result 2025': 'Die Bundeswahlleiterin, endgültiges Ergebnis 2025',
   'Who may vote, from what age?': 'Wer darf ab wann wählen?',
   'Choose a topic': 'Thema wählen',
@@ -389,6 +392,11 @@ const DE = {
   'Not listed?': 'Nicht dabei?',
   'Why these parties?': 'Warum diese Parteien?',
   'Why the role is shown': 'Warum die Rolle angezeigt wird',
+  // Wortwahl (Bewertung 18.11.2026): "KI" statt "Agent", Parteiname mit Artikel ueber "die Partei", gleich fuer alle.
+  'A KI searches all programmes while you type.': 'Eine KI durchsucht alle Programme, während Sie tippen.',
+  'As you type, a KI searches every programme and summarises where each party stands.': 'Schon während Sie tippen, durchsucht eine KI jedes Programm und fasst zusammen, wie jede Partei dazu steht.',
+  'The KI searches all election programmes and the Bundestag record for the question below. You need to be signed in.': 'Die KI sucht in allen Wahlprogrammen und in den Unterlagen des Bundestags nach der folgenden Frage. Dafür müssen Sie angemeldet sein.',
+  'In short: what does the party {name} stand for?': 'Kurz gesagt: Wofür steht die Partei {name}?',
 };
 let lang = 'en';
 export const setLang = l => { lang = l === 'de' ? 'de' : 'en'; };
