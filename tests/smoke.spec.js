@@ -176,6 +176,7 @@ test('die Parteiseite beginnt mit einer kurzen Zusammenfassung samt Quellen', as
 
 test('eigenes Thema: Ja/Nein-Bubble vorn, darunter das Warum; offene Fragen ohne Bubble', async ({ page }) => {
   await page.goto('/#eigene');
+  await page.waitForLoadState('networkidle'); // App fertig gestartet, bevor setContent die Seite ersetzt
   const html = await page.evaluate(async () => {
     const { R } = await import('/recherche.js');
     const { ergebnisHtml } = await import('/views/eigene.js');

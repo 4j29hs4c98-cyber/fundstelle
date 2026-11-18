@@ -39,6 +39,7 @@ function seitenTitel(main) {
 export function render() {
   const seite = `${S.view}/${S.param ?? ''}`;
   const main = $('#main'), y = window.scrollY;
+  if (!main) return; // Seite ohne App-Geruest (etwa in Tests ersetzt): nichts zu zeichnen
   const keep = render.last === seite || (render.lastView === S.view && AUSWAHL_IM_PARAM.has(S.view));
   const ae = document.activeElement, sig = keep && main.contains(ae) ? { tag: ae.tagName, elId: ae.id, d: Object.fromEntries(FOCUS_KEYS.map(k => [k, ae.dataset[k]])) } : null;
   main.style.minHeight = keep ? `${main.offsetHeight}px` : '';
