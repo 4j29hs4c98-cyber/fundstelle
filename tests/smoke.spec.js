@@ -295,7 +295,7 @@ test('eigenes Thema: Parteifrage zeigt Versprochen und Getan, verwirft unsichere
   });
   expect(r.geprueft).toBe(3);
   await page.setContent(`<div id="p">${r.html}</div>`);
-  await expect(page.locator('#p h2')).toHaveText([/programmes promise|Programme versprechen/, /parties do|Parteien tun/]);
+  await expect(page.locator('#p h2')).toHaveText([/programmes promise|Programme versprechen/, /parties do|Parteien tun/, /Deep search|Tiefensuche/]);
   await expect(page.locator('#p h3')).toHaveText([/Recorded votes|Namentliche/, /Motions|Anträge/, /news|Nachrichten/]);
   await expect(page.locator('#p .fraktionen li')).toHaveCount(2);
   await expect(page.locator('#p .fraktionen li').first()).toContainText('AfD');
@@ -463,4 +463,31 @@ test('Link pruefen: startet nur auf Knopfdruck, zeigt Urteil mit geprueften Bele
   await expect(box).toContainText(/could not be opened|ließ sich nicht öffnen/);
   await expect(box.locator('a[rel~=noopener]')).toHaveCount(1);
   expect(html).not.toContain('<img');
+});
+
+test('Tiefensuche: Knopf erst nach fertiger Recherche, Ergebnis nur zur eigenen Frage, fremde Daten werden geprueft', async ({ page }) => {
+  await page.goto('/#eigene');
+  const r = await page.evaluate(async () => {
+    const { R } = await import('/recherche.js');
+    const { T, ergebnisPruefen } = await import('/tiefe.js');
+    const { tiefeHtml } = await import('/views/tiefe.js');
+    R.frage = 'Soll es ein Tempolimit geben?'; R.status = 'laeuft';
+    const waehrend = tiefeHtml();
+    R.status = 'fertig'; T.frage = ''; T.status = 'leer';
+    const knopf = tiefeHtml();
+    const ok = { url: 'https://www.bundestag.de/a', richtung: 'kontext', aussage: 'Eine Aussage', auszug: 'Ein woertlicher Auszug von der Seite', seite: 'bundestag.de', titel: 'Titel' };
+    const feind = { url: 'javascript:alert(1)', richtung: 'kontext', aussage: 'x', auszug: 'x' };
+    T.frage = R.frage; T.status = 'fertig';
+    T.ergebnis = ergebnisPruefen({ zusammenfassung: '<img src=x onerror=alert(1)>', befunde: [ok, feind, { ...ok, richtung: 'boese' }], wenig_belege: false });
+    const fertig = tiefeHtml(), befunde = T.ergebnis.befunde.length;
+    T.frage = 'Eine andere Frage';
+    return { waehrend, knopf, fertig, befunde, andere: tiefeHtml() };
+  });
+  expect(r.waehrend).toBe('');
+  expect(r.knopf).toContain('data-action="tiefe-starten"');
+  expect(r.befunde).toBe(1);
+  expect(r.fertig).not.toContain('<img');
+  expect(r.fertig).not.toContain('javascript:');
+  expect(r.fertig).toContain('href="https://www.bundestag.de/a"');
+  expect(r.andere).toContain('data-action="tiefe-starten"');
 });

@@ -25,7 +25,7 @@ function themenZahl(t) {
   return t.quellen === 1 ? tr('{n} reports from one source', { n }) : tr('{n} reports from {m} sources', { n, m: t.quellen });
 }
 
-const themenKarte = (t, rang, von) => `<a class="card link" href="#nachricht/${esc(t.id)}">${rang ? `<span class="meta">${tr('{n} of {m}', { n: rang, m: von })}</span>` : ''}<h3>${esc(t.titel)}</h3>
+const themenKarte = (t, rang, von) => `<a class="card link${rang === 1 ? ' aufm' : ''}" href="#nachricht/${esc(t.id)}">${rang ? `<span class="meta">${tr('{n} of {m}', { n: rang, m: von })}</span>` : ''}<h3>${esc(t.titel)}</h3>
   ${t.zusammenfassung ? `<p><span class="tag">${tr('KI summary')}</span> ${esc(ersterSatz(t.zusammenfassung))}</p>` : ''}
   <span class="meta">${esc(themenZahl(t))} · ${esc(zeit(t.aktualisiert))}</span></a>`;
 

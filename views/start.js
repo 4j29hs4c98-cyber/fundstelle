@@ -90,6 +90,7 @@ export function viewStart() {
     <button class="btn primary">${tr('Ask')}</button>
   </form>
   ${S.frage ? antwort(S.frage) : ''}
+  ${aktuellHtml()}
 
   <h2 class="eyebrow section-label">${tr('Where do you want to start?')}</h2>
   <nav class="wege" aria-label="${tr('Where do you want to start?')}">
@@ -98,7 +99,6 @@ export function viewStart() {
     ${weg('#eigene', 'eigene', tr('Ask your own question'), tr('A KI searches all programmes while you type.'))}
     ${weg('#grundlagen', 'grundlagen', tr('How politics works'), tr('Short, neutral explanations of the terms that come up in programmes and votes.'))}
   </nav>
-  ${aktuellHtml()}
 
   ${hinweis(w, pr)}
   ${w ? `<a class="ballot" href="#wahlen"><div><b>${esc(w.name)}</b><span>${termin(w)}</span></div>

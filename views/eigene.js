@@ -10,6 +10,7 @@ import { kopf, pfeil, marke, extLink, pdfSeite, datum } from './teile.js';
 import { belegListe, personStatus, ohneMandat, PERSON_HINWEIS } from './person.js';
 import { tatenHtml } from './taten.js';
 import { personNachrichten } from './nachrichten.js';
+import { tiefeHtml } from './tiefe.js';
 
 const nachName = (a, b) => (partei(a.partei)?.name ?? '').localeCompare(partei(b.partei)?.name ?? '', 'de');
 const pdfLink = (url, seite) => (url ? `${url.split('#')[0]}#page=${seite}` : null);
@@ -49,7 +50,7 @@ function personHtml() {
   const speichern = R.status === 'fertig' && R.belege.length && !R.fehlgeschlagen
     ? `<p><button class="btn" data-action="eigen-speichern">${tr('Save topic')}</button></p>` : '';
   return `${status ? `<p class="meta" role="status"${R.status === 'laeuft' ? ' aria-busy="true"' : ''}>${esc(status)}</p>` : ''}
-    ${luecke}${R.status === 'fertig' ? ohneMandat(R.person) : ''}${belegListe(R.belege)}${R.status === 'fertig' && R.person ? personNachrichten(R.person.name) : ''}${speichern}${R.belege.length || R.status === 'fertig' ? PERSON_HINWEIS() : ''}`;
+    ${luecke}${R.status === 'fertig' ? ohneMandat(R.person) : ''}${belegListe(R.belege)}${R.status === 'fertig' && R.person ? personNachrichten(R.person.name) : ''}${speichern}${R.belege.length || R.status === 'fertig' ? PERSON_HINWEIS() : ''}${tiefeHtml()}`;
 }
 
 // Statuszeile, Hinweis auf unvollstaendige Ergebnisse und Anmeldelink. Auch der Vergleich nutzt das (views/vergleich-eigene.js).
@@ -77,7 +78,7 @@ export function ergebnisHtml() {
     ? `<p><button class="btn" data-action="eigen-speichern">${tr('Save topic')}</button></p>` : '';
   const zeigen = ['laeuft', 'fertig'].includes(R.status);
   return `${rechercheKopf()}
-    ${zeigen ? versprochen(R.ergebnisse, R.status === 'fertig') + tatenHtml(R.taten, R.ohneFraktion, R.status === 'fertig') : ''}${speichern}`;
+    ${zeigen ? versprochen(R.ergebnisse, R.status === 'fertig') + tatenHtml(R.taten, R.ohneFraktion, R.status === 'fertig') : ''}${speichern}${tiefeHtml()}`;
 }
 
 function gespeichertes(id) {

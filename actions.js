@@ -8,6 +8,7 @@ import { WAHLARTEN, BUNDESLAENDER } from './katalog.js';
 import { C } from './content.js';
 import { R, tippen, abbrechen } from './recherche.js';
 import { pruefen } from './pruefung.js';
+import { tiefeStarten } from './tiefe.js';
 import { pruefungZeichnen } from './views/pruefen.js';
 import { rechercheZeichnen } from './views/vergleich-eigene.js';
 import { PROFIL_ID } from './profil.js';
@@ -22,6 +23,8 @@ function vergleichJetzt() {
 }
 
 export const actions = {
+  // Tiefensuche zur Frage unter dem Fragenfeld: nur auf Knopfdruck, weil sie Geld kostet (Edge Function tiefensuche).
+  'tiefe-starten'() { if (R.frage) tiefeStarten(R.frage, rechercheZeichnen); },
   // Auf der Seite eines Themas des Tages: die vom System abgeleitete, neutrale Frage von der Recherche beantworten lassen.
   'nachricht-frage'({ frage }) { if (frage) tippen(frage, rechercheZeichnen, true); },
   // Eine gemerkte Frage ist ein Record des Nutzers, kein redaktioneller Inhalt. Format: { frage: <id>, created }.

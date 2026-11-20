@@ -1,6 +1,26 @@
 // i18n.js — every visible text goes through tr(). English text is the key; German is looked up.
 // Rule: whenever you add a tr('…') somewhere, add its German translation here (scripts/check-release.mjs checks this).
 const DE = {
+  // Tiefensuche (unter den Ergebnissen der Startfrage)
+  'Deep search': 'Tiefensuche',
+  'Start deep search': 'Tiefensuche starten',
+  'Try again': 'Erneut versuchen',
+  'Searches reputable sources on the web in addition to the programmes. Takes about two minutes. Each deep search uses paid KI research, so please only start it when you need it.': 'Sucht zusätzlich zu den Programmen auf seriösen Seiten im Netz. Dauert etwa zwei Minuten. Jede Tiefensuche nutzt eine bezahlte KI-Recherche, starten Sie sie deshalb nur, wenn Sie sie brauchen.',
+  'Speaks for yes': 'Spricht für Ja',
+  'Speaks for no': 'Spricht für Nein',
+  'Summary of the sources': 'Zusammenfassung der Quellen',
+  'Only one source could be verified, so there is no summary. The verified passage is shown below.': 'Nur eine Quelle ließ sich bestätigen, deshalb gibt es keine Zusammenfassung. Die bestätigte Stelle steht unten.',
+  'No source could be verified, so nothing is shown.': 'Keine Quelle ließ sich bestätigen, deshalb wird nichts gezeigt.',
+  'Sub-questions': 'Teilfragen',
+  'Still unclear': 'Noch ungeklärt',
+  'Deep search by a KI on a fixed list of reputable sites. Every quote was checked word for word on its page. This is not a verdict.': 'Tiefensuche durch eine KI auf einer festen Liste seriöser Seiten. Jedes Zitat wurde Wort für Wort auf seiner Seite geprüft. Das ist kein Urteil.',
+  'Sign in to start a deep search.': 'Melden Sie sich an, um eine Tiefensuche zu starten.',
+  'Deep search is not available in this version.': 'Die Tiefensuche ist in dieser Version nicht verfügbar.',
+  'The question is too short for a deep search.': 'Die Frage ist für eine Tiefensuche zu kurz.',
+  'You have reached the limit of deep searches for now. Please try again later.': 'Sie haben die Grenze für Tiefensuchen vorerst erreicht. Bitte versuchen Sie es später erneut.',
+  'Deep search is not available right now.': 'Die Tiefensuche ist gerade nicht verfügbar.',
+  'The deep search did not produce a usable result. Please try again.': 'Die Tiefensuche hat kein brauchbares Ergebnis geliefert. Bitte versuchen Sie es erneut.',
+  'The deep search was interrupted. Please try again.': 'Die Tiefensuche wurde unterbrochen. Bitte versuchen Sie es erneut.',
   // Link pruefen (Reiter Pruefen)
   'Takes about a minute. You need to be signed in. Each check uses paid KI research, so please only start it when you need it.': 'Dauert etwa eine Minute. Dafür müssen Sie angemeldet sein. Jede Prüfung nutzt eine bezahlte KI-Recherche, starten Sie sie deshalb nur, wenn Sie sie brauchen.',
   'Please sign in under Settings to check links.': 'Bitte melden Sie sich unter Einstellungen an, um Links zu prüfen.',

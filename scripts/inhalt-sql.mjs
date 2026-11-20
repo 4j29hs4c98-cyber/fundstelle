@@ -34,8 +34,11 @@ delete from public.wahlen where ist_demo;
 
 out.push(...I.wahlen.map(w => `insert into public.wahlen (id, name, datum, parlament, ist_demo, status) values (${v(w.id)}, ${v(w.name)}, ${v(w.datum)}, ${v(w.parlament)}, false, ${pub})
   on conflict (id) do update set name = excluded.name, datum = excluded.datum, parlament = excluded.parlament, ist_demo = false, status = excluded.status;`));
-out.push(...I.themen.map(t => `update public.themen set titel = ${v(t.titel)}, kurzfassung = ${v(t.kurz)}, sortierung = ${v(t.sort)} where id = ${v(t.id)};`));
-out.push(...I.fragen.map(f => `update public.fragen set frage = ${v(f.frage)}, kurz = ${v(f.kurz)}, sortierung = ${v(f.sort)} where id = ${v(f.id)};`));
+// Themen und Fragen: neue Zeilen werden angelegt (Entwurf des Agenten, veroeffentlicht), bestehende nur im Text aktualisiert.
+out.push(...I.themen.map(t => `insert into public.themen (id, titel, kurzfassung, sortierung, status, erstellt_von, geprueft) values (${v(t.id)}, ${v(t.titel)}, ${v(t.kurz)}, ${v(t.sort)}, ${pub}, ${agentGeprueft})
+  on conflict (id) do update set titel = excluded.titel, kurzfassung = excluded.kurzfassung, sortierung = excluded.sortierung;`));
+out.push(...I.fragen.map(f => `insert into public.fragen (id, thema_id, frage, kurz, sortierung, status, erstellt_von, geprueft) values (${v(f.id)}, ${v(f.thema)}, ${v(f.frage)}, ${v(f.kurz)}, ${v(f.sort)}, ${pub}, ${agentGeprueft})
+  on conflict (id) do update set thema_id = excluded.thema_id, frage = excluded.frage, kurz = excluded.kurz, sortierung = excluded.sortierung;`));
 // Parteien sind Tatsachen aus dem Katalog, deshalb erstellt_von = mensch.
 out.push(...I.parteien.map(p => `insert into public.parteien (id, kuerzel, anzeigename, ist_demo, status) values (${v(p.id)}, ${v(p.kuerzel)}, ${v(p.name)}, false, ${pub})
   on conflict (id) do update set kuerzel = excluded.kuerzel, anzeigename = excluded.anzeigename, ist_demo = false, status = excluded.status;`));

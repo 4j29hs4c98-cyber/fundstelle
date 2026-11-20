@@ -3,6 +3,7 @@
 // Wer weitertippt, bricht die laufende Recherche ab; nach einer kurzen Pause startet eine neue.
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import * as sync from './sync.js';
+import { tiefeAbbrechen } from './tiefe.js';
 
 export const MIN_LAENGE = 12, MAX_LAENGE = 200;
 // Der Agent startet sofort, wenn die Frage mit "?" endet, sonst nach einer laengeren Tipp-Pause. Jede Recherche kostet Geld.
@@ -74,6 +75,7 @@ export function tippen(text, zeichnen, sofort = false) {
   const frage = String(text).replace(/\s+/g, ' ').trim().slice(0, MAX_LAENGE);
   if (frage === R.frage && (R.status === 'laeuft' || R.status === 'fertig')) return;
   lauf?.abort(); lauf = null; laufNr += 1;
+  tiefeAbbrechen(); // eine Tiefensuche zur alten Frage soll keine Kosten mehr verursachen
   R.frage = frage;
   zuruecksetzen('leer');
   zeichnen();
@@ -166,4 +168,4 @@ function verarbeiten(zeile) {
   }
 }
 
-export function abbrechen() { clearTimeout(timer); lauf?.abort(); lauf = null; laufNr += 1; }
+export function abbrechen() { clearTimeout(timer); lauf?.abort(); lauf = null; laufNr += 1; tiefeAbbrechen(); }
