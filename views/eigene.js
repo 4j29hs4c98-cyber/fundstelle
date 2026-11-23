@@ -1,12 +1,14 @@
-// views/eigene.js — "Eigenes Thema": eine eigene Frage stellen, der Agent recherchiert schon beim Tippen.
+// views/eigene.js — eine Seite fuer jede eigene Frage (#recherche): zuerst was schon in der App steht, dann die
+// Recherche des Agenten ueber alle Programme, dann die Tiefensuche. #recherche/<id> zeigt ein gespeichertes eigenes Thema;
+// alte Adressen #eigene und #eigene/<id> leiten dorthin um (app.js).
 // Gespeicherte eigene Themen sind Records des Nutzers (kind 'eigenes'), kein
 // redaktioneller Inhalt. Neutral wie ueberall: Parteien alphabetisch, jede Aussage mit Zitat. Ja-Nein-Fragen zeigen je
 // Partei Ja oder Nein, offene Fragen nur die Position. Record: { frage, typ ('ja_nein' | 'offen', aeltere ohne), ergebnisse, stand }.
 import { tr, plural } from '../i18n.js';
 import { esc, list, get } from '../core.js';
-import { partei } from '../content.js';
+import { partei, thema, positionenZuFrage, frageSuche } from '../content.js';
 import { R, MIN_LAENGE, MAX_LAENGE } from '../recherche.js';
-import { kopf, pfeil, marke, extLink, pdfSeite, datum } from './teile.js';
+import { kopf, herkunftPfad, pfeil, marke, extLink, pdfSeite, datum, haltung, seitenLink } from './teile.js';
 import { belegListe, personStatus, ohneMandat, PERSON_HINWEIS } from './person.js';
 import { tatenHtml } from './taten.js';
 import { personNachrichten } from './nachrichten.js';
@@ -83,11 +85,28 @@ export function ergebnisHtml() {
 
 function gespeichertes(id) {
   const r = get(id);
-  if (!r || r.kind !== 'eigenes') return `${kopf(tr('Own topic'), tr('This topic no longer exists.'), '', { href: '#eigene', text: tr('Own topics') })}`;
-  return `${kopf(tr('Own topic'), esc(r.data.frage), tr('Researched on {d}', { d: datum(String(r.data.stand ?? '').slice(0, 10)) }), { href: '#eigene', text: tr('Own topics') })}
+  if (!r || r.kind !== 'eigenes') return `${kopf(tr('Own topic'), tr('This topic no longer exists.'), '', { href: '#recherche', text: tr('Ask your own question') })}`;
+  return `${kopf(tr('Own topic'), esc(r.data.frage), tr('Researched on {d}', { d: datum(String(r.data.stand ?? '').slice(0, 10)) }), herkunftPfad(tr('Own topic'), [{ href: '#themen', text: tr('Topics') }]))}
   ${r.data.typ === 'person' ? belegListe(r.data.belege ?? []) + PERSON_HINWEIS()
     : versprochen(r.data.ergebnisse ?? [], true) + tatenHtml(r.data.taten ?? [], r.data.ohne_fraktion ?? [], Array.isArray(r.data.taten))}
   <p><button class="btn" data-action="eigen-loeschen" data-id="${esc(r.id)}">${tr('Delete topic')}</button></p>`;
+}
+
+// Schon aufbereitete Fragen zur eigenen Frage, vor der Recherche des Agenten. Hoechstens drei, nach Zahl der Treffer.
+function antwortKarte(f) {
+  const zeilen = positionenZuFrage(f.id).map(p => `<li>${marke(partei(p.partei), 'klein', 'b')}
+    <span class="stance">${haltung(p.haltung)}</span>${p.seite ? seitenLink(p.partei, p.seite) : ''}</li>`).join('');
+  return `<article class="card"><span class="meta">${esc(thema(f.thema)?.titel ?? '')}</span><h3>${esc(f.frage)}</h3>
+    <ul class="mini">${zeilen}</ul>
+    <div class="row"><a class="go" href="#frage/${esc(f.id)}">${tr('All details')} ${pfeil}</a>
+      <a class="btn" href="#vergleich//${esc(f.thema)}">${tr('Compare parties')}</a></div></article>`;
+}
+export function vorhandenHtml(text) {
+  const r = String(text ?? '').trim() ? frageSuche(text) : null;
+  if (!r?.fragen.length) return '';
+  return `<h2 class="eyebrow section-label">${tr('Already in the app')}</h2>
+    ${r.wertend ? `<p class="note small">${tr('Who does something “best” is your call. The app shows what each programme says, with the page.')}</p>` : ''}
+    <div class="cards">${r.fragen.slice(0, 3).map(antwortKarte).join('')}</div>`;
 }
 
 // Liste der gespeicherten eigenen Themen, neueste zuerst. Erscheint unter "Eigene Frage" und unter "Themen".
@@ -95,30 +114,23 @@ export function gespeicherteThemen() {
   const meine = list('eigenes').sort((a, b) => String(b.data.stand).localeCompare(String(a.data.stand)));
   if (!meine.length) return '';
   return `<h2 class="eyebrow section-label">${tr('Your saved topics')}</h2>
-  <div class="cards">${meine.map(r => `<a class="card link" href="#eigene/${esc(r.id)}"><div class="card-row"><h3>${esc(r.data.frage)}</h3>${pfeil}</div>
+  <div class="cards">${meine.map(r => `<a class="card link" href="#recherche/${esc(r.id)}"><div class="card-row"><h3>${esc(r.data.frage)}</h3>${pfeil}</div>
     <span class="meta">${r.data.typ === 'person'
       ? plural((r.data.belege ?? []).length, tr('1 source'), tr('{n} sources', { n: (r.data.belege ?? []).length }))
       : plural((r.data.ergebnisse ?? []).length, tr('1 programme takes a position'), tr('{n} programmes take a position', { n: (r.data.ergebnisse ?? []).length }))
         + ((r.data.taten ?? []).length ? `, ${plural(r.data.taten.length, tr('1 action'), tr('{n} actions', { n: r.data.taten.length }))}` : '')}</span></a>`).join('')}</div>`;
 }
 
-// Eigene Recherche-Seite mit Eingabefeld. Die Startseite recherchiert inzwischen direkt unter ihrem Fragenfeld;
-// diese Seite bleibt fuer Verweise, etwa aus dem Vergleich bei Personenfragen. Gehoert zum Bereich Start.
-export function viewRecherche() {
-  // Mit eigenem Eingabefeld (dieselbe id wie unter #eigene, app.js startet darueber die Recherche beim Tippen): so laesst
-  // sich die Frage hier aendern, nach der Anmeldung erneut starten oder verlaengern, ohne zurueck zur Startseite.
-  return `${kopf(tr('Research'), tr('Ask your own question'), '', { href: '#start', text: tr('Start') })}
-  <label class="field"><span>${tr('Your question')}</span>
-    <textarea id="eigen-frage" rows="2" maxlength="${MAX_LAENGE}">${esc(R.frage)}</textarea></label>
-  <div id="recherche" aria-live="polite">${ergebnisHtml()}</div>`;
-}
-
-export function viewEigene(id) {
+// Die eine Seite fuer eigene Fragen. Das Fragenfeld der Startseite, "Nicht dabei?" unter Themen und der Hinweis im
+// Vergleich fuehren hierher. Beim Tippen recherchiert der Agent (app.js), #vorhanden und #recherche werden neu gezeichnet,
+// das Eingabefeld bleibt unberuehrt. Der Bereich der Tab-Leiste ist der, aus dem man kam (core.js FOLGT_HERKUNFT).
+export function viewRecherche(id) {
   if (id) return gespeichertes(id);
-  return `${kopf(tr('Own topic'), tr('Ask your own question'), tr('As you type, a KI searches every programme and summarises where each party stands.'), { href: '#themen', text: tr('All topics') })}
+  return `${kopf(tr('Research'), tr('Ask your own question'), tr('As you type, a KI searches every programme and summarises where each party stands.'), herkunftPfad(tr('Research'), [{ href: '#start', text: tr('Start') }]))}
   <label class="field"><span>${tr('Your question')}</span>
     <textarea id="eigen-frage" rows="2" maxlength="${MAX_LAENGE}" placeholder="${esc(tr('e.g. Should there be a speed limit on motorways?'))}">${esc(R.frage)}</textarea></label>
   <p class="note small">${tr('Ask a yes or no question, or an open one starting with How, What or Why. All parties appear in alphabetical order, no ranking.')}</p>
+  <div id="vorhanden">${vorhandenHtml(R.frage)}</div>
   <div id="recherche" aria-live="polite">${ergebnisHtml()}</div>
   ${gespeicherteThemen()}`;
 }

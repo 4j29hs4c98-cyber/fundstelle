@@ -4,7 +4,7 @@
 import { tr, plural } from '../i18n.js';
 import { esc } from '../core.js';
 import { GRUNDLAGEN } from '../grundlagen.js';
-import { kopf, pfeil, safeUrl } from './teile.js';
+import { kopf, pfad, pfeil, safeUrl } from './teile.js';
 
 const G = GRUNDLAGEN;
 const bereichNr = nr => G.bereiche.find(b => b.nr === nr);
@@ -30,7 +30,7 @@ function karteHtml(b, k, offen) {
 
 function uebersicht() {
   const buchstaben = [...new Set(G.glossar.map(g => g.begriff[0].toUpperCase()))];
-  return `${kopf(tr('Topics'), tr('How politics works'), tr('Short, neutral explanations of the terms that come up in programmes and votes.'), { href: '#start', text: tr('Start') })}
+  return `${kopf(tr('Topics'), tr('How politics works'), tr('Short, neutral explanations of the terms that come up in programmes and votes.'), pfad([{ href: '#themen', text: tr('Topics') }], tr('How politics works')))}
   <section class="notice"><b>${tr('Draft, not checked yet')}</b><p>${tr('Every card is a suggestion until someone in the team has checked it. Open points are marked.')}</p></section>
   <h2 class="eyebrow section-label">${tr('Areas')}</h2>
   <div class="cards">${G.bereiche.map(b => `<a class="card link" href="#grundlagen/${esc(b.id)}"><h3>${esc(b.titel)}</h3>
@@ -45,7 +45,7 @@ export function viewGrundlagen(param) {
   const [bid, kid] = String(param ?? '').split('/');
   const b = G.bereiche.find(x => x.id === bid);
   if (!b) return uebersicht();
-  return `${kopf(tr('How politics works'), esc(b.titel), '', { href: '#grundlagen', text: tr('All areas') })}
+  return `${kopf(tr('How politics works'), esc(b.titel), '', pfad([{ href: '#themen', text: tr('Topics') }, { href: '#grundlagen', text: tr('How politics works') }], b.titel))}
   ${b.intro ? `<p class="note">${text(b.intro)}</p>` : ''}
   <div class="cards">${b.karten.map(k => karteHtml(b, k, k.id === kid)).join('')}</div>`;
 }

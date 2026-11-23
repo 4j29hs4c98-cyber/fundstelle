@@ -4,15 +4,16 @@
 import { tr } from '../i18n.js';
 import { esc } from '../core.js';
 import { partei, hatInhalt, programmVon, positionenAufSeite, fundstellenVon, frage } from '../content.js';
-import { kopf, logo, seite, pfeil, safeUrl, demoHinweis } from './teile.js';
+import { kopf, herkunftPfad, logo, seite, pfeil, safeUrl, demoHinweis } from './teile.js';
 
-const zurueck = () => ({ href: '#parteien', text: tr('All parties') });
+// Der Leser hat mehrere moegliche Eltern (Frage, Partei, Vergleich): der Pfad folgt der Seite, von der man kam.
+const zurueck = p => herkunftPfad(p ? tr('Programme {name}', { name: p.name }) : tr('Programme'), [{ href: '#parteien', text: tr('Parties') }, ...(p ? [{ href: `#partei/${p.id}`, text: p.name }] : [])]);
 const platz = (n, k) => Array.from({ length: k }, (_, i) => `<span class="platz" style="width:${70 + ((n * 7 + i * 13) % 28)}%"></span>`).join('');
 const mitSeite = (u, n) => { const x = new URL(u); if (n) x.hash = `page=${n}`; return x.href; };
 const original = (url, n) => { const u = safeUrl(url); return u ? `<a class="go" href="${esc(mitSeite(u, n))}" target="_blank" rel="noopener">${n ? tr('Open the original on page {n}', { n }) : tr('Open the original programme')} ${pfeil}</a>` : ''; };
 
 function echtesProgramm(p) {
-  return `${kopf(tr('Programme'), `${logo(p)} ${esc(p.voll)}`, tr('Programme for the federal election 2025'), zurueck())}
+  return `${kopf(tr('Programme'), `${logo(p)} ${esc(p.voll)}`, tr('Programme for the federal election 2025'), zurueck(p))}
   ${original(p.programm) || `<p class="note">${tr('No official programme PDF found yet.')}</p>`}
   <section class="notice"><b>${tr('Not in the app yet')}</b><p>${tr('Positions with page numbers follow once this programme has been read and checked. Until then the link opens the party’s own PDF.')}</p></section>`;
 }
@@ -35,7 +36,7 @@ export function viewProgramm(param) {
         <p class="meta"><a href="#frage/${esc(s.frage)}">${esc(frage(s.frage)?.kurz ?? '')} ${pfeil}</a></p>`).join('')}
       ${platz(n + 3, stellen.length ? 3 : 6)}
     </article>`;
-  return `${kopf(tr('Programme'), `${logo(p)} ${esc(p.voll ?? p.name)}`, esc(pr.titel), { href: `#partei/${esc(id)}`, text: p.name })}
+  return `${kopf(tr('Programme'), `${logo(p)} ${esc(p.voll ?? p.name)}`, esc(pr.titel), zurueck(p))}
   <nav class="blaettern" aria-label="${tr('Pages')}">
     ${n > 1 ? `<a class="btn" href="#programm/${esc(id)}/${n - 1}">← ${seite(n - 1)}</a>` : '<span></span>'}
     <b>${von(n)}</b>

@@ -3,7 +3,7 @@
 import { tr } from '../i18n.js';
 import { esc } from '../core.js';
 import { parteienSortiert, ohneInhalt, hatInhalt, partei, programmVon, themenSortiert, fragenZuThema, positionVon, abstimmungenZuFrage, aussagenVon, frage } from '../content.js';
-import { kopf, pfeil, haltungZeile, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink, quelleZeile } from './teile.js';
+import { kopf, pfad, pfeil, haltungZeile, stimme, rolle, datum, seitenLink, herkunft, demoHinweis, safeUrl, logo, extLink, quelleZeile } from './teile.js';
 import { profilVon } from '../parteiprofile.js';
 import { parteiNachrichten } from './nachrichten.js';
 import { einordnungBlock, skalaHtml } from './einordnung.js';
@@ -61,7 +61,7 @@ export function aussagenBlock(liste, mitPartei = false) {
 }
 
 function echtePartei(p) {
-  return `${kopf(tr('Party'), `${logo(p)} ${esc(p.voll)}`, '', { href: '#parteien', text: tr('All parties') })}
+  return `${kopf(tr('Party'), `${logo(p)} ${esc(p.voll)}`, '', pfad([{ href: '#parteien', text: tr('Parties') }], p.name))}
   ${profilBlock(p)}
   ${einordnungBlock(p)}
   <div class="row">${safeUrl(p.programm) ? `<a class="go" href="#programm/${esc(p.id)}">${tr('Read programme')} ${pfeil}</a>` : ''}
@@ -91,7 +91,7 @@ export function viewPartei(id) {
   }).join('');
 
   return `${kopf(tr('Party'), `${logo(p)} ${esc(p.voll ?? p.name)}`, pr ? `${esc(pr.titel)}${pr.seiten ? ` · ${tr('{n} pages', { n: pr.seiten })}` : ''}` : '',
-    { href: '#parteien', text: tr('All parties') })}
+    pfad([{ href: '#parteien', text: tr('Parties') }], p.name))}
   ${profilBlock(p)}
   ${einordnungBlock(p)}
   <div class="row"><a class="go" href="#programm/${esc(p.id)}">${tr('Read programme')} ${pfeil}</a>

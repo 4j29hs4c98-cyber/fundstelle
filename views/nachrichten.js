@@ -8,7 +8,7 @@ import { frage, partei } from '../content.js';
 import { R, MAX_LAENGE } from '../recherche.js';
 import { N, BEREICHE, startThemen, themenNachBereich, themaNachId, themenZuPartei, zuPartei, zuPerson } from '../nachrichten.js';
 import { ergebnisHtml } from './eigene.js';
-import { extLink, kopf, pfeil } from './teile.js';
+import { extLink, kopf, pfad, pfeil } from './teile.js';
 
 const PARTEI_ANZAHL = 6, PARTEI_THEMEN = 4, PERSON_ANZAHL = 5;
 
@@ -51,7 +51,7 @@ export function viewNachrichten(param) {
       <ul class="news">${t.meldungen.slice(0, MELDUNGEN_JE_THEMA).map(zeile2).join('')}</ul>
       <span class="meta">${esc(themenZahl(t))}${t.meldungen.length > MELDUNGEN_JE_THEMA ? ` · <a href="#nachricht/${esc(t.id)}">${tr('All reports')}</a>` : ''}</span></article>`).join('')}`).join('');
   const leer = N.themen.length ? tr('No topics in this area right now.') : tr(N.stand ? 'No news available right now.' : 'Loading the news …');
-  return `${kopf(tr('News'), tr('News overview'), tr('The most important reports of the last 36 hours, sorted by area. Only headline, source and time, linked to the newsroom.'), { href: '#start', text: tr('Start') })}
+  return `${kopf(tr('News'), tr('News overview'), tr('The most important reports of the last 36 hours, sorted by area. Only headline, source and time, linked to the newsroom.'), pfad([{ href: '#start', text: tr('Start') }], tr('News overview')))}
   ${filter}
   ${gruppen || `<p class="note">${leer}</p>`}
   <p class="note small">${tr('A KI sorts the topics into areas. The reports themselves stay unchanged. An area is no judgement about a report.')}</p>`;
@@ -95,9 +95,9 @@ function programmTeil(t) {
 export function viewNachricht(id) {
   const t = themaNachId(id);
   // Noch nicht geladen (oder offline) ist nicht dasselbe wie "nicht mehr aktuell".
-  if (!t) return `${kopf(tr('Topic of the day'), tr(N.stand ? 'This topic is no longer current.' : 'Loading the topic …'), '', { href: '#start', text: tr('Start') })}`;
+  if (!t) return `${kopf(tr('Topic of the day'), tr(N.stand ? 'This topic is no longer current.' : 'Loading the topic …'), '', pfad([{ href: '#start', text: tr('Start') }], tr('Topic of the day')))}`;
   const namen = t.parteien.map(p => partei(p)).filter(Boolean).sort((a, b) => a.name.localeCompare(b.name, 'de'));
-  return `${kopf(tr('Topic of the day'), esc(t.titel), esc(`${themenZahl(t)} · ${zeit(t.aktualisiert)}`), { href: '#start', text: tr('Start') })}
+  return `${kopf(tr('Topic of the day'), esc(t.titel), esc(`${themenZahl(t)} · ${zeit(t.aktualisiert)}`), pfad([{ href: '#start', text: tr('Start') }], t.titel))}
   ${t.zusammenfassung ? `<p><span class="tag">${tr('KI summary')}</span> ${esc(t.zusammenfassung)}</p>
   <p class="note small">${tr('Summary by a KI from the titles and teasers of the reports below, in its own words. Numbers and names are checked against them. A person has not checked it.')}</p>` : `<p class="note">${tr('No summary for this topic: the automatic check did not pass or only commentary exists. The reports are listed below.')}</p>`}
   ${t.quellen === 1 ? `<p class="note small"><b>${tr('Only one source')}</b></p>` : ''}

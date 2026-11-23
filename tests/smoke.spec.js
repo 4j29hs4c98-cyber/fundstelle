@@ -60,7 +60,9 @@ test('vom Thema zur Frage und zurueck', async ({ page }) => {
   await page.click('a[href^="#thema/"] >> nth=0');
   await page.click(`a[href="#frage/${MIETE}"]`);
   await expect(page.locator('#main h1')).toContainText('Mietpreisbremse');
-  await page.click('.back');
+  // Pfad ueber der Frage: Themen › Thema › Frage, jede Stufe ist ein Link.
+  await expect(page.locator('nav.pfad a')).toHaveText(['Topics', 'Wohnen und Mieten']);
+  await page.click('nav.pfad a[href^="#thema/"]');
   await expect(page.locator('#main h1')).toHaveText('Wohnen und Mieten');
 });
 
@@ -97,15 +99,17 @@ test('Alle vier Tabs tragen am Handy ihre Beschriftung, nicht nur der aktive', a
   expect(breiten[2]).toBeLessThanOrEqual(breiten[3]);
 });
 
-test('eine gemerkte Frage erscheint auf dem Start und ueberlebt das Neuladen', async ({ page }) => {
+test('eine gemerkte Frage erscheint oben unter Themen und ueberlebt das Neuladen', async ({ page }) => {
   await page.goto(`/#frage/${RENTE}`);
   await page.click(`[data-action=merken][data-frage="${RENTE}"]`);
   // Erst neu laden, wenn das Speichern fertig ist (der Stern zeigt es an).
   await expect(page.locator(`[data-action=merken][data-frage="${RENTE}"]`)).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
   await expect(page.locator(`[data-action=merken][data-frage="${RENTE}"]`)).toHaveAttribute('aria-pressed', 'true');
-  await page.goto('/#start');
+  await page.goto('/#themen');
   await expect(page.locator(`a.card[href="#frage/${RENTE}"]`)).toBeVisible();
+  await page.goto('/#start');
+  await expect(page.locator(`a.card[href="#frage/${RENTE}"]`)).toHaveCount(0);
 });
 
 test('eine Frage wieder entfernen bietet Rueckgaengig an', async ({ page }) => {
@@ -145,7 +149,8 @@ test('keine Frage zeigt eine unklare Haltung', async ({ page }) => {
 
 test('eigenes Thema: beim Tippen meldet sich der Agent und verlangt ohne Konto eine Anmeldung', async ({ page }) => {
   await page.goto('/#themen');
-  await page.locator('a[href="#eigene"]').first().click();
+  await page.locator('a[href="#recherche"]').first().click();
+  await expect(page.locator('.tabbar a[data-nav=themen]')).toHaveAttribute('aria-current', 'page'); // bleibt im Bereich Themen
   const feld = page.locator('#eigen-frage');
   await feld.fill('Soll');
   await expect(page.locator('#recherche')).toContainText('12');
@@ -255,19 +260,96 @@ test('Vergleich: Halbkreis mit 630 Sitzen, Sitze und Knoepfe bleiben gleich gewa
   await expect(page.locator(`.pchip[data-id="${SPD}"]`)).toHaveAttribute('aria-pressed', 'false');
 });
 
-test('Startfrage recherchiert direkt auf der Startseite, auch wenn es passende Fragen in der App gibt', async ({ page }) => {
+test('Startfrage fuehrt zur einen Seite fuer eigene Fragen: zuerst was in der App steht, dann die Recherche', async ({ page }) => {
   await page.goto('/#start');
   await page.fill('#start-q', 'Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
   await page.press('#start-q', 'Enter');
-  await expect(page).toHaveURL(/#start$/);
-  await expect(page.locator('#start-q')).toHaveValue('Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
+  await expect(page).toHaveURL(/#recherche$/);
+  await expect(page.locator('#eigen-frage')).toHaveValue('Welche Meinung vertritt Friedrich Merz zum Tierschutz?');
   await expect(page.locator('#recherche [role=status]')).toContainText(/Sign in|anmelden|not switched on|nicht eingeschaltet|starting|startet/, { timeout: 8000 });
   await expect(page.locator('.notice')).toHaveCount(0);
-  // Mit Treffer in der App: Recherche oben, die vorhandenen Fragen darunter.
+  await expect(page.locator('.tabbar a[data-nav=start]')).toHaveAttribute('aria-current', 'page');
+  // Mit Treffer in der App: die vorhandenen Fragen oben, die Recherche darunter.
+  await page.goto('/#start');
   await page.fill('#start-q', 'Soll die Mietpreisbremse verlaengert werden?');
   await page.press('#start-q', 'Enter');
-  await expect(page.locator('#recherche')).toBeVisible();
-  await expect(page.locator('#recherche ~ .cards .card').first()).toBeVisible();
+  await expect(page).toHaveURL(/#recherche$/);
+  await expect(page.locator('#vorhanden .card').first()).toBeVisible();
+  await expect(page.locator('#vorhanden + #recherche')).toBeVisible();
+});
+
+test('Start: keine Kacheln, eine Themenreihe und Vorschlaege beim Tippen, ohne Recherche', async ({ page }) => {
+  await page.goto('/#start');
+  await expect(page.locator('.weg, .wege')).toHaveCount(0);
+  await expect(page.locator('.themenreihe a[href^="#thema/"]').first()).toBeVisible();
+  await page.fill('#start-q', 'Miet');
+  const v = page.locator('#vorschlaege .vorschlaege a');
+  await expect(v.first()).toBeVisible();
+  expect(await v.count()).toBeLessThanOrEqual(5);
+  await expect(page.locator(`#vorschlaege a[href="#frage/${MIETE}"]`)).toBeVisible();
+  await expect(page.locator('#recherche')).toHaveCount(0);                     // Tippen allein startet keine Recherche
+  await page.fill('#start-q', '');
+  await expect(v).toHaveCount(0);
+});
+
+test('Vergleich und Programm-Leser bleiben im Bereich der Frage, der Pfad zeigt die Herkunft', async ({ page }) => {
+  await page.goto(`/#frage/${MIETE}`);
+  await page.click('a.btn[href^="#vergleich/"]');
+  await expect(page.locator('#main h1')).toHaveText('Compare parties');
+  await expect(page.locator('.tabbar a[data-nav=themen]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('nav.pfad a')).toHaveText(['Topics', 'Wohnen und Mieten', /Mietpreisbremse/]);
+  // Nach dem Neuladen gibt es keine Herkunft mehr: Standardbereich Parteien.
+  await page.reload();
+  await expect(page.locator('.tabbar a[data-nav=parteien]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('nav.pfad a')).toHaveText(['Parties']);
+  // Programm-Leser aus der Frage: Pfad endet an der Frage, Bereich Themen.
+  await page.goto(`/#frage/${MIETE}`);
+  await page.locator('.pos .stelle summary').first().click();
+  await page.locator('.pos .stelle a.seite-link').first().click();
+  await expect(page).toHaveURL(/#programm\//);
+  await expect(page.locator('.tabbar a[data-nav=themen]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('nav.pfad a').last()).toHaveAttribute('href', `#frage/${MIETE}`);
+  // Blaettern im Leser behaelt den Pfad.
+  await page.locator('.blaettern a.btn').last().click();
+  await expect(page.locator('nav.pfad a').last()).toHaveAttribute('href', `#frage/${MIETE}`);
+});
+
+test('alte Adressen #eigene und #eigene/<id> zeigen die eigene Frage unter #recherche, gespeicherte Daten unveraendert', async ({ page }) => {
+  await page.goto('/#start');
+  await expect(page.locator('#main h1')).toBeVisible();                          // Speicher ist offen
+  await page.evaluate(async () => {
+    const { save } = await import('/core.js');
+    await save('eigenes', 'alt-1', { frage: 'Soll es ein Tempolimit geben?', ergebnisse: [], stand: '2026-11-01T10:00:00Z' });
+  });
+  await page.goto('/#eigene/alt-1');
+  await expect(page).toHaveURL(/#recherche\/alt-1$/);
+  await expect(page.locator('#main h1')).toHaveText('Soll es ein Tempolimit geben?');
+  await page.goto('/#eigene');
+  await expect(page).toHaveURL(/#recherche$/);
+  await expect(page.locator('a.card[href="#recherche/alt-1"]')).toBeVisible();
+  const daten = await page.evaluate(async () => (await import('/core.js')).get('alt-1').data);
+  expect(daten).toEqual({ frage: 'Soll es ein Tempolimit geben?', ergebnisse: [], stand: '2026-11-01T10:00:00Z' });
+});
+
+test('zurueck fuehrt an dieselbe Stelle der Seite, auch ueber den Pfad', async ({ page }) => {
+  await page.goto(`/#frage/${MIETE}`);
+  await expect(page.locator('.pos').first()).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await page.waitForTimeout(100);
+  const y = await page.evaluate(() => window.scrollY);
+  expect(y).toBeGreaterThan(300);
+  await page.click('a.btn[href^="#vergleich/"]');
+  await expect(page.locator('#main h1')).toHaveText('Compare parties');
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(50);           // neue Seite beginnt oben
+  await page.click(`nav.pfad a[href="#frage/${MIETE}"]`);                        // vorige Seite im Pfad: zurueck im Verlauf
+  await expect(page.locator('#main h1')).toContainText('Mietpreisbremse');
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(y - 5);
+  // Browser-Zurueck ebenso.
+  await page.click(`.pos a[href^="#partei/"] >> nth=0`);
+  await expect(page.locator('#main h1')).not.toContainText('Mietpreisbremse');
+  await page.goBack();
+  await expect(page.locator('#main h1')).toContainText('Mietpreisbremse');
+  await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBeGreaterThan(300);
 });
 
 test('eigenes Thema: Parteifrage zeigt Versprochen und Getan, verwirft unsichere Taten und nennt Parteien ohne Fraktion', async ({ page }) => {

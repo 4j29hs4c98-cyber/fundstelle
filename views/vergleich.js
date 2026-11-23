@@ -8,7 +8,7 @@ import { tr, plural } from '../i18n.js';
 import { esc } from '../core.js';
 import { partei, parteienSortiert, ohneInhalt, thema, themenSortiert, fragenZuThema, positionVon, argumenteZuFrage } from '../content.js';
 import { profil } from '../profil.js';
-import { kopf, marke, haltungZeile, quelleZeile, demoHinweis, herkunft } from './teile.js';
+import { kopf, herkunftPfad, marke, haltungZeile, quelleZeile, demoHinweis, herkunft } from './teile.js';
 import { halbkreis, sitzeVon, imBundestag } from './halbkreis.js';
 import { vergleichEigene } from './vergleich-eigene.js';
 import { gesamtbildHtml } from './einordnung.js';
@@ -70,7 +70,7 @@ export function viewVergleich(param) {
       const fr = fragenZuThema(t.id);
       return fr.length ? `<h2 class="eyebrow section-label">${esc(t.titel)}${meine.includes(t.id) ? ` · ${tr('Your topic')}` : ''}</h2>${fr.map(f => frageBlock(f, v.ids)).join('')}` : '';
     }).join('');
-  return `${kopf(tr('Parties'), tr('Compare parties'), tr('Choose up to four. Same questions, side by side, in alphabetical order.'), { href: '#parteien', text: tr('All parties') })}
+  return `${kopf(tr('Compare'), tr('Compare parties'), tr('Choose up to four. Same questions, side by side, in alphabetical order.'), herkunftPfad(tr('Compare parties'), [{ href: '#parteien', text: tr('Parties') }]))}
   ${halbkreis(buchstabeIn(v))}
   <p class="meta hk-hinweis">${tr('Tap a block of seats or a party in the list.')}</p>
   ${auswahl(v)}
