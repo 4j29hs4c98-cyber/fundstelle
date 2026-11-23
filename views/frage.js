@@ -3,7 +3,7 @@
 import { tr, plural } from '../i18n.js';
 import { esc } from '../core.js';
 import { frage, thema, partei, positionenZuFrage, argumenteZuFrage, abstimmungenZuFrage, aussagenZuFrage } from '../content.js';
-import { kopf, merkKnopf, haltungZeile, stimme, rolle, datum, pdfSeite, herkunft, demoHinweis, extLink, marke, seitenLink, pfeil, quelleZeile, auszugBlock } from './teile.js';
+import { kopf, pfad, merkKnopf, haltungZeile, stimme, rolle, datum, pdfSeite, herkunft, demoHinweis, extLink, marke, seitenLink, pfeil, quelleZeile, auszugBlock } from './teile.js';
 import { aussagenBlock } from './parteien.js';
 import { begriffeBlock } from './grundlagen.js';
 
@@ -53,7 +53,7 @@ export function viewFrage(id) {
   const liste = richtung => args.filter(a => a.richtung === richtung)
     .map(a => `<li>${esc(a.text)} <span class="src-inline">${quelleLink(a.url, a.quelle)}</span></li>`).join('') || `<li class="meta">${tr('None yet.')}</li>`;
 
-  return `${kopf(esc(t?.titel ?? tr('Question')), esc(f.frage), '', { href: t ? `#thema/${t.id}` : '#themen', text: t?.titel ?? tr('All topics') })}
+  return `${kopf(esc(t?.titel ?? tr('Question')), esc(f.frage), '', pfad([{ href: '#themen', text: tr('Topics') }, ...(t ? [{ href: `#thema/${t.id}`, text: t.titel }] : [])], f.kurz ?? f.frage))}
   <div class="row merk-row">${merkKnopf(f.id)}<span class="meta">${tr('All parties in alphabetical order. No ranking, no recommendation.')}</span></div>
 
   ${ueberblick(pos)}

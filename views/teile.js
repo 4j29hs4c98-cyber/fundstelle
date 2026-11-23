@@ -51,8 +51,20 @@ export const termin = w => (w.datum ? datum(w.datum) : esc(w.zeitraum));
 export const datum = iso => new Date(iso + 'T12:00:00').toLocaleDateString(LOC(), { day: 'numeric', month: 'long', year: 'numeric' });
 export const seite = n => tr('Page {n}', { n });
 
+// Pfad ueber tieferen Seiten: "Themen › Wohnen › Mietpreisbremse". Jede Stufe ist ein Link, die letzte ist die Seite selbst.
+// Texte kommen roh herein und werden hier escaped. render.js liest den Pfad der Seite aus (fuer die Herkunft, s. unten).
+export const pfad = (stufen, aktuell) => ({ pfad: stufen, aktuell });
+// Vergleich, Programm-Leser und eigene Frage haengen sich an die Seite, von der man kam (S.herkunft, gesetzt in render.js).
+// Ohne Herkunft, etwa nach dem Neuladen, gilt der Standardpfad.
+export const herkunftPfad = (aktuell, standard) => pfad(S.herkunft?.length ? S.herkunft : standard, aktuell);
+function pfadHtml({ pfad: stufen, aktuell }) {
+  return `<nav class="pfad" aria-label="${tr('Path')}"><ol>${stufen.map(s => `<li><a href="${esc(s.href)}">${esc(s.text)}</a></li>`).join('')}
+    <li aria-current="page"><span>${esc(aktuell)}</span></li></ol></nav>`;
+}
+
 export function kopf(eyebrow, titel, sub = '', zurueck = null) {
-  return `${zurueck ? `<a class="back" href="${esc(zurueck.href)}"><span aria-hidden="true">←</span> ${esc(zurueck.text)}</a>` : ''}
+  const oben = zurueck?.pfad ? pfadHtml(zurueck) : zurueck ? `<a class="back" href="${esc(zurueck.href)}"><span aria-hidden="true">←</span> ${esc(zurueck.text)}</a>` : '';
+  return `${oben}
   <header class="page-head">${eyebrow ? `<p class="eyebrow">${eyebrow}</p>` : ''}<h1>${titel}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</header>`;
 }
 

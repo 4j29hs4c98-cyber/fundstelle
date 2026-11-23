@@ -13,13 +13,18 @@ export const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().t
 // (#frage/<id>), die feste Seite "Wie wir auswaehlen" und die Einstellungen hinter dem Zahnrad.
 export const TABS = ['start', 'themen', 'parteien', 'pruefen'];
 // #vergleich/<id,id>, #programm/<partei>/<seite>, #wahlen.
-export const VIEWS = [...TABS, 'thema', 'frage', 'partei', 'vergleich', 'programm', 'wahlen', 'grundlagen', 'settings', 'eigene', 'recherche', 'nachricht', 'nachrichten'];
-export const TAB_OF = { thema: 'themen', frage: 'themen', partei: 'parteien', vergleich: 'parteien', programm: 'parteien', wahlen: 'start', grundlagen: 'start', eigene: 'themen', recherche: 'start', nachricht: 'start', nachrichten: 'start' };
+export const VIEWS = [...TABS, 'thema', 'frage', 'partei', 'vergleich', 'programm', 'wahlen', 'grundlagen', 'settings', 'recherche', 'nachricht', 'nachrichten'];
+export const TAB_OF = { thema: 'themen', frage: 'themen', partei: 'parteien', vergleich: 'parteien', programm: 'parteien', wahlen: 'start', grundlagen: 'themen', recherche: 'start', nachricht: 'start', nachrichten: 'start' };
+// Diese Seiten gehoeren zu dem Bereich, aus dem man kommt (Vergleich von einer Frage aus bleibt unter Themen, die eigene
+// Frage aus "Nicht dabei?" auch). TAB_OF gilt
+// nur, wenn es keinen Herkunftsbereich gibt, etwa direkt nach dem Laden.
+export const FOLGT_HERKUNFT = new Set(['vergleich', 'programm', 'recherche']);
 // Adressen aus Version 1, damit alte Lesezeichen weiter funktionieren. #vergleich ist wieder eine eigene Seite.
 export const ALTE_ADRESSEN = { ueberblick: 'start', programme: 'parteien', kontext: 'pruefen' };
 
-// param/suche/frage/alleWahlen/melden sind reiner Anzeigezustand, nichts davon wird gespeichert.
-export const S = { recs: new Map(), view: 'start', param: null, suche: '', frage: '', alleWahlen: false, melden: null };
+// param/suche/frage/alleWahlen/melden/herkunft sind reiner Anzeigezustand, nichts davon wird gespeichert.
+// herkunft: Pfad der Seite, von der Vergleich, Programm-Leser oder eigene Frage geoeffnet wurden ([{ href, text }]).
+export const S = { recs: new Map(), view: 'start', param: null, suche: '', frage: '', alleWahlen: false, melden: null, herkunft: null };
 
 export const list = kind => [...S.recs.values()].filter(r => r.kind === kind && !r.deleted);
 export const get = id => { const r = S.recs.get(id); return r && !r.deleted ? r : null; };

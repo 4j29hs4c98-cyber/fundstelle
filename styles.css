@@ -79,6 +79,7 @@ h1, h2, h3 { font-family: var(--font-display); letter-spacing: -.025em; }
 .qbar { display: flex; gap: 8px; overflow-x: auto; margin: 0 0 18px; padding-bottom: 2px; }
 .qchip { flex: none; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line);
   background: var(--surface); color: var(--muted); font-size: 14px; cursor: pointer; white-space: nowrap; }
+.themenreihe .qchip { display: inline-flex; align-items: center; text-decoration: none; color: var(--ink); }
 .qchip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); font-weight: 600; }
 .question { font-family: var(--font-display); font-size: 19px; font-weight: 700; line-height: 1.3; margin: 0 0 16px; }
 
@@ -160,6 +161,21 @@ input:not([type=checkbox]) { width: 100%; min-height: 44px; padding: 8px 14px; b
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 main { padding-top: 4px; }
 
+/* Pfad ueber tieferen Seiten: Themen › Wohnen › Frage. Jede Stufe ist ein Link (44 px hoch), die letzte ist die Seite selbst. */
+.pfad ol { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0 6px; margin: 0; padding: 0; font-size: 14px; }
+.pfad li { display: inline-flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; }
+.pfad li + li::before { content: '›' / ''; color: var(--muted); }
+.pfad a { display: inline-flex; align-items: center; min-height: 44px; color: var(--muted); font-weight: 600; text-decoration: none; }
+.pfad a:hover { color: var(--ink); text-decoration: underline; }
+.pfad [aria-current] span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 24ch; }
+@media (min-width: 900px) { .pfad [aria-current] span { max-width: 48ch; } }
+/* Vorschlaege beim Tippen im Fragenfeld der Startseite */
+.vorschlaege { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 6px; }
+.vorschlaege a { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 44px; padding: 10px 14px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); text-decoration: none; font-weight: 600; }
+.vorschlaege a:hover { border-color: var(--line-strong); }
+.vorschlaege .meta { font-weight: 400; }
+#vorschlaege:not(:empty) + .erstbesuch { display: none; }
 .back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; }
 a.card.link { display: block; color: inherit; text-decoration: none; }
 a.card.link h3 + .meta, a.card.link .meta { display: block; margin-top: 6px; }
@@ -266,25 +282,12 @@ mark.pruefen { background: var(--paper-warm); color: var(--ink); border-radius: 
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field > span { font-weight: 600; font-size: 14px; }
 
-/* ---------- Startseite: die drei Hauptwege ---------- */
-.wege { display: grid; gap: 10px; }
-.weg { display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 14px 14px 14px 16px; background: var(--surface);
-  border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); color: var(--ink); text-decoration: none; }
-.weg-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--primary); color: var(--primary-ink); flex: none; }
-.weg-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.weg-text { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.weg-text b { font-family: var(--font-display); font-size: 16px; font-weight: 700; letter-spacing: -.02em; }
-.weg-text span { color: var(--muted); font-size: 13px; line-height: 1.4; }
-@media (min-width: 700px) {
-  .wege { grid-template-columns: repeat(3, 1fr); }
-  .weg { flex-direction: column; align-items: flex-start; padding: 18px; min-height: 0; }
-  .weg > .arrow { align-self: flex-end; margin-top: auto; }
-}
+/* ---------- Startseite ---------- */
 .profil-tipp { display: flex !important; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 16px; padding: 14px 18px; box-shadow: none; }
 .profil-tipp b { font-size: 14px; } a.card.link.profil-tipp .meta { margin: 0; color: var(--ink); font-weight: 600; }
 
 /* Pfeil in ganzen Karten-Links: ruhiger Kreis, der beim Zeigen leicht nach rechts rueckt. */
-a.card.link .arrow, .weg > .arrow, .prog-head > .arrow { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%;
+a.card.link .arrow, .prog-head > .arrow { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%;
   background: var(--sunken); color: var(--ink); font-size: 14px; line-height: 1; }
 .prog-head > .arrow { margin-left: auto; } .prog-head > .meta + .arrow { margin-left: 0; }
 a.card.link .card-row { align-items: center; }
@@ -334,15 +337,15 @@ main { overflow-x: clip; }
 #main.enter > :nth-child(4) { animation-delay: 90ms; } #main.enter > :nth-child(5) { animation-delay: 120ms; }
 #main.enter > :nth-child(n+6) { animation-delay: 150ms; }
 
-a.card.link, .weg, .go, .btn, .qchip, .pchip, .seg button, .pin, .ballot, .gear, .back {
+a.card.link, .go, .btn, .qchip, .pchip, .seg button, .pin, .ballot, .gear, .back {
   transition: transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .2s ease, border-color .2s ease, background-color .2s ease, color .2s ease, opacity .2s ease; }
-a.card.link .arrow, .weg > .arrow, .go .arrow { transition: transform .2s cubic-bezier(.2,.7,.2,1), background-color .2s ease; }
-a.card.link:active, .weg:active, .ballot:active { transform: scale(.985); }
+a.card.link .arrow, .go .arrow { transition: transform .2s cubic-bezier(.2,.7,.2,1), background-color .2s ease; }
+a.card.link:active, .ballot:active { transform: scale(.985); }
 .go:active, .btn:active, .qchip:active, .pchip:active, .seg button:active, .pin:active, .tabbar a:active { transform: scale(.96); }
 @media (hover: hover) {
-  a.card.link:hover, .weg:hover { border-color: var(--line-strong); transform: translateY(-2px); }
-  a.card.link:hover .arrow, .weg:hover > .arrow, .go:hover .arrow { transform: translateX(3px); }
-  a.card.link:hover .arrow, .weg:hover > .arrow { background: var(--primary); color: var(--primary-ink); }
+  a.card.link:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  a.card.link:hover .arrow, .go:hover .arrow { transform: translateX(3px); }
+  a.card.link:hover .arrow { background: var(--primary); color: var(--primary-ink); }
   .go:hover { opacity: .9; }
   .btn:not(.primary):hover, .qchip:not([aria-pressed="true"]):hover, .pchip:hover { background: var(--sunken); border-color: var(--line-strong); }
   .btn.primary:hover { opacity: .9; }
@@ -504,11 +507,8 @@ input:not([type=checkbox]):focus-visible, textarea:focus-visible, select:focus-v
   .tabbar a[aria-current="page"] { background: var(--bar-active-bg); color: var(--bar-active-ink); }
   main { max-width: 1000px; padding: 32px 48px 56px; }
   .toast { bottom: 24px; left: calc(50% + var(--seite) / 2); }
-  /* Vier Einstiege: zwei mal zwei, auf breiten Bildschirmen alle vier in einer Reihe (statt drei plus eins). */
-  .wege { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 1200px) {
-  .wege { grid-template-columns: repeat(4, 1fr); }
   /* Reine Link-Listen (Parteien, Themen, Meldungen) in zwei Spalten; Listen mit Fliesstext bleiben einspaltig. */
   .cards:not(:has(> :not(a.card.link))) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

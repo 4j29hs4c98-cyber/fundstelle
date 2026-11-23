@@ -41,9 +41,9 @@ export const actions = {
     await save('eigenes', id, { frage: R.frage, typ: R.typ, ergebnisse: R.ergebnisse.map(e => ({ ...e })),
       ...(R.typ === 'person' ? { person: { ...R.person }, belege: R.belege.map(b => ({ ...b })) }
         : { taten: R.taten.map(t => structuredClone(t)), ohne_fraktion: [...R.ohneFraktion] }), stand: new Date().toISOString() });
-    toast('Topic saved'); location.hash = `#eigene/${id}`;
+    toast('Topic saved'); location.hash = `#recherche/${id}`;
   },
-  async 'eigen-loeschen'({ id }) { location.hash = '#eigene'; await undoable('Topic deleted', [id], () => remove(id), render); },
+  async 'eigen-loeschen'({ id }) { location.hash = '#recherche'; await undoable('Topic deleted', [id], () => remove(id), render); },
   // Entfernt einen gemerkten Eintrag aus Version 1 (Thema statt Frage).
   async vergessen({ id }) { await undoable('Topic removed', [id], () => remove(id), render); },
   // Oeffnet (bezug gesetzt) oder schliesst (bezug leer) das Formular "Fehler melden".
@@ -79,12 +79,14 @@ export const forms = {
   suche(fd) { S.suche = String(fd.get('q') || '').trim().slice(0, 200); },
   // Link pruefen: startet erst auf Knopfdruck, weil jede Pruefung Geld kostet. Laeuft im Hintergrund weiter.
   linkpruefen(fd) { pruefen(String(fd.get('url') || '').trim().slice(0, 2000), String(fd.get('text') || '').trim().slice(0, 3000), pruefungZeichnen); },
-  // Jede Frage startet den Agenten sofort, die Ergebnisse erscheinen direkt unter dem Fragenfeld der Startseite.
-  // Passende Fragen aus der App zeigt die Startseite zusaetzlich (views/start.js).
+  // Das Fragenfeld der Startseite fuehrt zur einen Seite fuer eigene Fragen (#recherche): dort stehen zuerst passende
+  // Fragen aus der App, dann startet der Agent sofort.
   startfrage(fd) {
     S.frage = String(fd.get('q') || '').trim().slice(0, 200);
     // Leeres Feld: eine laufende Recherche abbrechen, damit sie nicht unsichtbar weiterlaeuft und Kosten verursacht.
-    if (S.frage) tippen(S.frage, rechercheZeichnen, true); else abbrechen();
+    if (!S.frage) { abbrechen(); return; }
+    tippen(S.frage, rechercheZeichnen, true);
+    location.hash = '#recherche';
   },
   // Nur bekannte Werte speichern: was aus dem Formular kommt, wird gegen die Listen geprueft.
   async profil(fd) {

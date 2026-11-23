@@ -1,6 +1,6 @@
 // render.js — draws the current screen. Every change re-renders the screen, but scroll positions
 // and the focused control are kept, so the page never jumps.
-import { $, S, TAB_OF, TABS } from './core.js';
+import { $, S, TAB_OF, TABS, FOLGT_HERKUNFT } from './core.js';
 import { tr, setLang, getLang } from './i18n.js';
 import { viewStart } from './views/start.js';
 import { viewThemen, viewThema } from './views/themen.js';
@@ -13,11 +13,11 @@ import { halbkreisUebernehmen } from './views/halbkreis.js';
 import { viewProgramm } from './views/programm.js';
 import { viewWahlen } from './views/wahlen.js';
 import { viewGrundlagen } from './views/grundlagen.js';
-import { viewEigene, viewRecherche } from './views/eigene.js';
+import { viewRecherche } from './views/eigene.js';
 import { viewNachricht, viewNachrichten } from './views/nachrichten.js';
 
 const views = { start: viewStart, themen: viewThemen, thema: viewThema, frage: viewFrage, parteien: viewParteien, partei: viewPartei,
-  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, grundlagen: viewGrundlagen, pruefen: viewPruefen, settings: viewSettings, eigene: viewEigene, recherche: viewRecherche, nachricht: viewNachricht, nachrichten: viewNachrichten };
+  vergleich: viewVergleich, programm: viewProgramm, wahlen: viewWahlen, grundlagen: viewGrundlagen, pruefen: viewPruefen, settings: viewSettings, recherche: viewRecherche, nachricht: viewNachricht, nachrichten: viewNachrichten };
 const FOCUS_KEYS = ['action', 'id', 'v', 'frage', 'bezug'];
 
 // Seiten, deren Parameter nur eine Auswahl auf derselben Seite ist (Parteien im Vergleich). Ein Wechsel dort ist kein
@@ -36,11 +36,55 @@ function seitenTitel(main) {
   return text ? `${text} · ${APP_NAME}` : APP_NAME;
 }
 
+// Bereich der Tab-Leiste fuer die aktuelle Seite. Vergleich und Programm-Leser behalten den Bereich der vorigen Seite.
+export function bereich() {
+  if (FOLGT_HERKUNFT.has(S.view) && TABS.includes(render.lastTab)) return render.lastTab;
+  return TAB_OF[S.view] || S.view;
+}
+
+// Namen der Bereiche, wenn eine Seite keinen Pfad hat (Startseiten der Bereiche).
+const BEREICH_NAME = { start: 'Start', themen: 'Topics', parteien: 'Parties', pruefen: 'Check', settings: 'Settings' };
+
+// Pfad der gezeichneten Seite samt ihr selbst als letzte Stufe. Daraus wird die Herkunft der naechsten Seite.
+function seitenPfad(main) {
+  const nav = main.querySelector('nav.pfad');
+  const stufen = nav ? [...nav.querySelectorAll('a')].map(a => ({ href: a.getAttribute('href'), text: a.textContent.trim() })) : [];
+  const text = nav?.querySelector('[aria-current] span')?.textContent.trim()
+    || (BEREICH_NAME[S.view] ? tr(BEREICH_NAME[S.view]) : seitenTitel(main).split(' · ')[0]);
+  return [...stufen, { href: location.hash || '#start', text }];
+}
+
+// Vergleich, Programm-Leser und eigene Frage haengen sich an die vorige Seite. Fuehrt der Weg im Kreis (Programm aus dem
+// Vergleich, dann zurueck zum Vergleich), wird der Pfad an der Stelle der Seite selbst abgeschnitten.
+function herkunftMerken() {
+  if (!FOLGT_HERKUNFT.has(S.view) || render.lastView === S.view) return;
+  if (!render.pfad) { S.herkunft = null; return; }
+  const hier = location.hash, i = render.pfad.findIndex(s => s.href === hier);
+  S.herkunft = i >= 0 ? render.pfad.slice(0, i) : render.pfad;
+}
+
+// Zuruecknavigation: Jeder Verlaufseintrag bekommt beim ersten Zeichnen die Marke "besucht", danach schreibt app.js beim
+// Scrollen die Position hinein (history.state.y). Traegt der Eintrag die Marke schon, war man hier: die Seite springt an
+// dieselbe Stelle. Inhalte, die spaeter laden, machen die Seite erst nach und nach lang genug: dann noch ein paar Mal nachfassen.
+function scrollWiederherstellen(seite) {
+  const st = history.state, y = st?.y;
+  if (!st?.besucht || typeof y !== 'number') {
+    try { history.replaceState({ ...(st || {}), besucht: true, y: 0 }, ''); } catch {}
+    return false;
+  }
+  window.scrollTo(0, y);
+  [150, 400, 900].forEach(ms => setTimeout(() => {
+    if (render.last === seite && Math.abs(window.scrollY - y) > 2 && !render.gescrollt) window.scrollTo(0, y);
+  }, ms));
+  return true;
+}
+
 export function render() {
   const seite = `${S.view}/${S.param ?? ''}`;
   const main = $('#main'), y = window.scrollY;
   if (!main) return; // Seite ohne App-Geruest (etwa in Tests ersetzt): nichts zu zeichnen
   const keep = render.last === seite || (render.lastView === S.view && AUSWAHL_IM_PARAM.has(S.view));
+  if (!keep) { herkunftMerken(); render.vorigeAdresse = render.adresse; render.adresse = location.hash || '#start'; render.gescrollt = false; }
   const ae = document.activeElement, sig = keep && main.contains(ae) ? { tag: ae.tagName, elId: ae.id, d: Object.fromEntries(FOCUS_KEYS.map(k => [k, ae.dataset[k]])) } : null;
   main.style.minHeight = keep ? `${main.offsetHeight}px` : '';
   if (keep) main.classList.remove('enter'); // neue Kinder derselben Seite sollen nicht erneut einblenden
@@ -48,15 +92,16 @@ export function render() {
   if (!(keep && halbkreisBehalten(main, html))) main.innerHTML = html;
   main.style.minHeight = '';
   document.title = seitenTitel(main);
-  const tab = TAB_OF[S.view] || S.view;
+  const tab = bereich();
   if (!keep) einblenden(main, tab);
   document.querySelectorAll('[data-nav]').forEach(a => a.setAttribute('aria-current', a.dataset.nav === tab ? 'page' : 'false'));
   const ziel = keep ? null : main.querySelector('[data-ziel]');
-  if (keep) window.scrollTo(0, y); else if (ziel) ziel.scrollIntoView(); else window.scrollTo(0, 0);
+  if (keep) window.scrollTo(0, y); else if (scrollWiederherstellen(seite)) { /* zurueck an dieselbe Stelle */ } else if (ziel) ziel.scrollIntoView(); else window.scrollTo(0, 0);
   if (sig) {
     const el = sig.elId ? document.getElementById(sig.elId) : [...main.querySelectorAll(sig.tag)].find(e => FOCUS_KEYS.every(k => e.dataset[k] === sig.d[k]));
     el?.focus({ preventScroll: true });
   }
+  render.pfad = seitenPfad(main);
   render.last = seite;
   render.lastView = S.view;
   render.lastTab = tab;

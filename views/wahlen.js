@@ -5,7 +5,7 @@ import { esc, S } from '../core.js';
 import { WAHLARTEN, BUNDESLAENDER } from '../katalog.js';
 import { meineWahlen, profil, hatProfil } from '../profil.js';
 import { tageBis } from '../content.js';
-import { kopf, termin, extLink } from './teile.js';
+import { kopf, pfad, termin, extLink } from './teile.js';
 
 const artName = id => { const w = WAHLARTEN.find(x => x.id === id); return w ? tr(w.name) : esc(id); }; // id kann aus einem Backup stammen
 const landName = id => BUNDESLAENDER.find(l => l.id === id)?.name ?? '';
@@ -22,7 +22,7 @@ export function viewWahlen() {
   const ws = meineWahlen({ alle: S.alleWahlen }), pr = profil();
   const jahre = [...new Set(ws.map(w => w.sort.slice(0, 4)))];
   const filter = hatProfil() ? `${pr.wahlarten.map(artName).join(', ')}${pr.land ? ` · ${esc(landName(pr.land))}` : ''}` : tr('All elections');
-  return `${kopf(tr('Today'), tr('Upcoming elections'), tr('Fixed dates with a countdown, everything else as the expected period.'), { href: '#start', text: tr('Start') })}
+  return `${kopf(tr('Today'), tr('Upcoming elections'), tr('Fixed dates with a countdown, everything else as the expected period.'), pfad([{ href: '#start', text: tr('Start') }], tr('Upcoming elections')))}
   <div class="row merk-row"><button class="btn" data-action="alle-wahlen" aria-pressed="${S.alleWahlen}">${S.alleWahlen ? tr('Only my elections') : tr('Show all elections')}</button>
     <span class="meta">${S.alleWahlen ? tr('All elections') : filter} · <a href="#settings">${tr('Change profile')}</a></span></div>
   ${jahre.map(j => `<h2 class="eyebrow section-label">${j}</h2><div class="cards">${ws.filter(w => w.sort.startsWith(j)).map(wahlKarte).join('')}</div>`).join('')

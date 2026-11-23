@@ -1,20 +1,36 @@
 // app.js — entry point: event routing, URL routing (#home, #settings), sync wiring, startup.
 import * as db from './db.js';
 import * as sync from './sync.js';
-import { $, S, VIEWS, TABS, TAB_OF, ALTE_ADRESSEN, toast } from './core.js';
+import { $, S, VIEWS, TABS, ALTE_ADRESSEN, toast } from './core.js';
 import { tr, plural } from './i18n.js';
 import { loadContent } from './content.js';
 import { nachrichtenLaden } from './nachrichten.js';
-import { render, applyLang, applyTheme } from './render.js';
+import { render, bereich, applyLang, applyTheme } from './render.js';
 import { actions, forms } from './actions.js';
 import { syncLine } from './views/settings.js';
 import { tippen } from './recherche.js';
 import { rechercheZeichnen } from './views/vergleich-eigene.js';
+import { vorhandenHtml } from './views/eigene.js';
+import { vorschlaegeHtml } from './views/start.js';
 
-// Eigenes Thema: beim Tippen recherchiert der Agent. Nur der Ergebnisbereich wird neu gezeichnet, das Eingabefeld bleibt unberuehrt.
-document.addEventListener('input', e => { if (e.target.id === 'eigen-frage') tippen(e.target.value, rechercheZeichnen); });
+// Eigene Frage: beim Tippen recherchiert der Agent. Nur die Ergebnisbereiche werden neu gezeichnet, das Eingabefeld bleibt
+// unberuehrt. Im Fragenfeld der Startseite erscheinen beim Tippen passende Fragen aus der App (ohne Recherche, ohne Kosten).
+document.addEventListener('input', e => {
+  if (e.target.id === 'eigen-frage') {
+    tippen(e.target.value, rechercheZeichnen);
+    const vorhanden = document.getElementById('vorhanden');
+    if (vorhanden) vorhanden.innerHTML = vorhandenHtml(e.target.value);
+  }
+  if (e.target.id === 'start-q') { const el = document.getElementById('vorschlaege'); if (el) el.innerHTML = vorschlaegeHtml(e.target.value); }
+});
 
 document.addEventListener('click', async e => {
+  // Eine Stufe im Pfad, die genau die vorige Seite ist: im Verlauf zurueck statt vorwaerts, damit die Seite an derselben
+  // Stelle steht wie vorher (Scrollposition, siehe render.js).
+  const stufe = e.target.closest('nav.pfad a, a.back');
+  if (stufe && !e.metaKey && !e.ctrlKey && !e.shiftKey && stufe.getAttribute('href') === render.vorigeAdresse && history.length > 1) {
+    e.preventDefault(); history.back(); return;
+  }
   const el = e.target.closest('[data-action]');
   if (!el || el.disabled || !actions[el.dataset.action]) return;
   e.preventDefault();
@@ -38,6 +54,8 @@ document.addEventListener('change', async e => {
 // #frage/<id> -> view 'frage', param '<id>'. Unbekannte Adressen fuehren zum Start.
 function route() {
   const [roh, ...rest] = location.hash.slice(1).split('/');
+  // Alte Adressen der eigenen Frage: #eigene/<id> zeigt das gespeicherte Thema jetzt unter #recherche/<id>.
+  if (roh === 'eigene') { location.replace(`#recherche${rest.length ? `/${rest.join('/')}` : ''}`); return; }
   const v = ALTE_ADRESSEN[roh] || roh;
   S.view = VIEWS.includes(v) ? v : 'start';
   try { S.param = rest.length ? decodeURIComponent(rest.join('/')) : null; } catch { S.param = null; } // kaputte Adresse wie #frage/%E0
@@ -45,6 +63,20 @@ function route() {
   render();
 }
 window.addEventListener('hashchange', route);
+
+// Scrollposition je Verlaufseintrag merken (render.js stellt sie beim Zuruecknavigieren wieder her).
+let scrollGeplant = false;
+window.addEventListener('scroll', () => {
+  if (scrollGeplant) return;
+  scrollGeplant = true;
+  requestAnimationFrame(() => {
+    scrollGeplant = false;
+    // Nur Eintraege, die render.js schon als besucht markiert hat: zwischen Klick und Zeichnen gehoert die Position noch der alten Seite.
+    if (history.state?.besucht) try { history.replaceState({ ...history.state, y: Math.round(window.scrollY) }, ''); } catch {}
+  });
+}, { passive: true });
+// Scrollt die Person selbst, fasst render.js nicht mehr nach.
+['wheel', 'touchstart', 'keydown'].forEach(t => window.addEventListener(t, () => { render.gescrollt = true; }, { passive: true }));
 
 // Wischen nach links oder rechts wechselt den Bereich. Die Gesteuerung laeuft ueber den Hash,
 // damit die Architektur des Kits (eine Ansicht in #main) unveraendert bleibt.
@@ -63,7 +95,7 @@ window.addEventListener('hashchange', route);
     const dx = e.clientX - x0;
     id = null;
     if (locked !== 'x' || Math.abs(dx) < 60) return;
-    const tab = TAB_OF[S.view] || S.view, i = TABS.indexOf(tab);
+    const i = TABS.indexOf(bereich());
     if (i < 0) return;
     const next = TABS[i + (dx < 0 ? 1 : -1)];
     if (next) location.hash = '#' + next;
